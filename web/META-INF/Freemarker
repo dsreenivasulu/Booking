@@ -1,0 +1,262 @@
+Freemarker version : 2.3.20
+
+Directive References
+----------------------
+
+1)<#if condition>
+ 
+ <#elseif condition> 
+ <#else>
+ 
+ </#if>
+ 
+2) How to write user defined methods in freemarker
+ 
+by using macro
+
+<#macro mymacro>
+
+</#macro>
+
+And we can call in code <@mymacro>
+
+3)if the rendering freemarker fails in the script what will do ?
+
+<#attempt>
+  attempt block
+<#recover>
+  recover block
+</#attempt>
+
+If an error occurs during the execution of the attempt block, then the template execution is not aborted, 
+but the recover block is executed instead of the attempt block. 
+If no error occurs during the execution of the attempt block, then the recover block is ignored
+
+4)To remove whitespace of variable/code we wil use 
+<#compress>
+  ...
+</#compress>
+
+5)Creating a method that calculates the average of two numbers:
+<#function avg x y>
+  <#return (x + y) / 2>
+</#function>
+${avg(10, 20)}
+
+
+
+5)We can speciy the names globaly in our page 
+<#global name=value>
+
+6)<#assign c=JspTaglibs["http://java.sun.com/jsp/jstl/core"]/>
+<#assign security=JspTaglibs["http://www.springframework.org/security/tags"] />
+<#assign form=JspTaglibs["http://www.springframework.org/tags/form"]/>
+<#import "../layout/layout.ftl" as layout />
+<#include "/common/copyright.ftl">
+
+7)The simplest form for listing a sequence (or collection) is:
+
+<#list sequence as item>
+    Part repeated for each item
+</#list>
+and to list the key-value pairs of a hash (since 2.3.25):
+
+<#list hash as key, value>
+    Part repeated for each key-value pair
+</#list>
+
+7)To stop template rendering in page
+<#stop>
+or
+<#stop reasonhere>
+
+8)Switch case
+<#switch value>
+  <#case refValue1>
+    ...
+    <#break>
+  <#case refValue2>
+    ...
+    <#break>
+  ...
+  <#case refValueN>
+    ...
+    <#break>
+  <#default>
+    ...
+</#switch>
+
+9)Trim 
+
+<#t> Ignore all leading and trailing white-space in this line
+
+<#lt> Ignore all leading white-space in this line
+
+<#rt> Ignore all trailing white-space in this line
+
+
+Basic References.
+------------------
+
+1)Converts number to string 
+
+expression?string
+
+Converts number
+
+expression?string
+
+Converts a boolean to a string
+
+foo?string("yes", "no") foo is string it is yes else no
+
+2)sort : Returns the sequence sorted in ascending order
+
+<#assign ls = ["whale", "Barbara", "zeppelin", "aardvark", "beetroot"]?sort>
+<#list ls as i>${i} </#list>
+
+sort_by : Returns the sequence of hashes sorted by the given hash subvariable in ascending order
+
+<#list ls?sort_by("name") as i>
+- ${i.name}: ${i.weight}
+</#list>
+
+
+keys : A sequence that contains all the lookup keys in the hash.
+
+<#assign myHash = { "name": "mouse", "price": 50 }>
+<#list myHash?keys as k>
+  ${k}
+</#list>
+
+values :A sequence that contains all the variables (the values in the key-value pairs) in the hash.
+
+#list myHash?values as v>
+  ${v}
+</#list>
+
+
+Configured freemarker in spring 
+-------------------------------
+<bean class="NoncachingFreeMarkerViewResolver">
+		<property name="cache" value="true"/>
+		<property name="prefix" value=""/>
+		<property name="suffix" value=".ftl"/>
+	</bean>
+
+NoncachingFreeMarkerViewResolver is predefined viewResolver 
+
+public class NoncachingFreeMarkerViewResolver extends FreeMarkerViewResolver
+{
+	NoncachingFreeMarkerViewResolver()
+	{
+		super();
+	}
+	
+	protected Class requiredViewClass()
+	{
+		return NoncachingFreeMarkerView.class;
+	}
+	
+	private static class NoncachingFreeMarkerView extends FreeMarkerView
+	{
+		protected void renderMergedTemplateModel(Map model, 
+				HttpServletRequest request, HttpServletResponse response) 
+		throws Exception 
+		{
+			response.setHeader("Pragma", "no-cache");
+			response.setHeader("Cache-control", "no-store, no-cache, must-revalidate");
+			response.setDateHeader("Expires", 0);
+
+			model.put("synctoken", CSRFProtector.getSessionCsrfToken(request));
+			super.renderMergedTemplateModel(model, request, response);
+		}
+	}
+}
+
+And then set the freemarker config properties 
+
+<!-- freemarker config -->
+    <!-- bean is here instead of ac-mvc.xml because it's also needed by ac-event.xml -->
+	<bean id="freemarkerConfig" 
+		class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+	  <property name="templateLoaderPath" value="/WEB-INF/views/freemarker/"/>
+	  <property name="freemarkerSettings">
+	  	<props>
+	  		<prop key="template_exception_handler">rethrow</prop>
+	  		<prop key="url_escaping_charset">UTF-8</prop>
+	  	</props>
+	  </property>
+	  <property name="freemarkerVariables">
+        <props>
+            <prop key="cloudEnabled">${dateabasekey}</prop>
+        </props>
+      </property>
+	</bean>
+
+	
+Spring realted tags used in  freemarker
+--------------------------------------------
+  <@form.hidden path="name" />
+	
+  <@form.input path="jobTitle" maxlength='255' cssClass="six-col-field" />
+  
+  <@form:password path="password" />
+  
+  <@form.select path="name" cssClass="two-col-select">
+				<@form.option value="" label="Select" />
+				<@form.option value="Dr." label="Dr." />
+				<@form.option value="Mr." label="Mr." />
+				<@form.option value="Ms." label="Ms." />
+				<@form.option value="Mrs." label="Mrs." />
+			</@form.select>
+  
+  
+  
+  <@form.checkbox path="gender"  />
+  
+  <@form:radiobutton path="gender" value="M">
+  
+  <@form:textarea path="aboutYou" />
+  
+ JSTL core library used in freemarker
+------------------------------------
+
+<c:if test="${param.name == 'studytonight'}">
+      <p>Welcome to ${param.name} </p>
+    </c:if>
+
+ <c:out value="${param.name}" default="StudyTonight" />
+
+ <c:forEach var="message" items="${errorMsgs}" >
+        <li>${message}</li>
+      </c:forEach>
+
+<c:forEach var="tutorial" items="${MyTutorialMap}" begin="0" end="5" varStatus="status">
+      
+      <c:choose>
+        
+        <c:when test="${status.count %2 == 0 }">
+	  <p> Divisible by 2 : ${tutorial.key} </p>
+	  <br/>
+        </c:when>
+
+        <c:when test="${status.count %5 == 0 }">
+	  <p > Divisible by 5 : ${tutorial.key} </p>
+	  <br/>
+        </c:when>
+
+        <c:otherwise>
+	  <p> Neither divisible by 2 nor 5 : ${tutorial.key} </p><br/>
+        </c:otherwise>
+
+      </c:choose>
+
+    </c:forEach>
+
+ <a href='<c:url value="/home.jsp"/>' > Go Home </a>
+ 
+ <c:set target="student" property="name" value="${param.name}" /> 
+ 
+ <c:redirect> tag: It is used for redirecting the current page to another URL, 
+ provide the relative address in the URL attribute of this tag and the page will be redirected to the url.
