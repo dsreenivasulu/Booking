@@ -1,0 +1,155 @@
+liquibase version 3.1.1
+
+One alternative tool is flyway.
+
+Liquibase is an open source database-independent library for tracking, managing and applying database schema changes. 
+This will be usefual especially in an agile software development environment.
+
+Rather than writing SQL query directly against the database to create, update or drop database objects, developers define their desired database changes in XML files.  The XML file, called a changelog, contains a list of changesets that define a desired database change.  
+The changelog is intended to contain an evolving list of database changes the team would like to apply to a target database.  
+
+
+Liquibase uses two tables to manage changes to the database: databasechangelog and databasechangelock.  If the tables don’t exist on the target database, they are created.  An entry is added to the databasechangelock table which ensures only one instance of Liquibase is running at a time.  
+The databasechangelog table contains a listing of every changeset that has been applied to this database
+ 
+ 
+ <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd">
+    <changeSet author="gabraham" id="JIRA ID">
+        <createTable tableName="CAR">
+            <column name="MANUFACTURER" type="VARCHAR" />
+            <column name="MODEL" type="VARCHAR" />
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
+
+
+
+<changeSet author="gabraham" id="rename-first-column">
+    <renameColumn oldColumnName="MODEL" newColumnName="TYPE" tableName="CAR" />
+</changeSet>
+
+Inline native SQL
+	
+<changeSet author="gabraham" id="add-test-data">
+    <sql>INSERT INTO CAR (manufacturer,type) values ('Opel','Corsa')</sql>
+</changeSet>
+
+	
+<preConditions onFail="MARK_RAN">
+    <sqlCheck expectedResult="0">SELECT COUNT(*) FROM CARS WHERE MANUFACTURER='Opel' AND TYPE='Corsa';</sqlCheck>
+</preConditions>
+<sqlFile path="data/more-cars.sql"/>
+
+
+
+
+Explain about change set author and ID. Explain about the databasechangelog and databasechangelock
+
+Have option for roolback 
+
+<include file="database/each-release.xml" /> in the liquibase lane .xml file
+
+Over 30 built-in database refactorings
+Extensibility to create custom changes
+Update database to current version
+Rollback last X changes to database
+Rollback database changes to particular date/time
+Rollback database to "tag"
+SQL for Database Updates and Rollbacks can be saved for manual review
+Stand-alone IDE and Eclipse plug-in
+"Contexts" for including/excluding change sets to execute
+Database diff report
+Database diff changelog generation
+Ability to create changelog to generate an existing database
+Database change documentation generation
+DBMS Check, user check, and SQL check preconditions
+Ability to split change log into multiple files for easier management
+Executable via command line, Apache Ant, Apache Maven, servlet container, or Spring Framework.
+Support for 10 database systems
+
+
+task syncChanges(type: JavaExec) {
+    group = "Liquibase"
+    classpath configurations.liquibase
+    main = "liquibase.integration.commandline.Main"
+
+    args "--changeLogFile=database/changelog-index.xml"
+    args "--username=${config.server.dbuser}"
+    args "--password=${config.server.dbpass}"
+    args "--url=jdbc:postgresql://${config.server.hostname}:${config.server.dbport}/${config.server.dbname}"
+    args "--driver=org.postgresql.Driver"
+    args "--contexts=production,merge"
+    args "changelogsync"
+}
+
+task newDB(type: JavaExec) {
+    description = "updates the existing DB schema without dropping all objects; existing data remains intact; works even when no schema is in DB"
+    group = "Liquibase"
+    classpath configurations.liquibase
+    main = "liquibase.integration.commandline.Main"
+
+    args "--changeLogFile=database/changelog-index.xml"
+    args "--username=${config.server.dbuser}"
+    args "--password=${config.server.dbpass}"
+    args "--url=jdbc:postgresql://${config.server.hostname}:${config.server.dbport}/${config.server.dbname}"
+    args "--driver=org.postgresql.Driver"
+    args "--contexts=production,merge"
+    args "update"
+}
+
+task updateDB(type: JavaExec) {
+    description = "Upgrade a prior DB release version. Not used in development for the most part."
+    group = "Liquibase"
+    classpath configurations.liquibase
+    main = "liquibase.integration.commandline.Main"
+
+    args "--changeLogFile=database/changelog-index.xml"
+    args "--username=${config.server.dbuser}"
+    args "--password=${config.server.dbpass}"
+    args "--url=jdbc:postgresql://${config.server.hostname}:${config.server.dbport}/${config.server.dbname}"
+    args "--driver=org.postgresql.Driver"
+    args "--contexts=production"
+    args "update"
+}
+
+task dropAll(type: JavaExec) {
+    description = "drops all objects in the database - works fine even if the DB has no objects in it already"
+    group = "Liquibase"
+    classpath configurations.liquibase
+    main = "liquibase.integration.commandline.Main"
+
+    args "--changeLogFile=database/changelog-index.xml"
+    args "--username=${config.server.dbuser}"
+    args "--password=${config.server.dbpass}"
+    args "--url=jdbc:postgresql://${config.server.hostname}:${config.server.dbport}/${config.server.dbname}"
+    args "--driver=org.postgresql.Driver"
+    args "dropAll"
+}
+
+We can run the liqibase as commandLine and maven and ANT also
+
+
+CREATE TABLE databasechangelog
+(
+  id character varying(255) NOT NULL,
+  author character varying(255) NOT NULL,
+  filename character varying(255) NOT NULL,
+  dateexecuted timestamp with time zone NOT NULL,
+  orderexecuted integer NOT NULL,
+  exectype character varying(10) NOT NULL,
+  md5sum character varying(35),
+  description character varying(255),
+  comments character varying(255),
+  tag character varying(255),
+  liquibase character varying(20)
+)
+
+CREATE TABLE databasechangeloglock
+(
+  id integer NOT NULL,
+  locked boolean NOT NULL,
+  lockgranted timestamp with time zone,
+  lockedby character varying(255),
+  CONSTRAINT pk_databasechangeloglock PRIMARY KEY (id)
+)
