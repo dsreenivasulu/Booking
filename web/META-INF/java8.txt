@@ -1,0 +1,84 @@
+These interfaces are also called Single Abstract Method interfaces (SAM Interfaces). 
+And a popular way in which these are used is by creating Anonymous Inner classes using these interfaces, something like:
+public class AnonymousInnerClassTest {
+  public static void main(String[] args) {
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        System.out.println("A thread created and running ...");
+      }
+    }).start();
+  }
+}
+
+With Java 8 the same concept of SAM interfaces is recreated and are called Functional interfaces.
+
+Java 8 provides such an interface in Function<T,R> from the java.util.function package.
+
+Represents a function that accepts one argument and produces a result.
+This is a functional interface whose functional method is apply(Object). (Note : it have other methods
+
+Note 1: Functional interface should have only one abstract method.
+
+Note 2 : If we declared more than one abstract method then it will not be functional interface. 
+
+Note 3: If we declare interface using @FunctionalInterface then if we try to add another abstract method we will get compile time error  
+        If we declare functional interface with out @FunctionalInterface and then if we try to add another abstract method then it will be normal interface
+        but functional interface should not used in our code. if we used by using lambada expression we will get compile time error
+
+Note 4 : You can easily add default methods to the functional interface but Don’t Overuse Default Methods in Functional Interfaces
+         A functional interface can have more than one static or default methods, and also can Override some methods from java.lang.Object
+
+Note 5 : Best practice to Instantiate Functional Interfaces with Lambda Expressions not by using Anonymous Inner class as above
+
+Notes for Lambda expressions
+
+
+Note 6: Don’t Treat Lambda Expressions as Inner Classes . Inner class concept is different
+
+Note 7 : Avoid Specifying Parameter Types
+   Do this: (a, b) -> a.toLowerCase() + b.toLowerCase();
+   instead of this: (String a, String b) -> a.toLowerCase() + b.toLowerCase();
+   
+   A compiler in most cases is able to resolve the type of lambda parameters with the help of type inference. 
+   Therefore, adding a type to the parameters is optional and can be omitted.
+ 
+
+Note 8 : Avoid Parentheses Around a Single Parameter
+   
+ 		 Do this: a -> a.toLowerCase();
+         instead of this: (a) -> a.toLowerCase();
+		 
+Note 9 :  Avoid Return Statement and Braces
+
+         Do this: a -> a.toLowerCase();
+         instead of this: a -> {return a.toLowerCase()};
+
+Note 10 : Use Method References
+
+         Do this: String::toLowerCase;
+         instead of this: a -> a.toLowerCase();	 
+		 
+Note 11 : Accessing a non-final variable inside lambda expressions will cause the compile-time error
+
+public void method() {
+    String localVariable = "Local";
+    Foo foo = parameter -> {
+        String localVariable = parameter;
+        return localVariable;
+    };
+}		 
+
+Note 12 : You can not use inferred and declared types together, Following is invalid.
+   ( int arg1, arg2 ) // This is invalid
+   
+   
+Note 13 : If a body is statement of block, than it will be evaluated same as a method body, 
+that will be called and a hidden return statement at the end block that will return control to caller after execution of block. 
+So, branching statements ( continue and break ) are illegal and return is not necessary to write.   
+() -> {
+      System.out.println("Bad lambda");
+      break ; // this statement is not allowed here.
+   }
+ 
+ 

@@ -1,0 +1,125 @@
+When to use a lambda ?
+
+Lambda is replacement of Anonymous class ? NO, Lambdas are anonymous functions which are designed to eliminate overhead (Constructor and other bulky code) of Anonymous class where it is not required.
+
+Anonymous class :
+If you want to declare constructor, some variables and going to write additional methods that will not be part of Interface, Then use Anonymous class.
+
+Lambda Expression :
+If you want to implement only method of functional interface, than use Lambda expressions or you want to pass that to other code.
+
+
+1)Lambda Parameters
+  Zero Parameters : () -> System.out.println("Zero parameter lambda");
+  One Parameter:    param -> System.out.println("One parameter: " + param);
+  Multiple Parameters: (p1, p2) -> System.out.println("Multiple parameters: " + p1 + ", " + p2);
+  Parameter Types:  (Car car) -> System.out.println("The car is: " + car.getName());
+
+Streams :
+============  
+At the basic level, the difference between Collections and Streams has to do with when things are computed. 
+A Collection is an in-memory data structure, which holds all the values that the data structure currently has—every element in the Collection has to be computed before it can be added to the Collection. 
+A Stream is a conceptually fixed data structure, in which elements are computed on demand. This gives rise to significant programming benefits. The idea is that a user will extract only the values they require from a Stream, and these elements are only produced—invisibly to the user—as and when required. 
+This is a form of a producer-consumer relationship.  
+
+Stream operations can either be executed sequential or parallel.
+
+Based on above points, if we list down the various characteristics of Stream, they will be as follows:
+
+    Not a data structure
+    Designed for lambdas
+    Do not support indexed access
+    Can easily be outputted as arrays or lists
+    Lazy access supported
+    Parallelizable
+	
+java 8 features :
+=================
+1. We can declare default methods and static methods inside interface
+
+default method : We can declare default method by using default keyword 
+    Interface A 
+	{
+	  default string test ()
+	  {
+	      return "default test method";
+	  }
+	}
+Notes : 1. default methods can be overridden in a implementing class
+        2. We can call default methods by using implementing class instance 
+
+Static method : We can declare static method by using static keyword 
+ Interface A 
+	{
+	  static string test ()
+	  {
+	      return "static test method";
+	  }
+	}
+Notes : 1. static methods can't be overridden in a implementing class
+        2. We can call static methods by using Interface name (ex: A.test();)
+
+2. Method References
+    Used to call existing method in lambda expression
+	We have 4 variants of Method References
+	
+	1)References to static method 
+	  Ex : boolean isReal = list.stream().anyMatch(u -> User.isRealUser(u));
+	  Instead of above we can call as 
+	  boolean isReal = list.stream().anyMatch(User::isRealUser);
+	
+	2)References to instance method
+	    Following code calls method isLegalName(String string) of type User which validates an input parameter:
+    	User user = new User();
+        boolean isLegalName = list.stream().anyMatch(user::isLegalName);
+	
+    3)Reference to an Instance Method of an Object of a Particular Type
+       long count = list.stream().filter(String::isEmpty).count();
+    
+    4)Reference to a Constructor
+       Stream<User> stream = list.stream().map(User::new);
+
+3. Optional<T> : It is a public final class which is used to deal with NullPointerException in Java application
+     1)List<String> list = getList();
+     List<String> listOpt = list != null ? list : new ArrayList<>();
+     
+	 List<String> listOpt = getList().orElseGet(() -> new ArrayList<>());  
+
+     2)User user = getUser();
+     if (user != null) {
+    Address address = user.getAddress();
+    if (address != null) {
+        String street = address.getStreet();
+        if (street != null) {
+            return street;
+        }
+    }
+   }
+   return "not specified";
+   
+   Optional<User> user = Optional.ofNullable(getUser());
+	String result = user
+	.map(User::getAddress)
+	.map(Address::getStreet)
+	.orElse("not specified");   
+
+	3)String value = null;
+	String result = "";
+	try {
+		result = value.toUpperCase();
+	} catch (NullPointerException exception) {
+			throw new CustomException();
+	}
+	
+	String value = null;
+    Optional<String> valueOpt = Optional.ofNullable(value);
+	String result = valueOpt.orElseThrow(CustomException::new).toUpperCase(); 
+
+4)Functional Interfaces and Lambda Expressions
+
+5)Java Stream API for Bulk Data Operations on Collections 	
+
+6)Java Time API
+
+7)Java Parallel Array Sorting, StringJoiner, Collectors, forEach enhancement 
+    	
