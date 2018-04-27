@@ -1,0 +1,264 @@
+SQOOP tools : To display a list of all available tools
+$ sqoop help
+
+Available commands:
+  codegen            Generate code to interact with database records
+  create-hive-table  Import a table definition into Hive
+  eval               Evaluate a SQL statement and display the results
+  export             Export an HDFS directory to a database table
+  help               List available commands
+  import             Import a table from a database to HDFS
+  import-all-tables  Import tables from a database to HDFS
+  list-databases     List available databases on a server
+  list-tables        List available tables in a database
+  version            Display version information
+ex : $ sqoop version 
+
+See 'sqoop help COMMAND' for information on a specific command.
+command to run any tool : $ sqoop tool-name tool-arguments
+
+Note : Instead of sqoop (toolname) syntax, you can also use alias scripts as sqoop-(toolname) syntax
+
+Generic Hadoop command-line arguments:
+Generic options supported are
+-conf <configuration file>     specify an application configuration file
+-D <property=value>            use value for given property
+-fs <local|namenode:port>      specify a namenode
+-jt <local|jobtracker:port>    specify a job tracker
+-files <comma separated list of files>    specify comma separated files to be copied to the map reduce cluster
+-libjars <comma separated list of jars>    specify comma separated jar files to include in the classpath.
+-archives <comma separated list of archives>    specify comma separated archives to be unarchived on the compute machines.
+
+Note : Hadoop arguments starts with single dash character (-), whereas tool-specific arguments start with two dashes (--) except -p
+
+The -conf, -D, -fs and -jt arguments control the configuration and Hadoop server settings and The -files, -libjars, and -archives arguments are not typically used with Sqoop
+
+For example, the -D mapred.job.name=<job_name> can be used to set the name of the MR job that Sqoop launches, if not specified, the name defaults to the jar name for the job - which is derived from the used table name.
+
+list-databases
+===================
+$ sqoop list-databases --connect jdbc:mysql://database.example.com/
+o/p information_schema
+	employees
+	
+Note :list-databases only works with HSQLDB, MySQL and Oracle. When using with Oracle, user should have DBA privileges.
+
+Note : Hadoop generic arguments(-D parameter=value) must appear after the tool name and before any tool-specific arguments (for example, --connect, --table, etc).
+
+list-tables
+===================
+List tables available in the "corp" database:
+
+$ sqoop list-tables --connect jdbc:mysql://database.example.com/corp
+employees
+payroll_checks
+job_descriptions
+office_supplies
+
+eval
+===================
+Allows users to quickly run simple SQL queries against a database; results are printed to the console. 
+This allows users to preview their import queries to ensure they import the data they expect
+Argument	            Description
+-e,--query <statement>	Execute statement in SQL.
+
+Select ten records from the employees table:
+$ sqoop eval --connect jdbc:mysql://db.example.com/corp \
+    --query "SELECT * FROM employees LIMIT 10"
+
+Insert a row into the foo table:
+$ sqoop eval --connect jdbc:mysql://db.example.com/corp \
+    -e "INSERT INTO foo VALUES(42, 'bar')"
+		
+export
+======================
+Exports a set of files from HDFS to RDBMS. The target table must already exist in the database. 
+The input files are read and parsed into a set of records according to the user-specified delimiters.
+The default operation is to INSERT records into the database. 
+In "update mode," Sqoop will UPDATE existing records in the database.
+
+Export control arguments:
+Argument								Description
+--export-dir <dir>						HDFS source path for the export
+--table <table-name>					Table to populate
+-m,--num-mappers <n>			    	Use n map tasks to export in parallel
+--update-key <col-name>	            	column to update the existing record. Use a comma separated list of columns if there are more than one column.
+--update-mode <mode>	            	updateonly (default) and allowinsert . 
+if you Specify allowinsert mode then records are inserted when new rows are found with non-matching keys in database
+--staging-table <staging-table-name>	The table in which data will be staged before being inserted into the destination table.
+--clear-staging-table					Indicates that any data present in the staging table can be deleted.
+--input-null-string <null-string>		The string to be interpreted as null for string columns
+--input-null-non-string <null-string>	The string to be interpreted as null for non-string columns
+--direct								Use direct export fast path
+--batch									Use batch mode for underlying statement execution.
+
+Note: The --table and --export-dir arguments are required. other arguments are optional 
+-m or --num-mappers arguments control the number of map tasks: 
+Export performance depends on the degree of parallelism. By default, Sqoop will use four tasks in parallel for the export process
+If you increase tasks, Additional tasks may offer better concurrency but but if the database is already bottlenecked on updating indices, invoking triggers, and so on, then additional load may decrease performance
+
+MySQL provides a direct mode for exports as well, using the mysqlimport tool. When exporting to MySQL, use the --direct argument to specify this codepath. This may be higher-performance than the standard JDBC codepath
+
+Since Sqoop breaks down export process into multiple transactions, it is possible that a failed export job may result in partial data being committed to the database. This can further lead to subsequent jobs failing due to insert collisions in some cases, or lead to duplicated data in others. You can overcome this problem by specifying a staging table via the --staging-table option which acts as an auxiliary table that is used to stage exported data. The staged data is finally moved to the destination table in a single transaction.
+In order to use the staging facility, you must create the staging table prior to running the export job. This table must be structurally identical to the target table. This table should either be empty before the export job runs, or the --clear-staging-table option must be specified. If the staging table contains data and the --clear-staging-table option is specified, Sqoop will delete all of the data before starting the export job.
+Note : staging-table option not available for --direct option and --update-key option 
+
+Inserts vs. Updates
+By default, sqoop-export appends new rows to a table; each input record is transformed into an INSERT statement that adds a row to the target database table. If your table has constraints (e.g., a primary key column whose values must be unique) and already contains data, you must take care to avoid inserting records that violate these constraints. The export process will fail if an INSERT statement fails. This mode is primarily intended for exporting records to a new, empty table intended to receive these results.
+
+If you specify the --update-key argument, Sqoop will instead modify an existing dataset in the database. Each input record is treated as an UPDATE statement that modifies an existing row. The row a statement modifies is determined by the column name(s) specified with --update-key. For example, consider the following table definition:
+
+CREATE TABLE foo(
+    id INT NOT NULL PRIMARY KEY,
+    msg VARCHAR(32),
+    bar INT);
+
+	Consider also a dataset in HDFS containing records like these:
+0,this is a test,42
+1,some more data,100
+
+Running sqoop-export --table foo --update-key id --export-dir /path/to/data --connect.......
+will run an export job that executes SQL statements based on the data like so:
+
+UPDATE foo SET msg='this is a test', bar=42 WHERE id=0;
+UPDATE foo SET msg='some more data', bar=100 WHERE id=1;
+
+If an UPDATE statement modifies no rows, this is not considered an error; the export will silently continue. (In effect, this means that an update-based export will not insert new rows into the database.) Likewise, if the column specified with --update-key does not uniquely identify rows and multiple rows are updated by a single statement, this condition is also undetected.
+
+The argument --update-key can also be given a comma separated list of column names. In which case, Sqoop will match all keys from this list before updating any existing record.
+
+Depending on the target database, you may also specify the --update-mode argument with allowinsert mode if you want to update rows if they exist in the database already or insert rows if they do not exist yet.
+	
+Sqoop automatically generates code to parse and interpret records of the files containing the data to be exported back to the database. If these files were created with non-default delimiters (comma-separated fields with newline-separated records), you should specify the same delimiters again so that Sqoop can parse your files.
+
+If you specify incorrect delimiters, Sqoop will fail to find enough columns per line. This will cause export map tasks to fail by throwing ParseExceptions
+	
+Code generation arguments:
+Argument	Description
+--bindir <dir>	Output directory for compiled objects
+--class-name <name>	Sets the generated class name. This overrides --package-name. When combined with --jar-file, sets the input class.
+--jar-file <file>	Disable code generation; use specified jar
+--outdir <dir>	Output directory for generated code
+--package-name <name>	Put auto-generated classes in this package
+--map-column-java <m>	Override default mapping from SQL type to Java type for configured columns.
+
+If the records to be exported we can use the original generated class (generated in import process)to read the data back. 
+Specifying --jar-file and --class-name Advantage : no need to specify delimiters in this case.
+
+The use of existing generated code is incompatible with --update-key; an update-mode export requires new code generation to perform the update. You cannot use --jar-file, and must fully specify any non-default delimiters.	
+	
+Code generation arguments not useful in update-key. an update-mode export requires new code generation to perform the update. You cannot use --jar-file, and must fully specify any non-default delimiters	
+	
+	
+	
+Supported Databases
+-------------------
+Database	    --direct support     connect string matches
+HSQLDB		       No     			jdbc:hsqldb:*//
+MySQL		       Yes     			jdbc:mysql://
+Oracle		       No     			jdbc:oracle:*//
+PostgreSQL         Yes(import only)	jdbc:postgresql://
+
+Note : need to copy database vendor’s JDBC driver jar in $SQOOP_HOME/lib path
+
+Compatibility Notes: 
+-----------------------
+MySQL : Date column can be '0000-00-00'. if we connect MySQL by using JDBC URL, then we need to handle this value any one of the following.
+	Convert to NULL.
+	Throw an exception.
+	Round to the nearest legal date ('0001-01-01\').
+you can specify behavior using zeroDateTimeBehavior property. default Sqoop converts null. (convertToNull)
+
+$ sqoop import --table foo --connect jdbc:mysql://db.example.com/someDb?zeroDateTimeBehavior=round
+
+2)Columns with type UNSIGNED in MySQL can hold values between 0 and 2^32 (4294967295), but the database will report the data type to Sqoop as INTEGER, which will can hold values between -2147483648 and \+2147483647. Sqoop cannot currently import UNSIGNED values above 2147483647.
+
+3)Sqoop’s direct mode(--direct argument) does not support imports of BLOB, CLOB, or LONGVARBINARY columns. Use JDBC-based imports for these columns
+
+4)Sqoop’s direct mode(--direct argument) does not support to import view. Use JDBC-based imports to import view
+
+PostgreSQL :
+1)Sqoop’s direct mode(--direct argument) does not support to import view. Use JDBC-based imports to import view
+
+Oracle :
+1)DATE and TIME column types, by default sqoop can convert as TIMESTAMP(java.sql.Timestamp) fields
+2)To support date/time types TIMESTAMP WITH TIMEZONE and TIMESTAMP WITH LOCAL TIMEZONE. By default, Sqoop will specify the timezone "GMT" to Oracle
+  You can override by specifying a Hadoop property oracle.sessionTimeZone
+
+$ sqoop import -D oracle.sessionTimeZone=America/Los_Angeles \
+    --connect jdbc:oracle:thin:@//db.example.com/foo --table bar   
+3)In hive few properties will not have direct mapping between SQL types and Hive types.
+  ex : DATE, TIME, and TIMESTAMP will be converted as STRING
+       NUMERIC and DECIMAL SQL types will be converted as DOUBLE. 
+  In these cases, Sqoop will emit a warning in its log messages informing you of the loss of precision.
+
+Troubleshooting Tips:
+The following steps should be followed to troubleshoot any failure that you encounter while running Sqoop.
+
+1)Turn on verbose output by executing the same command again and specifying the --verbose option. 
+This produces more debug output on the console which can be inspected to identify any obvious errors.
+
+2)Look at the task logs from Hadoop to see if there are any specific failures recorded there. 
+It is possible that the failure that occurs while task execution is not relayed correctly to the console.
+
+3)Make sure that the necessary input files or input/output tables are present and can be accessed by the user that Sqoop is executing as or connecting to the database as. 
+It is possible that the necessary files or tables are present but the specific user that Sqoop connects as does not have the necessary permissions to access these files.
+If you are doing a compound action such as populating a Hive table or partition, try breaking the job into two separate actions to see where the problem really occurs. 
+For example if an import that creates and populates a Hive table is failing, you can break it down into two steps 
+- first for doing the import alone, and the second to create a Hive table without the import using the create-hive-table tool. 
+While this does not address the original use-case of populating the Hive table, it does help narrow down the problem to either regular import or during the creation and population of Hive table.
+
+4)Search the mailing lists archives and JIRA for keywords relating to the problem. It is possible that you may find a solution discussed there that will help you solve or work-around your problem.  
+  
+Oracle: 
+1)Connection Reset Error : 
+During the sqoop map-reduce job we will get below error 
+11/05/26 16:23:47 INFO mapred.JobClient: Task Id : attempt_201105261333_0002_m_000002_0, Status : FAILED
+java.lang.RuntimeException: java.lang.RuntimeException: java.sql.SQLRecoverableException: IO Error: Connection reset
+at com.cloudera.sqoop.mapreduce.db.DBInputFormat.setConf(DBInputFormat.java:164)
+at org.apache.hadoop.util.ReflectionUtils.setConf(ReflectionUtils.java:62)
+at org.apache.hadoop.util.ReflectionUtils.newInstance(ReflectionUtils.java:117)
+at org.apache.hadoop.mapred.MapTask.runNewMapper(MapTask.java:605)
+solution : Reason we think due to lack of resources. Informed to DBA. for work around changed in the java security file 
+$JAVA_HOME/jre/lib/security/java.security
+Change the line securerandom.source=file:/dev/random to securerandom.source=file:/dev/urandom
+
+2)Case-Sensitive Catalog Query Error :
+While working with Oracle you may encounter problems when Sqoop can not figure out column names
+One example, using --hive-import and resulting in a NullPointerException:
+11/09/21 17:18:49 ERROR sqoop.Sqoop: Got exception running Sqoop:
+java.lang.NullPointerException
+at com.cloudera.sqoop.hive.TableDefWriter.getCreateTableStmt(TableDefWriter.java:148)
+at com.cloudera.sqoop.hive.HiveImport.importTable(HiveImport.java:187)
+solution : --Check and Specify the table name in upper case (if it was created with mixed/lower case within quotes).	
+--Check and Specify the user name in upper case (if it was created with mixed/lower case within quotes).
+
+3)ORA-00933 error (SQL command not properly ended) : 
+In the command if we specify --driver oracle.jdbc.driver.OracleDriver then the built-in connection manager selection defaults to the generic connection manager, which causes this issue with Oracle
+If the driver option is not specified, the built-in connection manager selection mechanism selects the Oracle specific connection manager
+ERROR manager.SqlManager: Error executing statement:
+java.sql.SQLSyntaxErrorException: ORA-00933: SQL command not properly ended
+solution : omit the driver option from the command and re-run
+
+MySQL :
+1)Connection Failure : 
+While importing a table into Sqoop, if you do not have permissions to access database over the network, you may get the below connection failure.
+Caused by: com.mysql.jdbc.exceptions.jdbc4.CommunicationsException: Communications link failure
+solution: First, verify that you can connect to the database from the node where you are running Sqoop
+$ mysql --host=<IP Address> --database=test --user=<username> --password=<password>
+If this works, then Add the network port for the server to your my.cnf file /etc/my.cnf:
+[mysqld]
+port = xxxx
+Set up a user account to connect via Sqoop or Grant permissions to the user to access the database over the network
+(1) Log into MySQL as root mysql -u root -p<ThisIsMyPassword>. 
+(2) Issue the command: mysql> grant all privileges on test.* to 'testuser'@'%' identified by 'testpassword'
+Note that doing this will enable the testuser to connect to the MySQL server from any IP address. While this will work, it is not advisable for a production environment. 
+We advise consulting with your DBA to grant the necessary privileges
+
+2)Import of TINYINT(1) from MySQL behaves strangely
+Sqoop is treating TINYINT(1) columns as booleans, which is for example causing issues with HIVE import. 
+This is because by default the MySQL JDBC connector maps the TINYINT(1) to java.sql.Types.BIT, which Sqoop by default maps to Boolean.
+solution :A more clean solution is to force MySQL JDBC Connector to stop converting TINYINT(1) to java.sql.Types.BIT by adding tinyInt1isBit=false into your JDBC path (to create something like jdbc:mysql://localhost/test?tinyInt1isBit=false). 
+Another solution would be to explicitly override the column mapping for the datatype TINYINT(1) column.
+For example, if the column name is foo, then pass the following option to Sqoop during import: --map-column-hive foo=tinyint. 
+In the case of non-Hive imports to HDFS, use --map-column-java foo=integer.
