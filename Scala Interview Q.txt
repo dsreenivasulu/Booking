@@ -1,0 +1,536 @@
+--Case class or Case Object:
+   We can declare by using case keyword
+   By default, Scala Compiler adds toString, hashCode and equals methods. We can avoid writing this boilerplate code.
+	By default, Scala Compiler adds companion object with apply and unapply methods that’s why we don’t need new keyword to create instances of a case class.
+	By default, Scala Compiler adds copy method too.
+	We can use case classes in Pattern Matching.
+	By default, Case class and Case Objects are Serializable
+	By default Case Class Parameters are val. That's why case class/object is immutable. Even though, it is not recommended to change this nature, but we can change Case Class Parameters from val to var  
+	Case Class can NOT extend another Case class.  After 2.7.0 its possible
+	we cannot create Case Classes as Abstract. After 2.7.0 its possible
+	Case Class can extend another Class or Abstract Class or Trait
+--Constructors
+Constructor is used to create instances of a class.
+In Scala class can have two types of constructors:
+    Primary Constructor
+    Auxiliary Constructor
+A Scala class can contain one Primary Constructor and one or more Auxiliary Constructors.
+-Primary Constructor : We can define Primary Constructor with zero or one or more parameters
+ ex : Create a Person class with default Primary Constructor.
+		class Person{		
+		}
+ Anything we place (statements or expressions or method call)within the Class Body other than Method definitions, is a part of the Primary Constructor.
+ if we use “var” to define Primary Constructor’s parameters, then Scala compiler will generate setter and getter methods.
+ if we use “val” to define Primary Constructor’s parameters, then Scala compiler will generate getter methods only
+ if we don’t use “var” and “val” to define Primary Constructor’s parameters, then Scala compiler does NOT generate setter and getter methods
+ Getter Method
+    public java.lang.String firstName();
+ Setter Method
+    public void firstName_$eq(java.lang.String);
+Note : javap command is the Java Class File Disassembler. Generated java code can see from the scala.class file
+Scala does not follow the JavaBeans naming convention for accessor and mutator methods
+-Auxiliary Constructor:In Scala, We can define Auxiliary Constructors like methods by using “def” and “this” keywords. “this” is the constructor name.
+Auxiliary Constructor is also know as Secondary Constructor. A Scala class can contain zero or one or more Auxiliary Constructors.
+Adavantages- Auxiliary Constructors are used to provide Constructors Overloading
+Each Auxiliary Constructor must call a previously defined constructor: it may be either Primary Constructor or Auxiliary Constructors. This call should be first statement in that Constructor
+class Employee2(val empId : Int, val empName:String){	
+	println("From Primary Constructor")	
+    def this(){
+	this(0,null)
+	println("From Zero-Argument Auxiliary Constructor")
+    }	
+    def this( empId : Int){
+	this(empId, null)
+	println("From One-Argument Auxiliary Constructor")
+    }	 
+}
+
+What is Scala? Is it a Language or Platform? Does it support OOP or FP? Who is the father of Scala?
+Scala stands for SCAlable LAnguage. Martin Odersky is the father of Scala.
+Scala is a Multi-Paradigm Programming Language, which supports both Object-Oriented and Functional Programming concepts
+
+Is Scala Statically-Typed Language? What is Statically-Typed Language and What is Dynamically-Typed Language? What is the difference between statically typed and dynamically typed languages?
+Yes, Scala is a Statically-Typed Language.
+Statically-Typed Language means that Type checking is done at compile-time by compiler, not at run-time. The main Advantage of these kinds of Languages is Compiler checks many of the errors at compile-time, we don’t get much issues or bugs at run-time.
+Examples:- Java, Scala, C, C++ etc.
+Dynamically-Typed Language means that Type checking is done at run-time, not at compile-time by compiler. As a compiler won’t check any type checking at compile-time, We can expect more run-time issues or bug
+Example:- Groovy, JavaScript, Ruby, Python etc
+
+Is Scala a Pure OOP Language? Is Java a Pure OOP Language?
+Pure Object-Oriented Programming Language means that everything should be an Object.
+Java is not a Pure Object-Oriented Programming (OOP) Language because it supports the following two Non-OOP concepts:
+    Java supports primitive data types. They are not objects.
+    Java supports Static members. They are not related to objects.
+Yes, Scala is a Pure Object-Oriented Programming Language because in Scala, everything is an Object and everything is a value. Functions are values and values are Objects.
+Scala does not have primitive data types and also does not have static members
+
+Does Scala support all Functional Programming concepts? Does Java 8 support all Functional Programming concepts?
+Yes, Scala supports all Functional Programming (FP) concepts. Java 8 has introduced some Functional Programming constructs, but it does NOT support all Functional Programming concepts.
+For instance, Java 8 does not support Pattern Matching, Function Currying, Implicits etc
+Java SE 8 supports all Object-Oriented Programming Features. 
+However, it supports very few Functional Programming Features like Lambda Expressions, Functions, Type Inference, Higher-Order Functions.
+
+What are the major advantages of Scala Language? Are there any drawbacks of Scala Language?
+Advantages of Scala Language:-
+    Supports all OOP Features
+    Supports all FP Features. Highly Functional.
+    Better Parallel and Concurrency Programming
+    Highly Scalable and Maintainable code best suitable Distributed Applications
+    Full Java Interoperability
+	Statically-Typed Language
+	Type Inference
+	Supports Pattern Matching
+    100% Type-Safe Language
+    Immutability and No Side-Effects
+    Do More With Less Code
+	Powerful Scala DSLs available
+    REPL to learn Scala Basics
+
+Drawbacks of Scala Language:-
+    Bit tough to Understand the Code for beginners
+    Complex Syntax to learn
+    Less Backward Compatibility
+NOTE:- We can write Scala Code either more readable or less readable way.
+
+What is the main motto of Scala Language?
+Like Java’s Motto “Write Once Run Anywhere”, Scala has “Do More With Less” or “Do More With Less Code” Motto
+
+What is default access modifier in Scala? Does Scala have “public” keyword?
+In Scala, if we don’t mention any access modifier to a method, function, trait, object or class, the default access modifier is “public”. Even for Fields also, “public” is the default access modifier.
+Because of this default feature, Scala does not have “public” keyword.
+
+Differences between Scala’s Int and Java’s java.lang.Integer:
+    Scala’s Int class does not implement Comparable interface.
+    Java’s java.lang.Integer class implements Comparable interface.
+
+What is PreDef in Scala? What is the main purpose of PreDef in Scala?
+In Scala, PreDef is an object defined in scala package as “scala.PreDef”. It is an utility object.
+It defines many utility methods as shown below:
+    Console IO (print,println etc)
+    Collection utility methods
+    String utility methods
+    Implicit conversion methods
+    Assertion utility methods etc.
+print, println, readLine, readInt, require etc methods are defined in PreDef object.	
+We no need to import this object. Automatically all the methods in available in class/object/trait
+
+Mention Some keywords which are used by Java and not required in Scala? Why Scala does not require them?
+Java uses the following keywords extensively:
+    ‘public’ keyword – to define classes, interfaces, variables etc.
+    ‘static’ keyword – to define static members.
+Scala does not required these two keywords. Scala does not have ‘public’ and ‘static’ keywords.
+    In Scala, default access modifier is ‘public’ for classes,traits, methods/functions, fields etc. That’s why, ‘public’ keyword is not required.
+    To support OOP principles, Scala team has avoided ‘static’ keyword. That’s why Scala is a Pure-OOP Langauge. It is very tough to deal static members in Concurrency applications.
+
+How many operators are there in Scala and Why?
+Unlike Java and like C++, Scala supports Operator Overloading. Scala has one and only operator that is “=” (equalto) operator. Other than this all are methods only.
+For instance 2 + 3, here “+” is not an Operator in Scala. “+” is method available in Int class. Scala Compiler observes 2 and 3 are Integers and tries to find that “+” method in Int class. So Scala Compiler converts “2 + 3” expression into “2.+(3)” and make a call to “+” method on integer object “2” and pass integer object “3” as parameter to “+” method.	
+
+Like Java, what are the default imports in Scala Language?
+    java.lang package
+    scala package
+    scala.PreDef
+
+How many public class files are possible to define in Scala source file?
+In Java, we can define at-most one public class/interface in a Source file. Unlike Java, Scala supports multiple public classes in the same source file.
+We can define any number of public classes/interfaces/traits in a Scala Source file	
+
+What is the difference between Function and Method in Scala?
+Scala supports both functions and methods. We use same syntax to define functions and methods, there is no syntax difference.
+However, they have one minor difference:
+    We can define a method in a Scala class or trait. Method is associated with an object (An instance of a Class). We can call a method by using an instance of a Class. We cannot use a Scala Method directly without using object.
+    Function is not associated with a class or trait. It is defined in a Scala Package. We can access functions without using objects, like Java’s Static Methods
+	
+Tell me some features which are supported by Java, but not by Scala and Vice versa?
+    Java does not support Operator Overloading, but Scala supports it.
+    Java supports ++ and — operators , but Scala does not support them.
+    Java has Checked and Unchecked Exceptions, but Scala does not have Checked Exceptions.
+    Scala does not support break and continue statements, but Java uses them.
+    Scala does not have explicit Type casting, but Java supports this feature.
+    Scala supports Pattern Matching, but Java does not.
+    Java uses Primitive Data types, but Scala does not have.
+    Java supports static members, but Scala does not have static members concept.
+    Scala supports Implicits and Traits, Java does not support them
+	
+Is Scala an Expression-Based Language or Statement-Based Language? Is Java an Expression-Based Language or Statement-Based Language?
+In Scala, everything is a value. All Expressions or Statements evaluates to a Value. We can assign Expression, Function, Closure, Object etc. to a Variable. So Scala is an Expression-Oriented Language.
+In Java, Statements are not Expressions or Values. We cannot assign them to a Variable. So Java is not an Expression-Oriented Language. It is a Statement-Based Language	
+
+What is the difference between Java’s “If..Else” and Scala’s “If..Else”?
+Java’s “If..Else”:In Java, “If..Else” is a statement, not an expression. It does not return a value and cannot assign it to a variable.
+Example:-
+ int year;
+ if( count == 0) 
+   year = 2014;
+ else 
+   year = 2015;
+
+Scala’s “If..Else”:In Scala, “If..Else” is an expression. It evaluates a value i.e. returns a value. We can assign it to a variable.
+ val year = if( count == 0) 2014 else 2015
+Note : we can also java's style if else in scala
+
+What is an Expression? What is a Statement? Difference between Expression and Statement?
+Expression: Expression is a value that means it will evaluate to a Value. As an Expression returns a value, We can assign it to a variable.
+Example:- Scala’s If condition, Java’s Ternary operator.
+Statement: Statement defines one or more actions or operations. That means Statement performs actions. As it does not return a value, we cannot assign it to a Variable.
+Example:- Java’s If condition
+
+What is “Application” in Scala or What is Scala Application? What is “App” in Scala? What is the use of Scala’s App?
+Scala Application: In Scala, App is a trait defined in scala package like “scala.App”. It defines main method. If an Object or a Class extends this trait, then they will become as Scala Executable programs automatically because they will inherit main method from Application.
+The main advantage of using App is that we don’t need to write main method. The main drawback of using App is that we should use same name “args” to refer command line argument because scala.App’s main() method uses this name.
+
+How do we implement loops functionally? What is the difference between OOP and FP style loops?
+We know how to implement loops in Object-Oriented style: Using Mutable Temporary variables, update the variable value and use Loop constructs. It is very tedious and unsafe approach. It is not Thread-Safe.
+Object-Oriented style uses the following constructs to implement Loops:
+    Loop Constructs
+    Mutability
+    Side Effects
+We can implement same Loops differently in Functional way. It is Thread-Safe. We can use the following two techniques to implement the loops in functional style:
+    Recursion
+    Tail-Recursion
+    Immutability
+    No Side-Effects
+	
+What is REPL in Scala? What is the use of Scala’s REPL? How to access Scala REPL from CMD Prompt?
+REPL stands for Read-Evaluate-Print Loop. We can pronounce it as ‘ripple’. In Scala, REPL is acts as an Interpreter to execute Scala code from command prompt. That’s why REPL is also known as Scala CLI(Command Line Interface) or Scala command-line shell	
+We can access REPL by using “scala” command. When we type “scala” command at CMD Prompt, we will get REPL shell where we can type and execute scala code.
+
+what’s a lazy val? 
+It’s almost like a val, but its value is only computed when needed. It’s specially useful to avoid heavy computations
+lazy val x = {
+  println("computing x")
+  3
+}
+val y = {
+  println("computing y")
+  10
+}
+y + y // x was still not computed, "computing x" was not yet printed
+x + x // x is required, x is going to be computed, a "computing x" message will be printed *once*
+
+What is the difference between unapply and apply, when would you use them?
+unapply is a method that needs to be implemented by an object in order for it to be an extractor. Extractors are used in pattern matching to access an object constructor parameters. It’s the opposite of a constructor.
+The apply method is a special method that allows you to write someObject(params) instead of someObject.apply(params). This usage is common in case classes, which contain a companion object with the apply method that allows the nice syntax to instantiate a new object without the new keyword
+apply method: To compose an object from it’s components.
+unapply method: To decompose an object into it’s components.
+
+What is the difference between Case Object and Object(Normal Object)?
+Normal object is created using “object” keyword. By default, It’s a singleton object.
+object MyNormalObject
+Case Object is created using “case object” keywords.By default, It’s also a singleton object
+case object MyCaseObject
+By Default, Case Object gets toString and hashCode methods. But normal object cannot.
+By Default, Case Object is Serializable. But normal object is not.
+-------------------------------------------------------------------------------------------------------------------------
+What is the latest version of Scala?
+Scala 2.12. requires java8
+
+What is the difference between == in Java and Scala?
+The == operator will automatically run the instance's equals method, to check that two objects are actually the same reference.
+In java, The == operator is used to check that two objects are actually the same reference.
+Note : you can still check for referential equality by using eq method.
+
+How to you create Singleton classes in Scala?
+Scala introduces keyword called object, which is used to represent Singleton classes. 
+These are the class with just one instance and their method can be available globally (similar to Java's static methods.)
+
+A singleton object in Scala can also extend classes and traits
+
+Which keyword is used to define a function in Scala?
+using the def keyword. 
+
+What is the use of App class in Scala?
+Scala provides a helper class, called App, that provides the main method. 
+Instead of writing main method, classes can extend App class to execute applications in Scala
+
+object Main extends App {
+  Console.println("Hello Scala: " + (args aString ", "))
+}
+
+What is the difference between an object and a class in Scala?
+An object is a singleton instance of a class. It does not need to be instantiated by the developer. 
+If an object has the same name that a class, the object is called a companion object.
+
+What is the difference between a trait and an abstract class in Scala?
+A class can inherit from multiple traits but only one abstract class.
+Abstract classes can have constructor parameters as well as type parameters. Traits can have only type parameters.
+
+What is the difference between a call-by-value and call-by-name parameter?
+The main difference between a call-by-value and a call-by-name parameter is that the former is computed before calling the function, and the later is evaluated when accessed
+
+What is the difference between a Java method and a Scala function?
+Scala function can be treated as a value. It can be assigned to a val or var, or even returned from another function, which is not possible in Java. 
+Though Java 8 brings lambda expression which also makes function as a first class object, which means you can pass a function to a method just like you pass an object as an argument
+
+What is Companion Object in Scala?
+If an object has the same name that a class, the object is called a companion object. 
+A companion object has access to methods of private visibility of the class, and the class also has access to private methods of the object. 
+We commonly use Companion Objects for Factories.
+
+What is tail recursion in Scala? What is the benefit?
+A function is called tail recursive if the recursive call is the last operation in the function; the method does not rely on the result of the recursive call for any more computation. The most important benefit of the tail recursive function is that compiler can rewrite the method in an iterative fashion, similar to a while loop with mutable state. This allows long, deep recursion without taking too much of stack memory that could result in StackOverFlowError. Unfortunately, Java compiler doesn't support tail call optimization but Scala compiler does. In Scala, you can annotate a function with @tailrec to inform the compiler that this particular method is tail recursive. If the compiler cannot make the function tail recursive, it will throw an error.
+
+What is ‘Unit’ and ‘()’ in Scala?
+The 'Unit' is a type similar to void in Java. it represents 'no value exists'
+ The empty tuple '()' represents a Unit value in Scala.
+ 
+What are two ways to make an executable Scala program?
+There are two general strategies: you can write a script file and use the interpreter, or you can compile an object that has a main method.
+
+What is Monad in Scala?
+A monad is an object that wraps another object in Scala. It helps to perform the data manipulation of the underlying object, instead of manipulating the object directly.
+
+What are High Order Functions in Scala?
+High order functions are functions that can receive or return other functions. 
+Common examples in Scala are the filter, map,  and flatMap functions, which receive other functions as arguments.
+
+What is a Closure in Scala?
+A closure is also known as an anonymous function whose return value depends upon the value of the variables declared outside the function.
+
+What is currying in Scala?
+Currying is a technique to transform a function that takes multiple arguments into a function that takes a single argument.
+
+What is the difference between a Java future and a Scala future?
+Even though both Java and Scala's Future object provides asynchronous computation, but there is a difference between them on how you retrieve the result of the computation. 
+Java's Future requires that you access the result via a blocking get method.Although you can call isDone() method to find out if a Java Future has completed before calling get, thereby avoiding any blocking, you must wait until the Java Future has completed before proceeding with any computation that uses the result.
+With scala's Future you can attach callbacks for completion (success/failure) or simply map it and chain multiple Futures together in a monadic fashion without blocking.
+
+What is the difference between 'concurrency' and 'parallelism'? Name some constructs you can use in Scala to leverage both.
+Concurrency is when several computations are executing sequentially during overlapping time periods, while parallelism describes processes that are executed simultaneously. The concepts are often confused because actors can be concurrent and parallel, sometimes simultaneously. For example, Node.js has concurrency via its event loop despite being a single threaded implementation. Parallel collections are a canonical example of parallelism, but Futures and the Async library can be as well. In short, Concurrency is about avoiding access to mutable state by multiple threads at the same time. Parallelism is taking a single task and breaking it apart to be performed by multiple threads at the same time.
+-------------------------------------------------------------------------------------------------------------------------
+
+what are the design-patterns-in-scala ?
+1. Factory method pattern : used to create an object by encapsulating class instantiation inside method
+
+trait Animal
+private class Dog extends Animal
+private class Cat extends Animal
+
+object Animal {
+  def apply(kind: String) = kind match {
+    case "dog" => new Dog()
+    case "cat" => new Cat()
+  }
+}
+
+Animal("dog")
+
+2. Lazy initialization pattern : used to initializes a value (or an object) on its first access.
+Access to lazy value is thread-safe.
+lazy val x = {
+  print("(computing x) ")
+  42
+}
+println(x) 
+
+3. Singleton pattern : used to create only one object per class 
+Singleton pattern is Thread-safety
+
+4. Value object pattern : used to create simple immutable object that represents a simple entity whose equality isn’t based on identity. Value objects are equal if all their fields are equal.
+case class Point(x: Int, y: Int)
+val point = Point(1, 2)
+
+val point = (1, 2) // new Tuple2(1, 2)
+
+5. Null Object pattern : used to represent none value for the absence of null object 
+Option/Some/None 
+
+6. Visitor Design Pattern : used for Pattern matching
+
+-------------------------------------------------------------------------------------------------------------------------
+
+How Scala solves Inheritance Diamond Problem automatically and easily than Java 8?
+If we use Java 8’s Interface with Default methods, we will get Inheritance Diamond Problem. Developer has to solve it manually in Java 8. It does not provide default or automatic resolution for this problem.
+In Scala, we will get same problem with Traits but Scala is very clever and solves Inheritance Diamond Problem automatically using Class Linearization concept.
+
+What is the use of ‘yield’ keyword in Scala’s for-comprehension construct or for loop construct or what is the use of yield keyword 
+In the for loop, we can iterative collection elements and generate new collection elements of the same type
+scala> val list = List(1,2,3,4,5)
+scala> for(l <- list) yield l*2
+o/p is res0: List[Int] = List(2, 4, 6, 8, 10)
+
+What are the major differences between Scala’s Auxiliary constructors and Java’s constructors?
+Java’s constructors define using classname 
+Auxiliary constructors define using this and first line must call previous constructor
+
+In FP, What is the difference between a function and a procedure?
+A function is a computation unit without side-effect where as a Procedure is also a computation unit with side-effects.
+
+How many values of type Nothing have in Scala?
+Nothing type have no values. It is a subtype of all Value classes and Reference classes.
+
+How many values of type Unit have in Scala?
+It has one and only one value that is ().
+
+What is the use of Companion Object in Scala?
+The main purpose of Companion Object is to define apply methods and avoid using new keyword in creating an instance of that Companion class object.
+
+How do we declare a private Primary Constructor in Scala? How do we make a call to a private Primary Constructor in Scala?
+we can declare a private Primary Constructor by adding ‘private’ after class name and before parameter list
+class Person private (name: String)
+object Person{
+ def apply(name: String) = new Person(name)
+}
+As it’s a private constructor, we cannot call it from outside. We should provide a factory method (that is apply method) as shown above and use that constructor indirectly.
+
+What is Range in Scala? How to create a Range in Scala?
+Range is a Lazy Collection used to represent a sequence of integer values. 
+ex 1 to 10, 1 until 10
+
+How to implement interfaces in Scala?
+There is no interface concept in Scala. Scala has a more powerful and flexible concept i.e. trait for this purpose.
+
+Why Scala does NOT have “static” keyword? What is the main reason for this decision?
+Scala is a Pure Object-Oriented Language. “static” keyword means that we can access that class members without creating an object or without using an object. 
+This is completely against with OOP principles.
+
+What is Diamond Problem? How Scala solves Diamond Problem?
+A Diamond Problem is a Multiple Inheritance problem.
+It occurs when a Class extends more than one Traits which have same method definition
+trait A{   
+  def display(){ println("From A.display")  }
+}
+trait B extends A{ 
+  override def display() { println("From B.display") }
+}
+trait C extends A{ 
+  override def display() { println("From C.display") }
+}
+class D extends B with C{ }
+
+object ScalaDiamonProblemTest extends App {
+    val d = new D
+    d display
+}
+
+What are the differences between Array and ArrayBuffer in Scala?
+What are the differences between Array and List in Scala?
+Array is fixed size array. We cannot change its size once its created.
+ArrayBuffer is variable size array. It can increase or decrease it’s size dynamically. (ArrayBuffer similar to ArrayList)
+Arrays are always Mutable where as List is always Immutable.
+List is variable size array. It can increase or decrease it’s size dynamically
+
+What is the usage of isInstanceOf and asInstanceOf methods in Scala? Is there anything similar concept available in Java?
+Both isInstanceOf and asInstanceOf methods are defined in Any class
+“isInstanceOf” method is used to test whether the object is of a given type or not. If so, it returns true. Otherwise returns false.
+   scala> val str = "Hello"
+   scala>str.isInstanceOf[String]
+   res0: Boolean = false   
+"asInstanceOf” method is used to cast the object to the given a type. If the given object and type are of same type, then it cast to given type. Otherwise, it throws java.lang.ClassCastException.
+scala> val str = "Hello".asInstanceOf[String]
+ str: String = Hello
+ In Java, ‘instanceof’ keyword is similar to Scala’s ‘isInstanceOf’ method. In Java, the following kind of manual type casting is similar to Scala’s ‘asInstanceOf’ method.
+
+-------------------------------------------------------------------------------------------------------------------------
+
+How to declare abstract class in scala ? when to use abstract class compared to traits
+abstract class Base(db: Database) {
+    def save { db.save }
+    def update { db.update }
+    def delete { db.delete }
+
+    // abstract
+    def connect
+
+    // an abstract method that returns a String
+    def getStatus: String
+
+    // an abstract method that takes a parameter
+    def setServerName(serverName: String)
+}
+There is no need for an abstract keyword; simply leaving the body of the method undefined makes it abstract.
+Usage : We want to create a base class that requires constructor arguments
+
+What is Option in Scala? What are Some and None? What is Option/Some/None Design Pattern in Scala?
+Option is used to represent optional values that is either exist or not exist.
+Option is an abstract class and it two subclasses: Some and None. Some is used to represent existing value. None is used to represent non-existent value.
+Option used in collections and pattern matching. All three (Option, Some and None) are defined in “scala” package like “scala.Option”.
+
+What is Either in Scala? What are Left and Right in Scala? Explain Either/Left/Right Design Pattern in Scala?
+In Scala, Either is an abstract class. It is used to represent one value of two possible types. It takes two type parameters: Either[A,B].
+It exactly have two subtypes: Left and Right. If Either[A,B] represents an instance A that means it is Left. If it represents an instance B that means it is Right.
+
+What is the equivalent construct of Scala’s Option in Java SE 8?  
+Optional
+
+What are the Advantages of Functional Programming (FP) or Advantages of Pure Functions?
+More Modular
+Easier to understand Or Easier reason about
+Easier to test
+Less prone to bugs
+Easier to reuse
+Easier to Parallelism and generalize
+Lazy evaluatation
+
+Why Scala is better than Java? What are the advantages of Scala over Java (Java 8)? Compare to Java What are the major advantages or benefits of Scala?
+Full FP Features
+More Expression Language
+Pattern Matching
+Automatic resolution for Inheritance Diamond Problem with Traits
+Better support for Akka Actor Model
+Asynchronous and Non-blocking IO programming using Akka Framework
+Fully Reactive Streaming API
+
+What is an Anonymous Function In Scala? What is a Function Literal in Scala? What are the advantages of a Anonymous Function/Function Literal in Scala?
+We can assign a Function Literal to variable
+We can pass a Function Literal to another function/method
+We can return a Function Literal as another function/method result/return value
+
+What is an Higher-Order Function (HOF)?
+It takes other functions as arguments
+Return functions as their results
+
+What are the Java’s OOP constructs not supported by Scala? What are the Scala’s OOP constructs not supported by Java?
+Java’s OOP constructs, which are not supported by Scala:
+There is no interface concept in Scala
+There is no Enum concept in Scala
+Scala’s OOP constructs, which are not supported by Java:
+Scala Traits
+Solving Inheritance Diamond Problem automatically.
+
+
+
+What are the available Build Tools to develop Play and Scala based Applications?
+SBT
+Maven
+Gradle
+
+What is SBT? What is the best Build Tool to develop Play and Scala Applications?
+SBT stands for Scala Build Tool. Its a Simple Build Tool to develop Scala-based applications.
+Most of the people uses SBT Build tool for Play and Scala Applications. For example, IntelliJ IDEA Scala Plugin by default uses SBT as Build tool for this purpose.
+
+What are the available Unit Testing, Functional Testing and/or BDD Frameworks for Play and Scala Based applications?
+Spec2
+ScalaTest
+ScalaCheck
+Mokito
+
+Which IDEs support Play and Scala-Based Applications Development and how?
+IntelliJ IDEA
+Eclipse IDE
+
+What is the best Scala style checker tool available for Play and Scala based applications?
+Like Checkstyle for Java-Based Applications, Scalastyle is best Scala style checker tool available for Play and Scala based applications.
+
+Like Hibernate for Java-based applications, What are the Popular ORM Frameworks available to use in Play/Scala based applications?
+Slick
+SORM(Scala ORM)
+
+What are the Popular Scala-Based Frameworks to develop RESTful Web Services or REST API?
+Play Framework
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
