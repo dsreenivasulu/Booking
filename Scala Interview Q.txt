@@ -264,21 +264,31 @@ Though Java 8 brings lambda expression which also makes function as a first clas
 
 What is Companion Object in Scala?
 If an object has the same name that a class, the object is called a companion object. 
-A companion object has access to methods of private visibility of the class, and the class also has access to private methods of the object. 
+A companion object has access to methods of private visibility of the class, 
+and the class also has access to private methods of the object. 
 We commonly use Companion Objects for Factories.
 
 What is tail recursion in Scala? What is the benefit?
-A function is called tail recursive if the recursive call is the last operation in the function; the method does not rely on the result of the recursive call for any more computation. The most important benefit of the tail recursive function is that compiler can rewrite the method in an iterative fashion, similar to a while loop with mutable state. This allows long, deep recursion without taking too much of stack memory that could result in StackOverFlowError. Unfortunately, Java compiler doesn't support tail call optimization but Scala compiler does. In Scala, you can annotate a function with @tailrec to inform the compiler that this particular method is tail recursive. If the compiler cannot make the function tail recursive, it will throw an error.
+A function is called tail recursive if the recursive call is the last operation in the function; 
+the method does not rely on the result of the recursive call for any more computation. 
+The most important benefit of the tail recursive function is that compiler can rewrite the method in an iterative fashion,
+similar to a while loop with mutable state. 
+This allows long, deep recursion without taking too much of stack memory that could result in StackOverFlowError. 
+Unfortunately, Java compiler doesn't support tail call optimization but Scala compiler does. 
+In Scala, you can annotate a function with @tailrec to inform the compiler that this particular method is tail recursive. 
+If the compiler cannot make the function tail recursive, it will throw an error.
 
 What is ‘Unit’ and ‘()’ in Scala?
 The 'Unit' is a type similar to void in Java. it represents 'no value exists'
  The empty tuple '()' represents a Unit value in Scala.
  
 What are two ways to make an executable Scala program?
-There are two general strategies: you can write a script file and use the interpreter, or you can compile an object that has a main method.
+There are two general strategies: you can write a script file and use the interpreter, 
+or you can compile an object that has a main method.
 
 What is Monad in Scala?
-A monad is an object that wraps another object in Scala. It helps to perform the data manipulation of the underlying object, instead of manipulating the object directly.
+A monad is an object that wraps another object in Scala. 
+It helps to perform the data manipulation of the underlying object, instead of manipulating the object directly.
 
 What are High Order Functions in Scala?
 High order functions are functions that can receive or return other functions. 
@@ -326,7 +336,8 @@ println(x)
 3. Singleton pattern : used to create only one object per class 
 Singleton pattern is Thread-safety
 
-4. Value object pattern : used to create simple immutable object that represents a simple entity whose equality isn’t based on identity. Value objects are equal if all their fields are equal.
+4. Value object pattern : used to create simple immutable object that represents a simple entity whose equality 
+isn’t based on identity. Value objects are equal if all their fields are equal.
 case class Point(x: Int, y: Int)
 val point = Point(1, 2)
 
@@ -340,8 +351,10 @@ Option/Some/None
 -------------------------------------------------------------------------------------------------------------------------
 
 How Scala solves Inheritance Diamond Problem automatically and easily than Java 8?
-If we use Java 8’s Interface with Default methods, we will get Inheritance Diamond Problem. Developer has to solve it manually in Java 8. It does not provide default or automatic resolution for this problem.
-In Scala, we will get same problem with Traits but Scala is very clever and solves Inheritance Diamond Problem automatically using Class Linearization concept.
+If we use Java 8’s Interface with Default methods, we will get Inheritance Diamond Problem. 
+Developer has to solve it manually in Java 8. It does not provide default or automatic resolution for this problem.
+In Scala, we will get same problem with Traits but Scala is very clever 
+and solves Inheritance Diamond Problem automatically using Class Linearization concept.
 
 What is the use of ‘yield’ keyword in Scala’s for-comprehension construct or for loop construct or what is the use of yield keyword 
 In the for loop, we can iterative collection elements and generate new collection elements of the same type
@@ -381,8 +394,8 @@ How to implement interfaces in Scala?
 There is no interface concept in Scala. Scala has a more powerful and flexible concept i.e. trait for this purpose.
 
 Why Scala does NOT have “static” keyword? What is the main reason for this decision?
-Scala is a Pure Object-Oriented Language. “static” keyword means that we can access that class members without creating an object or without using an object. 
-This is completely against with OOP principles.
+Scala is a Pure Object-Oriented Language. “static” keyword means that we can access that class members without
+creating an object or without using an object. This is completely against with OOP principles.
 
 What is Diamond Problem? How Scala solves Diamond Problem?
 A Diamond Problem is a Multiple Inheritance problem.
