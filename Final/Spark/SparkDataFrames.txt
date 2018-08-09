@@ -1,0 +1,382 @@
+Data Frame :
+Data Frame is distributed collection of data, organized into named columns.
+It is similar to relational tables with good optimization techniques.
+The idea behind DataFrame is it allows processing of a large amount of structured data. It contains rows with Schema
+Data Frame build on top of RDD.
+We can construct Data Frame from different sources such as existing RDDs, Structured Data files, Hive tables, external databases
+DataFrame is also available in Application Programming Interface (APIs) (Scala, Java, Python, and R)
+
+Why DataFrame? or Advantages or features of data frames
+Optimized Execution plan(query optimizer): Using DataFrame, an optimized execution plan is created for the execution of a query. 
+Once the optimized plan is created final execution takes place on RDDs of Spark
+
+Limitation of RDD 
+It does not have any built-in optimization engine
+No inbuilt optimization engine: When working with structured data, RDDs cannot take advantages of Spark’s advanced optimizers including catalyst optimizer and Tungsten execution engine. Developers need to optimize each RDD based on its attributes.
+Handling structured data: Unlike Dataframe and datasets, RDDs don’t infer the schema of the ingested data and requires the user to specify it.
+
+Limitations of DataFrame 
+Spark SQL DataFrame API does not have provision for compile time type safety. So, if the structure is unknown, we cannot manipulate the data.
+
+
+Datasets : 
+A Dataset is a strongly-typed, immutable collection of objects that are mapped to a relational schema.   
+Dataset is an extension of the DataFrame API
+Dataset provides both type safety and object-oriented programming interface
+Datasets also allow direct operations over user-defined classes
+in Dataset case class is used to define the structure of data schema 
+
+also provides Encoders act as interface between JVM objects and Spark’s internal custom memory binary format data and allowing operations on serialized data and improved memory utilization
+An encoder provides on-demand access to individual attributes without having to de-serialize an entire object
+Since encoder knows the schema of record, it can achieve serialization and deserialization.
+
+Note : No matter which abstraction Dataframe or Dataset we use, internally final computation is done on RDDs
+
+When to use RDDs?
+Consider these scenarios or common use cases for using RDDs when:
+when our data is unstructured, such as media streams or streams of text;
+when we want low-level transformation and actions and control on our dataset;
+when we want to manipulate our data with functional programming constructs than domain specific expressions;
+when we don’t care about imposing a schema, such as columnar format, while processing or accessing data attributes by name or column; and
+you can forgo some optimization and performance benefits available with DataFrames and Datasets for structured and semi-structured data.
+
+When should I use DataFrames and Dataset
+When we want rich semantics, high-level abstractions, and domain specific APIs, we can use DataFrame or Dataset.
+When our processing demands high-level expressions, filters, maps, aggregation, averages, sum, SQL queries, columnar access 
+and use of lambda functions on structured and semi-structured data, use DataFrame or Dataset.
+
+When we want type-safety at compile time
+When we want typed JVM objects
+When we want take advantage of Catalyst optimization
+and benefit from Tungsten’s efficient code generation, use Dataset.
+
+-----------------------------------------------------------------------------
+Explain ?
+/ read the json file and create the dataset from the 
+// case class DeviceIoTData
+// ds is now a collection of JVM Scala objects DeviceIoTData
+val ds = spark.read.json(“/databricks-public-datasets/data/iot/iot_devices.json”).as[DeviceIoTData]
+
+Spark reads the JSON, infers the schema, and creates a collection of DataFrames.
+At this point, Spark converts your data into DataFrame = Dataset[Row], a collection of generic Row object, since it does not know the exact type.
+Now, Spark converts the Dataset[Row] -> Dataset[DeviceIoTData] type-specific Scala JVM object, as dictated by the class DeviceIoTData.
+
+  
+-----------------------------------------------------------------------------------  
+Example :
+
+how-to-convert-rdd-object-to-dataframe-in-spark
+Method 1 : 
+scala> val numList = List(1,2,3,4,5)
+val numRDD = sc.parallelize(numList)
+val numDF = numRDD.toDF
+numDF.show
++---+
+| _1|
++---+
+|  1|
+|  2|
+|  3|
+|  4|
+|  5|
++---+
+
+val numDF = numRDD.toDF("person_id")
+numDF.show
++---+
+| person_id|
++---+
+|  1|
+|  2|
+|  3|
+|  4|
+|  5|
++---+
+
+Method 2 : SparkSession
+
+import org.apache.spark.sql.SparkSession
+
+val spark = SparkSession
+  .builder()
+  .appName("Spark SQL basic example")
+  .config("spark.some.config.option", "some-value")
+  .getOrCreate()
+
+// For implicit conversions like converting RDDs to DataFrames
+import spark.implicits._
+
+
+val rdd = sc.parallelize(
+  Seq(
+    ("first", Array(2.0, 1.0, 2.1, 5.4)),
+    ("test", Array(1.5, 0.5, 0.9, 3.7)),
+    ("choose", Array(8.0, 2.9, 9.1, 2.5))
+  )
+)
+
+val dfWithoutSchema = spark.createDataFrame(rdd)
+dfWithoutSchema.show (in out put schema name will be _1, _2)
+
+val dfWithSchema = spark.createDataFrame(rdd).toDF("id", "vals")
+dfWithSchema.show()
+
+Method 3: 
+
+This way requires the input rdd should be of type RDD[Row].
+val rowsRdd: RDD[Row] = sc.parallelize(
+  Seq(
+    Row("first", 2.0, 7.0),
+    Row("second", 3.5, 2.5),
+    Row("third", 7.0, 5.9)
+  )
+)
+create the schema
+val schema = new StructType()
+  .add(StructField("id", StringType, true))
+  .add(StructField("val1", DoubleType, true))
+  .add(StructField("val2", DoubleType, true))
+Now apply both rowsRdd and schema to createDataFrame()
+val df = spark.createDataFrame(rowsRdd, schema)
+df.show()
+
+What is Difference between toDF and createDataFrame ? 
+To used toDF method we need import spark.implicits._
+toDF method is deprecated in spark 2.x
+toDF() is limited because the column type and nullable flag cannot be customized
+
+Difference : 
+dic = [{"a":1},{"b":2},{"c":3}]
+
+spark.parallelize(dic).toDF()
+df.show()
++----+                                                                          
+|   a|
++----+
+|   1|
+|null|
+|null|
++----+
+
+spark.createDataFrame(dic).show()
+
++----+----+----+                                                                
+|   a|   b|   c|
++----+----+----+
+|   1|null|null|
+|null|   2|null|
+|null|null|   3|
++----+----+----+
+
+Because UserWarning: inferring schema from dict is deprecated,please use pyspark.sql.Row instead warnings
+
+how-to-load-data-into-spark-dataframe-from-text-file-without-knowing-the-schema
+-------------------------------------------------------------------------------
+I have a text file in hadoop, I need to sort it using its second column.
+I am using data frame but I am not sure about its columns. It may have dynamic columns,means I don't know about the exact number of columns.
+
+Fixed number of Columns :
+where data looks like for ebay.csv :
+“8213034705,95,2.927373,jake7870,0,95,117.5,xbox,3”
+
+//  SQLContext entry point for working with structured data
+val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+// this is used to implicitly convert an RDD to a DataFrame.
+import sqlContext.implicits._
+// Import Spark SQL data types and Row.
+import org.apache.spark.sql._
+
+//define the schema using a case class
+case class Auction(auctionid: String, bid: Float, bidtime: Float, bidder: String, bidderrate: Integer, openbid: Float, price: Float, item: String, daystolive: Integer)
+
+
+ val auction = sc.textFile("ebay.csv").map(_.split(",")).map(p => 
+Auction(p(0),p(1).toFloat,p(2).toFloat,p(3),p(4).toInt,p(5).toFloat,p(6).toFloat,p(7),p(8).toInt )).toDF()
+
+// Display the top 20 rows of DataFrame 
+auction.show()
+// auctionid  bid   bidtime  bidder         bidderrate openbid price item daystolive
+// 8213034705 95.0  2.927373 jake7870       0          95.0    117.5 xbox 3
+// 8213034705 115.0 2.943484 davidbresler2  1          95.0    117.5 xbox 3 …
+
+
+// Return the schema of this DataFrame
+auction.printSchema()
+root
+ |-- auctionid: string (nullable = true)
+ |-- bid: float (nullable = false)
+ |-- bidtime: float (nullable = false)
+ |-- bidder: string (nullable = true)
+ |-- bidderrate: integer (nullable = true)
+ |-- openbid: float (nullable = false)
+ |-- price: float (nullable = false)
+ |-- item: string (nullable = true)
+ |-- daystolive: integer (nullable = true)
+
+auction.sort("auctionid") // this will sort first column i.e auctionid
+
+
+Variable number of Columns (since Case class with Array parameter is possible):
+case class Auction(auctionid: String, bid: Float, bidtime: Float, bidder: String, variablenumberofColumnsArray:String*)
+then Rest is same.
+
+
+================================================================================
+RDDs
+val lines = sc.textFile("/wikipedia")
+val words = lines
+  .flatMap(_.split(" "))
+  .filter(_ != "")
+ 
+Datasets
+val lines = sqlContext.read.text("/wikipedia").as[String]
+val words = lines
+  .flatMap(_.split(" "))
+  .filter(_ != "")
+  
+RDDs
+val counts = words
+    .groupBy(_.toLowerCase)
+    .map(w => (w._1, w._2.size))
+
+Datasets
+val counts = words
+    .groupBy(_.toLowerCase)
+    .count()
+	
+Support for Semi-Structured Data (JSON)
+-----------------------------------------
+{"name": "UC Berkeley", "yearFounded": 1868, numStudents: 37581}
+{"name": "MIT", "yearFounded": 1860, numStudents: 11318}
+
+case class University(name: String, numStudents: Long, yearFounded: Long)
+val schools = sqlContext.read.json("/schools.json").as[University]
+schools.map(s => s"${s.name} is ${2015 – s.yearFounded} years old")
+
+if we try to use a datatype that is too small,we will get AnalysisException
+case class University(numStudents: Byte)
+
+val schools = sqlContext.read.json("/schools.json").as[University]
+org.apache.spark.sql.AnalysisException: Cannot upcast yearFounded from bigint to smallint as it may truncate
+
+DataFrame
+scala>df = sqlContext.jsonFile("/tmp/people.json")
+df.show display the contents of the DataFrame:
++----+-------+
+| age|   name|
++----+-------+
+|null|Michael|
+|  30|   Andy|
+|  19| Justin|
++----+-------+
+
+
+import org.apache.spark.sql.functions._ 
+df.select(df("name"), df("age") + 1).show()
++-------+---------+
+|   name|(age + 1)|
++-------+---------+
+|Michael|     null|
+|   Andy|       31|
+| Justin|       20|
++-------+---------+
+
+df.filter(df("age") > 21).show()
++---+----+
+|age|name|
++---+----+
+| 30|Andy|
++---+----+
+
+df.groupBy("age").count().show()
++----+-----+
+| age|count|
++----+-----+
+|null|    1|
+|  19|    1|
+|  30|    1|
++----+-----+
+
+Programmatically Specifying Schema
+----------------------------------------
+
+import org.apache.spark.sql._ 
+
+// Create sql context from an existing SparkContext (sc)
+val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+
+// Create people RDD
+val people = sc.textFile("/tmp/people.txt")
+
+// Encode schema in a string
+val schemaString = "name age"
+
+// Import Spark SQL data types and Row
+import org.apache.spark.sql.types.{StructType,StructField,StringType} 
+
+// Generate the schema based on the string of schema
+val schema = 
+  StructType(
+    schemaString.split(" ").map(fieldName => StructField(fieldName, StringType, true)))
+
+// Convert records of people RDD to Rows
+val rowRDD = people.map(_.split(",")).map(p => Row(p(0), p(1).trim))
+
+// Apply the schema to the RDD
+val peopleSchemaRDD = sqlContext.createDataFrame(rowRDD, schema)
+
+// Register the SchemaRDD as a table
+peopleSchemaRDD.registerTempTable("people")
+
+// Execute a SQL statement on the 'people' table
+val results = sqlContext.sql("SELECT name FROM people")
+
+// The results of SQL queries are SchemaRDDs and support all the normal RDD operations.
+// The columns of a row in the result can be accessed by ordinal
+results.map(t => "Name: " + t(0)).collect().foreach(println)
+
+This will produce an output similar to the following:
+15/12/16 13:29:19 INFO DAGScheduler: Job 9 finished: collect at :39, took 0.251161 s
+15/12/16 13:29:19 INFO YarnHistoryService: About to POST entity application_1450213405513_0012 with 10 events to timeline service http://green3:8188/ws/v1/timeline/
+Name: Michael
+Name: Andy
+Name: Justin
+
+Example of RDD transformations and actions 
+
+Scala: 
+rdd.filter(_.age > 21) // transformation 
+   .map(._last)            // transformation 
+   .saveAsObjectFile("under21.bin"); // action 
+
+Java: 
+rdd.filter(p -> p.getAge() < 21) // transformation .map(p -&gt; p.getLast()) 
+   .saveAsObjectFile("under21.bin"); // action 
+
+Filter by attribute with RDD 
+
+Scala: 
+rdd.filter(_.age > 21) 
+
+Java: 
+rdd.filter(person -> person.getAge() > 21) 
+
+Filter by attribute with DataFrame
+Note that these examples have the same syntax in both Java and Scala
+
+SQL Style 
+df.filter("age > 21"); 
+
+Expression builder style: 
+df.filter(df.col("age").gt(21));
+
+val rdd = sc.textFile("data.txt")
+val ds = spark.createDataset(rdd)
+
+
+more examples
+https://www.balabit.com/blog/spark-scala-dataset-tutorial
+https://blog.codecentric.de/en/2016/07/spark-2-0-datasets-case-classes/	
+https://spark.apache.org/docs/latest/sql-programming-guide.html
+https://github.com/hhbyyh/DataFrameCheatSheet   
+   

@@ -1,0 +1,18 @@
+Web Interfaces
+---------------
+SparkContext launches a web UI, by default on port 4040, that displays useful information about the application. This includes:
+
+    A list of scheduler stages and tasks
+    A summary of RDD sizes and memory usage
+    Environmental information.
+    Information about the running executors
+
+You can access this interface by simply opening http://<driver-node>:4040 in a web browser
+
+Every Application web UI runs 
+spark.ui.port 	4040 	Web UI 
+
+History server web UI runs 
+spark.history.ui.port 	18080 	The port to which the web interface of the history server binds. 
+
+Executors/Workers port are random

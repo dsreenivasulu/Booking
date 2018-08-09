@@ -1,0 +1,267 @@
+Transformations : 
+-------------------
+Map : Returns new RDD by applying function to each element of Existing RDD
+Example 1: To calculate the length of each line.
+scala> lines.map(s => s.length).collect
+res46: Array[Int] = Array(48, 25, 34, 5, 6, 6, 5, 5, 6)
+
+
+FlatMap : Return a new RDD by first applying a function to all elements of Existing RDD, and then flattening the results
+It is Similar to map, but each input item can be mapped to 0 or more output items (so func should return a Seq rather than a single item).
+Example 1: Generate the Int List and compare "map" and "flatMap".
+
+difference between Map and FlatMap
+scala> val intlist = List( 1,2,3,4,5 )
+scala> intlist.map(x=>List(x,x*2))
+res72: List[List[Int]] = List(List(1, 2), List(2, 4), List(3, 6), List(4, 8), List(5, 10))
+
+scala> intlist.flatMap(x=>(List(x,x*2)))
+res73: List[Int] = List(1, 2, 2, 4, 3, 6, 4, 8, 5, 10)
+
+Filter : Returns new RDD containing only the elements that satisfy a predicate
+ex: filter the errors and warns from the log file
+errors = lines.filter(_.startsWith(“ERROR”))
+
+Group By: Group the data in the original RDD. Create pairs where the key is the output of a user function, and the value is all items for which the function yields this key.
+val x =  sc.parallelize(Array("John", "Fred", "Anna", "James"))
+val y =  x.groupBy(w => w.charAt(0))
+println(y.collect().mkString(", "))
+0/p is y :[('A',['Anna']),('J',['John','James']),('F',['Fred'])]
+https://stackoverflow.com/questions/44404817/how-to-use-dataset-to-groupby
+
+GroupBy vs GroupByKey ?
+
+
+groupByKey() : Group values with the same key.
+val inputTupplesList = sc.parallelize(List((1, 2), (3, 5), (3, 7)))
+val resultGroupByKey = inputTupplesList.reduceByKey((x, y) => x + y)
+println("Group values with the same key:" + resultGroupByKey.collect().mkString(",")
+o/p is Group values with the same key: (1, 2), (3, 12)
+
+reduceByKey() : Combine values with the same key.
+
+sortByKey() :
+When we apply the sortByKey() function on a dataset of (K, V) pairs, the data is sorted according to the key K in another RDD.
+sortByKey() example:
+    val data = spark.sparkContext.parallelize(Seq(("maths",52), ("english",75), ("science",82), ("computer",65), ("maths",85)))
+    val sorted = data.sortByKey()
+    sorted.foreach(println)
+Note – In above code, sortByKey() transformation sort the data RDD into Ascending order of the Key(String).
+
+coalesce() :
+To avoid full shuffling of data we use coalesce() function. In coalesce() we use existing partition so that less data is shuffled. 
+Using this we can cut the number of the partition. 
+Suppose, we have four nodes and we want only two nodes. Then the data of extra nodes will be kept onto nodes which we kept.
+    val rdd1 = spark.sparkContext.parallelize(Array("jan","feb","mar","april","may","jun"),3)
+    val result = rdd1.coalesce(2)
+    result.foreach(println)
+Note – The coalesce will decrease the number of partitions of the source RDD to numPartitions define in coalesce argument.
+
+join() :
+The Join is database term. It combines the fields from two table using common values. join() operation in Spark is defined on pair-wise RDD. Pair-wise RDDs are RDD in which each element is in the form of tuples. Where the first element is key and the second element is the value.
+The boon of using keyed data is that we can combine the data together. The join() operation combines two data sets on the basis of the key.
+Join() example:
+    val data = spark.sparkContext.parallelize(Array(('A',1),('b',2),('c',3)))
+    val data2 =spark.sparkContext.parallelize(Array(('A',4),('A',6),('b',7),('c',3),('c',8)))
+    val result = data.join(data2)
+    println(result.collect().mkString(","))
+Note –  The join() transformation will join two different RDDs on the basis of Key.
+
+mapPartitions(func) :
+mapPartitionWithIndex():
+	
+union() : Returns a new RDD that contains the union of the two source RDDs
+val inputRdd1 = sc.parallelize(List(1, 2, 3))
+val inputRdd2 = sc.parallelize(List(3, 5, 7))
+val resultInputUnion = inputRdd1.union(inputRdd2)
+println("Union:" + resultInputUnion.collect().mkString(","))
+o/p is Union: (1, 2, 3,3,5,7)
+
+intersection() :Returns a new RDD that contains the intersection of the two source RDDs
+val inputRdd1 = sc.parallelize(List(1, 2, 3))
+val inputRdd2 = sc.parallelize(List(3, 5, 7))
+val resultIntersection = inputRdd1.intersection(inputRdd2)
+println("Intersection:" + resultIntersection.collect().mkString(","))
+o/p is Intersection: 3
+
+distinct() : Returns a new RDD that contains the distinct elements of the source RDD.
+val distinctInput = sc.parallelize(List(1, 2, 3, 4, 2, 1, 3, 4, 2, 5, 6))
+val distinctResult = distinctInput.distinct()
+println("distinct:" + distinctResult.collect().mkString(","))
+o/p is distinct: 4,6,2,1,3,5
+
+subtract() : Returns a new RDD that contains subtraction of one source RDD with another source RDD
+val inputSubtract1 = sc.parallelize(List(1, 2, 3))
+val inputSubtract2 = sc.parallelize(List(3, 5, 6))
+val resultSub = inputSubtract1.subtract(inputSubtract2)
+println("subtract:" + resultSub.collect().mkString(","))
+o/p is subtract: (2,1)
+
+Actions : 
+-------------------
+collect() 	Return all the elements of the dataset as an array at the driver program. This is usually useful after a filter or other operation that returns a sufficiently small subset of the data.
+
+count() 	Return the number of elements in the dataset.
+
+countByKey() 	Only available on RDDs of type (K, V). Returns a hashmap of (K, Int) pairs with the count of each key.
+
+first() 	Return the first element of the dataset (similar to take(1)).
+
+reduce(func) 	Aggregate the elements of the dataset using a function (func which takes two arguments and returns one). The function should be commutative and associative so that it can be computed correctly in parallel.
+
+take(n) 	Return the first n elements of the dataset as array
+
+takeSample(withReplacement, num, [seed]) 	Return an array wit00h a random sample of num elements of the dataset, with or without replacement, optionally pre-specifying a random number generator seed.
+
+takeOrdered(n, [ordering]) 	Return the first n elements of the RDD using either their natural order or a custom comparator.
+
+saveAsTextFile(path) 	Write the elements of the dataset as a text file (or set of text files) in a given directory in the local filesystem, HDFS or any other Hadoop-supported file system. Spark will call toString on each element to convert it to a line of text in the file.
+
+saveAsSequenceFile(path) Write the elements of the dataset as a Hadoop SequenceFile in a given path in the local filesystem, HDFS or any other Hadoop-supported file system. This is available on RDDs of key-value pairs that implement Hadoop's Writable interface. In Scala, it is also available on types that are implicitly convertible to Writable (Spark includes conversions for basic types like Int, Double, String, etc).
+
+saveAsObjectFile(path) Write the elements of the dataset in a simple format using Java serialization, which can then be loaded using SparkContext.objectFile().
+
+foreach(func) 	Run a function func on each element of the dataset. This is usually done for side effects such as updating an Accumulator or interacting with external storage systems.
+Note: modifying variables other than Accumulators outside of the foreach() may result in undefined behavior. See Understanding closures for more details.
+
+--------------------------------------------------------------------
+shuffle : The process of moving the data from partition to partition in order to aggregate or join is known as shuffling. 
+map-side shuffle : The aggregation/reduction that takes place before data is moved across partitions is known as a map-side shuffle.
+
+The following operations are examples of shuffle operations for RDDs:
+    groupBy/subtractByKey/foldByKey/aggregateByKey/reduceByKey
+    cogroup
+    any of the join transformations
+    distinct
+Tuning shuffle : Shuffles are tuned by a few parameters: The shuffle manager (which determines which keys go to which partitions) 
+and the number/size of partitions (these are sort of interchangable)  and the number/size of executors processing your data.
+When you increase the number of partitions, you inherently reduce (or in certain cases, keep the size the same) the size of each partition	
+shuffle performance is the number of partitions. In practice this is done using the "repartition" or "coalesce" functions.
+
+how-to-merge-two-rdd-to-one-rdd ?
+use union
+
+Efficient way to test if an RDD is empty
+use isEmpty() or rdd.take(1).length == 0 
+
+Add a header before text file on save in Spark
+df.write
+  .format("csv")
+  .option("header", "true")  //adds header to file
+  .save("hdfs://location/to/save/csv")
+  
+Apache Spark RDD filter into two RDDs
+implicit class RDDOps[T](rdd: RDD[T]) {
+  def partitionBy(f: T => Boolean): (RDD[T], RDD[T]) = {
+    val passes = rdd.filter(f) //debug 
+    val fails = rdd.filter(e => !f(e)) // Spark doesn't have filterNot //Error
+    (passes, fails)
+  }
+} 
+
+
+map vs mapPartitions?
+mapPartitions : is a specialized map that is called only once for each partition.
+map works the function being utilized at a per element level while mapPartitions exercises the function at the partition level.
+Example Scenario : if we have 100K elements in a particular RDD partition then we will fire off the function being used by the mapping transformation 100K times when we use map.
+Conversely, if we use mapPartitions then we will only call the particular function one time, but we will pass in all 100K records and get back all responses in one function call.
+There will be performance gain since map works on a particular function so many times, especially if the function is doing something expensive each time that it wouldn't need to do if we passed in all the elements at once(in case of mappartitions).
+
+So mapPartitions transformation is faster than map since it calls our function once/partition, not once/element.. 
+
+ex : val data = sc.parallelize(List(1,2,3,4,5,6,7,8), 2)
+
+Map:
+def sumfuncmap(numbers : Int) : Int =
+{
+var sum = 1
+return sum + numbers
+}
+data.map(sumfuncmap).collect
+o/p returns Array[Int] = Array(2, 3, 4, 5, 6, 7, 8, 9)   
+
+def sumfuncpartition(numbers : Iterator[Int]) : Iterator[Int] =
+{
+var sum = 1
+while(numbers.hasNext)
+{
+sum = sum + numbers.next()
+}
+return Iterator(sum)
+}
+data.mapPartitions(sumfuncpartition).collect
+o/p returns Array[Int] = Array(11, 27) 
+
+def sumfuncpartition(numbers : Iterator[Int]) : Iterator[Int] =
+{
+var sum = 0
+while(numbers.hasNext)
+{
+sum = sum + numbers.next()
+}
+return Iterator(sum)
+}
+data.mapPartitions(sumfuncpartition).collect
+o/p returns Array[Int] = Array(10, 26) 
+
+
+
+reduceByKey vs aggregateByKey 
+scala> val nameCounts = sc.parallelize(List(("David", 6), ("Abby", 4), ("David", 5), ("Abby", 5)))
+scala> nameCounts.reduceByKey((v1, v2) => v1 + v2).collect or nameCounts.reduceByKey(_+_).collect
+here v1 and v2 are first value and second value 
+o/p is res0: Array[(String, Int)] = Array((Abby,9), (David,11))
+
+scala> nameCounts.aggregateByKey(0)((accum, v) => accum + k, (v1, v2) => v1 + v2).collect
+res1: Array[(String, Int)] = Array((Abby,9), (David,11))
+
+RDD sample in Spark
+sample(withReplacement, fraction, seed).
+fraction and seed are pretty easy to guess -- they are the fraction of elements you want to see in your sample (i.e. sample of .5 will give you a sample of initial RDD containing half of the elements). 
+Seed is random number generator seed. This is important because you might want to be able to hard code the same seed for your tests so that you always get the same results in test,
+but in prod code replace it with current time in milliseconds or a random number from a good entropy source
+The sample transformation takes up to three parameters SparkSampling:
+1.1. First is weather the sampling is done with replacement or not.
+1.2. Second is the sample size as a fraction. Finally we can optionally provide a random seed.
+1.3. Finally we can optionally provide a random seed.
+
+
+How to increase the size of an RDD using sample with replacement
+ex : I have 50 elements want to increase 200 elements
+al fraction = num_new.toDouble / rdd.count()  // following my examle: num_new is 200, and rdd.count() is 35
+val sampledRDD = rdd.sample(true, fraction, seed)
+
+What is cogroup ? difference between join and cogroup transformations
+cogroup : we can group the data which has same key from multiple RDDs
+This is very similar to relation database operation FULL OUTER JOIN, but instead of flattening the result per line per record, it will give you the interable interface to you, 
+val rdd1 = sc.makeRDD(Array(("A","1"),("B","2"),("C","3")),2)
+val rdd2 = sc.makeRDD(Array(("A","a"),("C","c"),("D","d")),2)
+
+scala> rdd1.join(rdd2).collect
+res0: Array[(String, (String, String))] = Array((A,(1,a)), (C,(3,c)))
+
+All keys that will appear in the final result is common to rdd1 and rdd2. This is similar to relation database operation INNER JOIN.
+
+val rdd1 = sc.makeRDD(Array(("A","1"),("B","2"),("C","3")),2)
+val rdd2 = sc.makeRDD(Array(("A","a"),("C","c"),("D","d")),2)
+
+scala> var rdd3 = rdd1.cogroup(rdd2).collect
+res0: Array[(String, (Iterable[String], Iterable[String]))] = Array(
+(B,(CompactBuffer(2),CompactBuffer())), 
+(D,(CompactBuffer(),CompactBuffer(d))), 
+(A,(CompactBuffer(1),CompactBuffer(a))), 
+(C,(CompactBuffer(3),CompactBuffer(c)))
+)
+
+
+
+http://www.openkb.info/2015/01/scala-on-spark-cheatsheet.html
+
+What is Spark Executor? When SparkContext connect to a cluster manager, it acquires an Executor on nodes in the cluster. Executors are Spark processes that run computations and store the data on the worker node. The final tasks by SparkContext are transferred to executors for their execution.
+What do you understand by worker node? Worker node refers to any node that can run the application code in a cluster.
+What is Spark Driver? Spark Driver is the program that runs on the master node of the machine and declares transformations and actions on data RDDs. In simple terms, driver in Spark creates SparkContext, connected to a given Spark Master. The driver also delivers the RDD graphs to Master, where the standalone cluster manager runs
+ 
+ 
+ 
+ 
+ https://stackoverflow.com/questions/31508083/difference-between-dataframe-in-spark-2-0-i-e-datasetrow-and-rdd-in-spark?rq=1

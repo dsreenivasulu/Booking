@@ -1,0 +1,83 @@
+hive>explain <query>
+To understand the execution plan of the query 
+(it shows o/p as STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:)
+
+JOIN OPTIMIZATION in HIVE
+=======================
+How the Join works in Hive ?
+Tablex <-->  Mapper
+             Mapper  <-- shuffle  \
+             Mapper                \
+                                     Reducer  -> o/p 
+TableY <-->  Mapper                / 
+             Mapper  <--  shuffle /
+		     Mapper
+
+A common join task involves a map stage and a reduce stage. 
+A mapper reads from join tables and emits the join key and join value pair into an intermediate file. 
+Hadoop sorts and merges these pairs in what's called the shuffle stage. The reducer takes the sorted results as input and does the actual join work.
+The shuffle stage is really expensive since it needs to sort and merge. Saving the shuffle and reduce stages improves the task performance.
+
+
+1. Join table ordering (Largest table last)
+----------------------------
+When Hive executes a join query, it needs to be select which table is streamed and which table is cached. 
+Hive takes the last table in the JOIN statement for streaming, so we need to ensure that this streaming table is largest among the two.
+
+For example : person and group table, person table data will keep grow. group table data would be static most of time
+select person.id, person.name, type from group join person on group.personId = person.id
+
+Or, you can also explicitly tell Hive which table it should stream.
+select /*+ streamtable(person) */ person.id, person.name, type from group join person on group.personId = person.id
+
+2. Map Side Join or Replicated Join
+-----------------------
+A map-side join is a special type of join where a smaller table is loaded in memory and join is performed in map phase of MapReduce job. 
+Since there is no reducer involved in the map-side join, it is much faster when compared to regular join.
+
+Enable below two properties in hive-site.xml or HIVECL
+hive> set hive.auto.convert.join=true;
+hive> set hive.auto.convert.join.noconditionaltask=true;
+ 
+ex: select person.id, person.name, type from group join person on group.personId = person.id 
+
+OR
+select /*+ mapjoin(person) */ person.id, person.name, type from group join person on group.personId = person.id
+This isn't a good user experience because sometimes the user may give the wrong hint or may not give any hint at all. 
+It's much better to convert the common join into a map join without user hints.
+
+
+3. Sort-Merge-Bucket (SMB) Map Join:
+-----------------------
+It is another Hive join optimization technique where all the tables need to be bucketed and sorted. 
+In this case joins are very efficient because they require a simple merge of the presorted tables.
+
+hive> set hive.enforce.bucketing=true;
+hive> set hive.enforce.sorting=true;
+
+ex : create bucket 
+create tmp_person(...) CLUSTERED BY (id) SORTY BY (id) into 4 Bucket
+
+INSERT OVERWRITE TABLE tmp_person SELECT * FROM person;
+
+Now create another bucket table for group and then set below properties
+
+hive>set hive.enforce.sortmergebucketmapjoin=false;
+hive>set hive.auto.convert.sortmerge.join=true;
+hive>set hive.optimize.bucketmapjoin = true;
+hive>set hive.optimize.bucketmapjoin.sortedmerge = true;
+hive>set hive.auto.convert.join=false;  // if we do not do this, automatically Map-Side Join will happen
+
+SELECT u.name,u.salary FROM tmp_group d INNER JOIN tmp_person u ON d.id = u.id;
+
+Note : 4 mapper tasks will be running (as we had 4 buckets). This helps in performing faster join operation when compared to regular
+
+
+https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Joins
+
+https://cwiki.apache.org/confluence/display/Hive/LanguageManual+JoinOptimization

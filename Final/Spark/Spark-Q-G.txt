@@ -1,0 +1,483 @@
+Why Spark?
+Spark is parallel distributed data processing framework. It’s unified bigdata solution for all bigdata processing problems such as batch , interactive, streaming processing.
+So By using Spark we can solve many bigdata processing problems.
+
+What is RDD?
+Spark’s primary core abstraction is called Resilient Distributed Datasets. RDD is a collection of partitioned data that satisfies properties like Immutable, distributed, lazily evaluated, catchable.
+
+What is Spark engine responsibility?
+Spark engine responsible for scheduling, distributing, and monitoring the application across the cluster.
+
+What are Spark Ecosystems?
+Spark SQL(Shark)
+Spark Streaming
+MLLib
+GraphX
+
+What is Partitions?
+Partition is a logical division of the data (this idea derived from Map-reduce (split))
+Logical data specifically used to process the data. 
+Input data, intermediate data, and output data everything is Partitioned RDD
+
+How spark partition the data?
+Spark use map-reduce API to partition the data. By default HDFS block size is partition size (for best performance), but its’ possible to change partition size(like Split).
+
+How Spark store the data?
+Spark is a processing engine, there is no storage engine. It can retrieve data from any storage engine like HDFS, S3 and other data resources.
+
+Is it mandatory to start Hadoop to run spark application?
+No not mandatory, but there is no separate storage in Spark, so it use local file system to store the data. You can load data from local system and process it, Hadoop or HDFS is not mandatory to run spark application.
+
+What is SparkCore functionalities?
+SparkCore is a base engine of apache spark framework. Memory management, fault tolerance, scheduling and monitoring jobs, interacting with store systems are primary functionalities of Spark.
+
+How SparkSQL is different from HQL and SQL?
+SparkSQL is a special component on the sparkCore engine that support SQL and HiveQueryLanguage without changing any syntax. It’s possible to join SQL table and HQL table.
+
+What is Map and flatMap in Spark?
+The map is a specific line or row to process that data. 
+In FlatMap each input item can be mapped to multiple output items (so the function should return a Seq rather than a single item). So most frequently used to return Array elements.
+
+Q)Say I have a huge list of numbers in RDD(say myrdd). And I wrote the following code to compute average:
+
+def myAvg(x, y):
+return (x+y)/2.0;
+avg = myrdd.reduce(myAvg);
+
+Q)What is wrong with it? And How would you correct it?
+
+The average function is not commutative and associative;
+I would simply sum it and then divide by count.
+def sum(x, y):
+return x+y;
+total = myrdd.reduce(sum);
+avg = total / myrdd.count();
+The only problem with the above code is that the total might become very big thus over flow. So, I would rather divide each number by count and then sum in the following way.
+cnt = myrdd.count();
+def devideByCnd(x):
+return x/cnt;
+myrdd1 = myrdd.map(devideByCnd);
+avg = myrdd.reduce(sum);
+
+Q)Say I have a huge list of numbers in a file in HDFS. Each line has one number.And I want to compute the square root of sum of squares of these numbers. How would you do it?
+# We would first load the file as RDD from HDFS on spark
+numsAsText = sc.textFile(“hdfs://hadoop1.knowbigdata.com/user/student/sgiri/mynumbersfile.txt”);
+# Define the function to compute the squares
+def toSqInt(str):
+v = int(str);
+return v*v;
+#Run the function on spark rdd as transformation
+nums = numsAsText.map(toSqInt);
+#Run the summation as reduce action
+total = nums.reduce(sum)
+#finally compute the square root. For which we need to import math.
+import math;
+print math.sqrt(total);
+
+Q)Is the following approach correct? Is the sqrtOfSumOfSq a valid reducer?
+
+numsAsText =sc.textFile(“hdfs://hadoop1.knowbigdata.com/user/student/sgiri/mynumbersfile.txt”);
+def toInt(str):
+return int(str);
+nums = numsAsText.map(toInt);
+def sqrtOfSumOfSq(x, y):
+return math.sqrt(x*x+y*y);
+total = nums.reduce(sum)
+import math;
+print math.sqrt(total);
+
+A: Yes. The approach is correct and sqrtOfSumOfSq is a valid reducer.
+
+Q)Could you compare the pros and cons of the your approach (in Question 2 above) and my approach (in Question 3 above)?
+You are doing the square and square root as part of reduce action while I am squaring in map() and summing in reduce in my approach.
+My approach will be faster because in your case the reducer code is heavy as it is calling math.sqrt() and reducer code is generally executed approximately n-1 times the spark RDD.
+The only downside of my approach is that there is a huge chance of integer overflow because I am computing the sum of squares as part of map.
+
+Q)If you have to compute the total counts of each of the unique words on spark, how would you go about it?
+#This will load the bigtextfile.txt as RDD in the spark
+lines = sc.textFile(“hdfs://hadoop1.knowbigdata.com/user/student/sgiri/bigtextfile.txt”);
+#define a function that can break each line into words
+def toWords(line):
+return line.split();
+# Run the toWords function on each element of RDD on spark as flatMap transformation.
+# We are going to flatMap instead of map because our function is returning multiple values.
+words = lines.flatMap(toWords);
+# Convert each word into (key, value) pair. Her key will be the word itself and value will be 1.
+def toTuple(word):
+return (word, 1);
+wordsTuple = words.map(toTuple);
+# Now we can easily do the reduceByKey() action.
+def sum(x, y):
+return x+y;
+counts = wordsTuple.reduceByKey(sum)
+# Now, print
+counts.collect()
+
+Q)In a very huge text file, you want to just check if a particular keyword exists. How would you do this using Spark?
+lines = sc.textFile(“hdfs://hadoop1.knowbigdata.com/user/student/sgiri/bigtextfile.txt”);
+val sentence = lines.filter(line => line.contains("term"))
+or 
+def isFound(line):
+if line.find(“mykeyword”) > -1:
+return 1;
+return 0;
+foundBits = lines.map(isFound);
+sum = foundBits.reduce(sum);
+if sum > 0:
+print “FOUND”;
+else:
+print “NOT FOUND”;
+
+-----------------------------------------------------------------------------------------------------
+Illustrate some demerits of using Spark.
+Since Spark utilizes more storage space compared to Hadoop MapReduce, there may arise certain problems. 
+We need to be careful while running applications in Spark. Instead of running everything on a single node, the work must be distributed over multiple clusters.
+
+With feature of In-memory computation, Spark requires lots of RAM to run in-memory, thus the cost of Spark is quite high compare to Map Reduce
+
+Does not have its file management system. Thus, it needs to integrate with Hadoop or other cloud-based data platforms
+
+What is PageRank?
+PageRank is a algorithm in graph, PageRank is the measure of each vertex in the graph. 
+
+What are benefits of Spark over MapReduce?
+With feature of in-memory computation, Spark data processing speed is 100 times faster than Hadoop MapReduce.
+It is around 100 times faster than MapReduce in memory and 10 times faster on disk.
+Spark is general purpose cluster computation engine. It provides in-built libraries to perform multiple tasks like batch processing, Steaming, Machine learning, Graph processing,Interactive SQL queries. Where as Map-Reduce MapReduce is developed for batch processing.
+Spark uses an abstraction called RDD which makes Spark feature rich, whereas map reduce doesn't have any abstraction
+Spark uses lower latency by caching partial/complete results across distributed nodes whereas MapReduce is completely disk-based.
+Spark is capable of performing computations multiple times on the same dataset. That is Spark has in-built interactive mode. iterative computation Where as on Map-Reduce there is no built-in iterative computing
+Spark is Independent of Hadoop where as Map-Reduce is part of Hadoop ecosystems.
+
+Is there any point of learning MapReduce, then?
+MapReduce is a paradigm used by many big data tools including Spark. 
+So, understanding the MapReduce paradigm and how to convert a problem into series of MapReduce tasks is very important.
+Almost, every other tool such as Hive or Pig converts its query into MapReduce phases. If you understand the MapReduce then you will be able to optimize your queries better
+
+Is it possible to configure spark as hive execution engine
+Yes .
+hive> set hive.execution.engine=spark;
+
+-----------------------------------------------------------------------------------------------------
+What is Spark Core?
+Spark Core is a common execution engine for Spark platform. It provides parallel and distributed processing for large data sets. 
+All the components on the top of it. Spark core provides speed through in-memory computation
+
+How is data represented in Spark?
+The data can be represented in three ways in Apache Spark: RDD, DataFrame, DataSet.
+
+What are the abstractions of Apache Spark?
+RDD and shared variables
+
+What are Paired RDD?
+Paired RDDs are the RDD-containing key-value pair. A key-value pair (KYP) contains two linked data item. Here Key is the identifier and Value are the data corresponding to the key value.
+
+What is Directed Acyclic Graph(DAG)?
+RDDs are formed after every transformation. At high level when we apply action on these RDD, Spark creates a DAG. 
+DAG is a finite directed graph with no directed cycles.
+There are so many vertices and edges, where each edge is directed from one vertex to another. 
+It contains a sequence of vertices such that every edge is directed from earlier to later in the sequence. 
+It is a strict generalization of MapReduce model. DAG lets you get into the stage and expand in detail on any stage.
+In the stage view, the details of all RDDs that belong to that stage are expanded.
+
+What are the benefits of lazy evaluation?
+Using lazy evaluation we can:
+Increase the manageability of the program.
+Saves computation overhead and increases the speed of the system.
+Reduces the time and space complexity.
+provides the optimization by reducing the number of queries
+
+How can data transfer be minimized when working with Apache Spark?
+By using a broadcast variable 
+Using Accumulator 
+
+-----------------------------------------------------------------------------------------------------
+What is pipe operator ?
+Pipe operator allows to process RDD data using external application 
+After creating RDD, we can pipe that RDD through shell script. Shell scripting allows to access that RDD through external application
+
+RDD can share across the applications ?
+No. RDD can share access the networks but not applications
+
+What is the sizeEstimator tool ?
+An utiliy tool to estimate the size of object in java heap is called sizeEstimator
+
+What is difference between reduce and fold ?
+Reduce: (commutative/associative property is assumed to be true)
+reduce(func): Combine the elements of the RDD together in parallel (e.g., sum)
+commutative/associative property is assumed to be true
+var RDD1= lines.reduce((x,y) => x+y))
+
+Fold ,same as reduce but needs an initial zero value 
+fold (zero) (func) :  (commutative property is assumed to be NOT present)
+The zero value you provide should be the identity element for your
+operation; that is, applying it multiple times with your function should not change. This ZERO value provides the order of commutation.
+the value (e.g., 0 for +, 1 for *, or an empty list for concatenation).
+rdd.fold(0)((x, y) => x + y).
+
+(1 until 10).reduce( (a,b) => a+b ) 
+(1 until 10).fold(0)( (a,b) => a+b ) 
+(1 until 10).fold(10)( (a,b) => a+b ) 
+
+What is glom in RDD
+rdd.glom() : Returns new RDD with partition elements in form of array rather than single row 
+Ex : find out maximum in a given RDD.
+// create rdd
+ val dataList = List(50.0,40.0,40.0,70.0)   
+ val dataRDD = sc.makeRDD(dataList)  
+ val maxValue =  dataRDD.reduce (_ max _)
+there will be lot of shuffles between partitions for comparisons of each value
+
+With glom
+First find maximum in each partition
+Compare maximum value between partitions to get the final max value
+val maxValue = dataRDD.glom().map((value:Array[Double]) => value.max)
+ .reduce(_ max _)
+only maximum of each partition are shuffled rather than all the values
+
+how-can-i-obtain-an-element-position-in-sparks-rdd
+using zipWithIndex
+EX : 
+scala> val r1 = sc.parallelize(List("a", "b", "c", "d", "e", "f", "g"), 3)
+scala> val r2 = r1.zipWithIndex
+scala> r2.foreach(println)
+(c,2)
+(d,3)
+(e,4)
+(f,5)
+(g,6)
+(a,0)
+(b,1)
+Above example confirm it. The red has 3 partitions, and a with index 0, b with index 1, etc.
+-----------------------------------------------------------------------------------------------------
+Why does the picture of Spark come into existence?
+To overcome the drawbacks of Apache Hadoop like Hadoop provides batch processing only and Hadoop used disk-based processing, Spark came into the picture.
+
+What are the limitations of Spark?
+Does not have its own distributed file management system
+
+How can data transfer be minimized when working with Apache Spark?
+By minimizing data transfer and avoiding shuffling of data we can increase the performance.
+By avoiding operations like ByKey, repartition or any other operation that trigger shuffle. we can minimize the data transfer.
+By using a broadcast variable – Since broadcast variable increases the efficiency of joins between small and large RDDs. the broadcast variable allows keeping a read-only variable cached on every machine in place of shipping a copy of it with tasks. We create broadcast variable v by calling SparlContext.broadcast(v) and we can access its value by calling the value method.
+Using Accumulator – Using accumulator we can update the value of a variable in parallel while executing. Accumulators can only be added through the associative and commutative operation. We can also implement counters (as in MapReduce) or sums using an accumulator. Users can create named or unnamed accumulator. We can create numeric accumulator by calling SparkContext.longAccumulator() or SparkContext.doubleAccumulator() for Long or Double respectively.
+-----------------------------------------------------------------------------------------------------
+Explain spark architecture ?
+
+On which all platform can Apache Spark run?
+Spark can run on the following platforms:
+YARN (Hadoop): 
+Apache Mesos:  
+EC2: If you do not want to manage the hardware by yourself, you can run the Spark on top of Amazon EC2. This makes spark suitable for various organizations.
+Standalone: 
+
+What are the various storages from which Spark can read data?
+HDFS, Cassandra, EC2, Hive, HBase
+
+Where does Spark Driver run on Yarn?
+If you are submitting a job with client machine, the Spark driver runs on the client’s machine. 
+If you are submitting a job with –master yarn-cluster, the Spark driver would run inside a YARN container.
+
+What happens to RDD when one of the nodes on which it is distributed goes down?
+Since Spark knows how to prepare a certain data set because it is aware of various transformations and actions that have lead to the dataset, it will be able to apply the same transformations and actions to prepare the lost partition of the node which has gone down.
+
+How to save RDD?
+saveAsTextFile: Write the elements of the RDD as a text file (or set of text files) to the provided directory. The directory could be in the local filesystem, HDFS or any other file system. Each element of the dataset will be converted to text using toString() method on every element. And each element will be appended with newline character “\n”
+later read it using textFile
+saveAsSequenceFile: Write the elements of the dataset as a Hadoop SequenceFile. This works only on the key-value pair RDD which implement Hadoop’s Writeable interface. You can load sequence file using sc.sequenceFile().
+later read it using SequenceFile
+saveAsObjectFile: This simply saves data by serializing using standard java object serialization.
+
+How to save dataFrame ?
+csv:
+df.write
+  .option("header", "true")
+  .csv("file:///C:/out.csv")
+Spark does not have a CSV exporting features from the box. Need to use Databricks plugin (com.databricks:spark-csv_2.10:1.3.0)
+It creates several csv files based on the data frame partitioning. this is good for optimization in a distributed environment
+But If you need single CSV file, you have to implicitly create one single partition.
+df.write.
+    repartition(1).
+    format("com.databricks.spark.csv").
+    option("header", "true").
+    save("myfile.csv")
+text:
+val op= df.write.mode("overwrite").format("text").save("C:/Users/phadpa01/Desktop/op")
+types of modes
+overwrite: overwrite the existing data.
+append: append the data.
+ignore: ignore the operation (i.e. no-op).
+error: default option, throw an exception at runtime.
+df.write.text("/path/to/output")
+json:
+df.write.json("/yourPath")
+orc;
+df.write.orc("/yourPath")
+parquet:
+df.write().parquet(“/path/to/save/the/file”)
+saveAsTable:
+Seq((1, 2)).toDF("i", "j").write.mode("overwrite").saveAsTable("t1")
+df.jdbc(url,tablename,connectionproperties)
+
+option used to specify key value 
+df.write.option("orc.compress", "lzo")orc("/yourPath")
+none, snappy, gzip, and lzo
+df.write.option("spark.sql.parquet.compression.codec", "lzo").parquet("/yourPath")
+none, snappy, gzip, and lzo
+
+When we create an RDD, does it bring the data and load it into the memory?
+No. An RDD is made up of partitions which are located on multiple machines. 
+The partition is only kept in memory if the data is being loaded from memory or the RDD has been cached/persisted into the memory. 
+Otherwise, an RDD is just mapping of actual data and partitions.
+
+When creating an RDD, what goes on internally?
+While loading Data from Source – When an RDD is prepared by loading data from some source (HDFS, Cassandra, in-memory), the machines which exist nearer to the data are assigned for the creation of partitions. 
+These partitions would hold the parts of mappings or pointers to the actual data. 
+When we are loading data from the memory (for example, by using parallelize), the partitions would hold the actual data instead of pointers or mapping
+By converting an in-memory array of objects – An in-memory object can be converted to an RDD using parallelize.
+By operating on existing RDD – An RDD is immutable. We can’t change an existing RDD. We can only form a new RDD based on the previous RDD by operating on it. When operating on existing RDD, a new RDD is formed. These operations are also called transformations. The operation could also result in shuffling – moving data across the nodes. Some operations that do not cause shuffling: map, flatMap and filter. Examples of the operations that could result in shuffling are groupByKey, repartition, sortByKey, aggregateByKey, reduceByKey, distinct.Spark maintains the relationship between the RDD in the form of a DAG (Directed Acyclic Graph). When an action such reduce() or saveAsTextFile() is called, the whole graph is evaluated and the result is returned to the driver or saved to the location such as HDFS.
+
+What does it mean by Columnar Storage Format?
+While converting a tabular or structured data into the stream of bytes we can either store row-wise or we could store column-wise.
+In row-wise, we first store the first row and then store the second row and so on. In column-wise, we first store first column and second column.
+empid name
+10     joe
+11     jan
+10:001,11:002;joe:001,jan:002 ->Columnar
+001:10,joe;002:jan,11
+
+What do we mean by Partitions or slices?
+Partitions (also known as slices earlier) are the parts of RDD. Each partition is generally located on a different machine. Spark runs a task for each partition during the computation.
+If you are loading data from HDFS using textFile(), it would create one partition per block of HDFS(64MB typically). Though you can change the number of partitions by specifying the second argument in the textFile() function.
+If you are loading data from an existing memory using sc.parallelize(), you can enforce your number of partitions by passing the second argument.
+You can change the number of partitions later using repartition().
+If you want certain operations to consume the whole partitions at a time, you can use map partition().
+
+Map and FlatMap difference
+flatMap can convert one element into multiple elements of RDD while map can only result in an equal number of elements.
+flatMap can emulate as map and filter: If it returns single out value then it behaves as map. 
+If it returns empty out value then it behaves as filter. 
+
+What does reduce action do?
+A reduce action converts an RDD to a single value by applying recursively the provided (in argument) function on the elements of an RDD until only one value is left. 
+The provided function must be commutative and associative – the order of arguments or in what way we apply the function should not make difference.
+ex : 1,2,3,4, applying sum func on reduce
+val x = sc.parallelize(1 to 4)
+scala> val y = x.reduce((accum,n) => (accum + n))  or val y = x.reduce((x,y) => (x + y))
+o/p is 10
+reduce func will work on parallel on different partition
+partition1   partition1
+1,2             3,4
+3                7
+        10
+note : if we apply avg func on reduce results will be different reason it is not commutative and associative
+(1+2/2+3)/2 != (1+(2+3/2)/2
+commutative : if changing the order of inputs does not make any difference to output that function is commutative, ex : 2+3  = 3+2, 2*3 = 3*2
+non commutative ex : 2/3 != 3/2, 2-3 != 3-2
+associative : can add or multiply regardless of the numbers are grouped, ex : (3 * 4) * 2  = 3 * (4 * 2)
+non associative : (2/3)/4 != 2/(3/4)
+note : a reduce function must be commutative and associative otherwise the results will be unpredictable and wrong
+
+
+Say I have a huge list of numbers in a file in HDFS. Each line has one number and I want to compute the square root of the sum of squares of these numbers. 
+How would you do it?
+#We would first load the file as RDD from HDFS on Spark
+numsAsText = sc.textFile("hdfs:////user/student/sgiri/mynumbersfile.txt");
+# Define the function to compute the squares
+def toSqInt(str):
+    v = int(str);
+    return v*v;
+#Run the function on Spark rdd as transformation
+nums = numsAsText.map(toSqInt);
+#Run the summation as reduce action
+total = nums.reduce(sum)
+#finally compute the square root. For which we need to import math.
+import math;
+print math.sqrt(total);
+
+In a very huge text file, you want to just check if a particular keyword exists. How would you do this using Spark?
+lines = sc.textFile("hdfs:///user/student/sgiri/bigtextfile.txt");
+def isFound(line):
+    if line.find("mykeyword") > -1:
+        return 1;
+    return 0;
+foundBits = lines.map(isFound);
+sum = foundBits.reduce(sum);
+if sum > 0:
+    print “FOUND”;
+else:
+    print “NOT FOUND”;
+
+https://cloudxlab.com/blog/spark-interview-questions/	
+-----------------------------------------------------------------------------------------------------
+
+What is a DStream?
+Discretized Stream is a sequence of Resilient Distributed Databases that represent a stream of data. DStreams can be created from various sources like Apache Kafka, HDFS, and Apache Flume. DStreams have two operations –
+Transformations that produce a new DStream.
+Output operations that write data to an external system.
+
+What is the advantage of a Parquet file?
+Parquet file is a columnar format file that helps –
+Limit I/O operations
+Consumes less space
+Fetches only required columns.
+
+What do you understand by Executor Memory in a Spark application?
+Every spark application has same fixed heap size and fixed number of cores for a spark executor. 
+The heap size is what referred to as the Spark executor memory which is controlled with the spark.executor.memory property of the –executor-memory flag. 
+Every spark application will have one executor on each worker node. The executor memory is basically a measure on how much memory of the worker node will the application utilize.
+
+What is Spark.executor.memory in a Spark Application?
+The default value for this is 1 GB. It refers to the amount of memory that will be used per executor process
+
+What do you understand by worker node?
+Worker node refers to any node that can run the application code in a cluster
+
+What is Spark Executor?
+When SparkContext connects to a cluster manager, it acquires an Executor on nodes in the cluster. 
+Executors are Spark processes that run computations and store the data on the worker node. 
+The final tasks by SparkContext are transferred to executors for their execution.
+
+What does the Spark Engine do?
+Spark engine schedules, distributes and monitors the data application across the spark cluster
+
+In a given spark program, how will you identify whether a given operation is Transformation or Action ?
+One can identify the operation based on the return type -
+i) The operation is an action, if the return type is other than RDD.
+ii) The operation is transformation, if the return type is same as the RDD.
+
+What according to you is a common mistake apache spark developers make when using spark ?
+Maintaining the required size of shuffle blocks.
+Spark developer often make mistakes with managing directed acyclic graphs (DAG's.)
+
+What is a Sparse Vector?
+A sparse vector has two parallel arrays; one for indices and the other for values. 
+These vectors are used for storing non-zero entries to save space.
+Vectors.sparse(7,Array(0,1,2,3,4,5,6),Array(1650d,50000d,800d,3.0,3.0,2009,95054))
+The above sparse vector can be used instead of dense vectors.
+val myHouse = Vectors.dense(4450d,2600000d,4000d,4.0,4.0,1978.0,95070d,1.0,1.0,1.0,0.0)
+----------------------------------------------------------------------------------------------
+What is spark history server ?
+Spark History Server is the web UI for completed and running (aka incomplete) Spark applications. It is an extension of Spark’s web UI.
+$ ./sbin/start-history-server.sh  and $ ./sbin/stop-history-server.sh
+
+Add the following line to conf/log4j.properties
+log4j.logger.org.apache.spark.deploy.history=INFO
+
+Few settings related history server in spark-defaults.conf file 
+Setting 							Default Value 
+spark.history.ui.port       			18080 (Cloud era using 18088)
+spark.history.fs.logDirectory 		file:/tmp/spark-events
+spark.history.retainedApplications      50 
+
+What is spark Web UI
+Web UI (aka Application UI or webUI or Spark UI) is the web interface of a Spark application to monitor and inspect Spark job executions in a web browser.
+The web UI is available at http://[driverHostname]:4040 by default.
+To obtain information about Spark application behavior we can consult cluster manager logs and the Spark web application UI. 
+It has tabs
+Jobs : Active jobs, completed jobs, Failed jobs.
+Stages : Active Stages, completed Stages, Failed Stages, Pending stages
+Storage
+Environment
+Executors
+SQL 

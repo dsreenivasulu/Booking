@@ -1,0 +1,114 @@
+Inbox 
+EMR 
+RIS 
+Temp box Cloud account 
+Perm box Cloud account
+Universal box 
+VNA  permanent store 
+PACS temporary store 
+LEMR 
+EUnity -- Logs 
+Mamosphere -- 
+RSNA clearing House
+
+Internal chat -- 
+
+
+Data collected ?
+
+
+We have purge worklfow, this workflow 
+ 
+<t_box> -> <t_license>
+
+<t_license.license_type> := {SENDERBOX | LILA | OUTBOX | REFERRALBOX | INBOX}
+
+Exam transfers from Lila to Cloud. Types of transfers are: dicom routing, hl7 auto, send to connection
+
+Analytics
+=================
+Authentication - Roles Supported
+---------------------------------
+Users considered to be lifeIMAGE Sales and Product Manager users can view and download stats reports for all organizations. 
+These users are known as "Sales", and "Product Manager" users, respectively.
+They may not see PHI 
+
+Users considered to be lifeIMAGE Service users can view and download stats reports for all organizations. 
+These users are known as "Services" users.
+They are allowed to see PHI
+
+
+Users who do not fall into the categories defined above are known as "Customers". 
+"Customer" users should only see the reports for their own organization
+
+usrnames : lisales, lisvc, customer id 
+
+https://lifeimage.atlassian.net/browse/RAM-256
+
+https://lifeimage.atlassian.net/browse/RAM-480
+
+https://lifeimage.atlassian.net/browse/RAM-486
+
+https://lifeimage.atlassian.net/browse/DRS-46
+
+
+We need Report that should generate pushed to PACS exams per user
+We need Report that should generate Exams Uploaded Per User per user 
+
+==========================================================
+
+SR Images Structured reports with out pixel data , Used to process 
+==========================================================
+
+Where you used hive partition in your project
+To understand the patterns of share, nomination, uploaded exams 
+Dynamic partition we have viewer logs and web logs When exam selecting by uploader and phyisican, and reports and attachments creation/updation/deltion
+
+What is your cluster size 
+The decision to make to prepare cluster will consider the below points.
+1) Ingestion rate: It is the data we can expect on daily basis on an average
+2) Replication factor: It will help to create the data copies which can be used when there is a failure a data node.It can be specified in hdfs-site.xml. for multi node cluster replication factor by default is 3 and for single node cluster, it is a 1.Replication factor will occupy the disk space depending on the factor count.It can be modified depending on t he rate we receive the data
+3) Size of hard disks: Size of disk which will be installed each data node
+4) Buffer memory: Amount of memory kept aside for storing intermediate results of map results
+
+Daily Ingestion rate 1 TB
+Replication Factor	3
+Size of Hard Disk 48 (12 * 4 TB)
+Buffer memory 25% or 0.25
+Memory to be stored in HD 1 * 3 = 3TB
+Memory can be used for storing and processing 48-(48*0.25) = 36 TB
+Number of Nodes reqd (3*365)/36 =~31 Nodes
+
+1000GB = 1TB
+In My PROJECT : 
+
+Daily Ingestion rate 70 GB/1000GB = 0.07TB
+Replication Factor	3
+Buffer memory 25% or 0.25
+Size of Hard Disk 8 (4 * 2 TB)
+Memory can be used for storing and processing 8-(8*0.25) = 6 TB
+Memory to be stored in HD 0.07 * 3 = 0.21
+
+Number of Nodes reqd (0.21*365)/6 = 13
+
+
+
+==================================
+Nodes -> 13
+Hard Disk -> 10TB
+Core's -> 8Cores 
+RAM -> 32GB
+
+13 + 2 Name nodes + 3 edge nodes =  18
+
+--num-executors  26   
+--executor-cores 3 
+--executor-memory 9GB  Memory per executor
+
+ Tiny executors [One Executor per core]:
+ Fat executors (One Executor per node): both are not good 
+ 
+ We are using Balanced executors 
+ https://spoddutur.github.io/spark-notes/distribution_of_executors_cores_and_memory_for_spark_application
+ ==================================
+

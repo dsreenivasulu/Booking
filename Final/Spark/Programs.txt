@@ -1,0 +1,224 @@
+Word count example:
+---------------------
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+
+object SparkWordCount {
+  def main(args: Array[String]) {
+    // create Spark context with Spark configuration
+    val sc = new SparkContext(new SparkConf().setAppName("Spark Count"))
+	val textFile = sc.textFile("hdfs://...")
+	val words = textFile.flatMap(line => line.split(" "))
+	val groupedWords = words.map(word => (word, 1))
+	val count = groupedWords.reduceByKey(_ + _)
+	counts.saveAsTextFile("hdfs://...")
+   }
+}
+
+spark 2.x example using DataSet and SparkSession :
+-----------------------------------
+import org.apache.spark.sql.SparkSession
+object DataSetWordCount {
+  def main(args: Array[String]) {
+
+    val sparkSession = SparkSession.builder.master("local")
+      .appName("example")
+      .getOrCreate()
+
+    import sparkSession.implicits._
+    val data = sparkSession.read.text("src/main/resources/data.txt").as[String]
+    val words = data.flatMap(line => line.split(" "))
+	val groupedWords = words.map(word => (word, 1))
+	val count = groupedWords.reduceByKey(_ + _)
+    counts.show()
+  }
+}
+
+using DataFrame and SparkSession : 
+val linesDF = sc.textFile("file.txt").toDF("line")
+ val wordsDF = linesDF.explode("line","word")((line: String) => line.split(" "))
+ val wordCountDF = wordsDF.groupBy("word").count()
+ wordCountDF.show()
+ 
+ Word Count Using Spark SQL on Dataset & TempView
+ val wordsDS = readFileDS.flatMap(_.split(" ")).as[String]
+ wordsDS.createOrReplaceTempView("WORDS")    
+ val wcounts5 = spark.sql("SELECT Value, COUNT(Value) FROM WORDS WHERE Value ='Humpty' OR Value ='Dumpty' GROUP BY Value")
+ wcounts5.show
+
+-----------------------------------------------------------------------------------
+
+Load error messages from a log into memory, then interactively search for various patterns
+lines = spark.textFile(“hdfs://...”)
+errors = lines.filter(_.startsWith(“ERROR”))
+messages = errors.map(_.split(‘\t’)(2))
+cachedMsgs = messages.cache()
+cachedMsgs.filter(_.contains(“foo”)).count
+cachedMsgs.filter(_.contains(“bar”)).count
+-----------------------------------------------------------------------------------
+
+Text Search using data frame:
+val textFile = sc.textFile("hdfs://...")
+// Creates a DataFrame having a single column named "line"
+val df = textFile.toDF("line")
+val errors = df.filter(col("line").like("%ERROR%"))
+// Counts all the errors
+errors.count()
+// Counts errors mentioning MySQL
+errors.filter(col("line").like("%MySQL%")).count()
+// Fetches the MySQL errors as an array of strings
+errors.filter(col("line").like("%MySQL%")).collect()
+------------------------------------------------------------------------
+Read a table stored in a database and calculate the number of people for every age :
+
+// Creates a DataFrame based on a table named "people"
+// stored in a MySQL database.
+val url =
+  "jdbc:mysql://yourIP:yourPort/test?user=yourUsername;password=yourPassword"
+val df = sqlContext
+  .read
+  .format("jdbc")
+  .option("url", url)
+  .option("dbtable", "people")
+  .load()
+
+// Looks the schema of this DataFrame.
+df.printSchema()
+
+// Counts people by age
+val countsByAge = df.groupBy("age").count()
+countsByAge.show()
+
+// Saves countsByAge to S3 in the JSON format.
+countsByAge.write.format("json").save("s3a://...")
+
+
+---------------------------
+Turning an RDD into a Relation
+//Define the schema using a case class.
+case class Person(name: String, age: Int)
+// Create an RDD of Person objects and register it as a table.
+val people = sc.textFile("examples/src/main/resources/people.txt")
+			   .map(_.split(","))
+			   .map(p => Person(p(0), p(1).trim.toInt))
+people.registerAsTable("people")
+----------------------------------------------------------------------
+
+Avg aggregation on RDD 
+  
+
+ val input = sc.textFile(inputFile)
+ val result = input.map(_.toInt).aggregate((0, 0))(
+        (acc, value) => (acc._1 + value, acc._2 + 1),
+        (acc1, acc2) => (acc1._1 + acc2._1, acc1._2 + acc2._2))
+val avg = result._1 / result._2.toFloat
+
+Note : if we use parrilze collection then to convert toInt
+----------------------------------------------------------------------
+How to read CSV as DataFrame
+1. Do it in programmatic way
+val df = spark.read
+         .format("csv")
+         .option("header", "true") //reading the headers
+         .load("hdfs:///csv/file/dir/file.csv")
+
+df = spark.read.format("csv").option("header", "true").load("csvfile.csv")
+		 
+2. You can do this SQL way as well
+val df = spark.sql("SELECT * FROM csv.`hdfs://csv/file/dir/file.csv`")
+
+----------------------------------------------------------------------
+How to enable Hive Support in spark ?
+// You automatically get it as part of the SparkSession
+val warehouseLocation = "file:${system:user.dir}/spark-warehouse"
+val spark = SparkSession
+   .builder()
+   .appName("SparkSessionZipsExample")
+   .config("spark.sql.warehouse.dir", warehouseLocation)
+   .enableHiveSupport()
+   .getOrCreate()
+   
+How to configure/get run time parameters after spark session is initialized ?
+//set new runtime options
+spark.conf.set("spark.sql.shuffle.partitions", 6)
+spark.conf.set("spark.executor.memory", "2g")
+
+//get all settings
+val configMap:Map[String, String] = spark.conf.getAll()
+
+How to fetch Hive Hcatalog metadata in spark ?
+//fetch metadata data from the catalog
+spark.catalog.listDatabases.show(false)
+spark.catalog.listTables.show(false)   
+
+Saving and Reading from Hive table with SparkSession
+//drop the table if exists to get around existing table error
+spark.sql("DROP TABLE IF EXISTS zips_hive_table")
+//save as a hive table
+spark.table("zips_table").write.saveAsTable("zips_hive_table")
+//make a similar query against the hive table 
+val resultsHiveDF = spark.sql("SELECT city, pop, state, zip FROM zips_hive_table WHERE pop > 40000")
+resultsHiveDF.show(10)
+
+----------------------------------------------------------
+
+//create a Dataset using spark.range starting from 5 to 100, with increments of 5
+val numDS = spark.range(5, 100, 5)
+// reverse the order and display first 5 items
+numDS.orderBy(desc("id")).show(5)
+
+   
+// create a DataFrame using spark.createDataFrame from a List or Seq
+val langPercentDF = spark.createDataFrame(List(("Scala", 35), ("Python", 30), ("R", 15), ("Java", 20)))
+//rename the columns
+val lpDF = langPercentDF.withColumnRenamed("_1", "language").withColumnRenamed("_2", "percent")
+//order the DataFrame in descending order of percentage
+lpDF.orderBy(desc("percent")).show(false)
+
+// read the json file and create the dataframe
+val jsonFile = args(0)
+val zipsDF = spark.read.json(jsonFile)
+//filter all cities whose population > 40K
+zipsDF.filter(zipsDF.col("pop") > 40000).show(10)
+
+// Creates a temporary view of the DataFrame
+zipsDF.createOrReplaceTempView("zips_table")
+zipsDF.cache()
+val resultsDF = spark.sql("SELECT city, pop, state, zip FROM zips_table")
+resultsDF.show(10)
+
+----------------------------------------------------------
+I have RDD which contains lines, I want add new column for first word and last word
+val sc: SparkContext = ...
+val sqlContext = new SQLContext(sc)
+
+import sqlContext.implicits._
+
+val extractFirstWord = udf((sentence: String) => sentence.split(" ").head)
+val extractLastWord = udf((sentence: String) => sentence.split(" ").reverse.head)
+
+val sentences = sc.parallelize(Seq("This is an example", "And this is another one", "One_word", "")).toDF("sentence")
+val splits = sentences
+             .withColumn("first_word", extractFirstWord(col("sentence")))
+             .withColumn("last_word", extractLastWord(col("sentence")))
+
+splits.show()
+
+Then the output is:
+
++--------------------+----------+---------+
+|            sentence|first_word|last_word|
++--------------------+----------+---------+
+|  This is an example|      This|  example|
+|And this is anoth...|       And|      one|
+|            One_word|  One_word| One_word|
+|                    |          |         |
++--------------------+----------+---------+
+
+----------------------------------------------------------
+
+
+
+Spark SQL build in functions
+http://spark.apache.org/docs/latest/api/sql/

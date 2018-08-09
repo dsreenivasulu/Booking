@@ -1,0 +1,50 @@
+Find matching and un-matching records from two tables
+un-matching records
+SELECT 
+   TableA.Id
+FROM 
+   TableA
+WHERE
+   TableA.Id NOT IN 
+    (
+       SELECT TableB.Id FROM TableB
+    )
+
+or 	
+select * from TableA 
+except
+select * from TableB	
+-----------------------------------------
+select *
+from (
+select 'Uploads' as ReportType
+      , to_char(dt_created, 'yyyy') as yr
+      , to_char( dt_created, 'MM') as mo
+      , count(sak_exam) as exams
+FROM LIPROD.t_activity_log a
+WHERE dt_created between date '2017-04-01' and date '2018-04-30'
+  and action_type = 'STUDY_UPLOADED'
+group by to_char(dt_created, 'yyyy')
+        ,to_char( dt_created, 'MM')
+UNION
+select 'Downloads' as ReportType
+      , to_char(dt_created, 'yyyy') as yr
+      , to_char( dt_created, 'MM') as mo
+      , count(sak_exam) as exams
+FROM LIPROD.t_activity_log a
+WHERE dt_created between date '2017-04-01' and date '2018-04-30'
+  and action_type = 'STUDY_DOWNLOAD'
+  group by to_char(dt_created, 'yyyy')
+          ,to_char( dt_created, 'MM')
+UNION
+select 'Shares' as ReportType
+      , to_char(dt_created, 'yyyy') as yr
+      , to_char( dt_created, 'MM') as mo
+      , count(sak_exam) as exams
+FROM LIPROD.t_activity_log a
+WHERE dt_created between date '2017-04-01' and date '2018-04-30'
+  and action_type = 'STUDY_SHARE'
+  group by to_char(dt_created, 'yyyy')
+          ,to_char( dt_created, 'MM')
+) cloud_volume
+ORDER BY 1,2,3;

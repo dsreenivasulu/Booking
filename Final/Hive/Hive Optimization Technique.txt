@@ -1,0 +1,98 @@
+hive-optimization-techniques
+
+Partitioning :
+--------------
+Bucketing:
+--------------
+Vectorization:
+--------------
+By default, the Hive query execution engine processes one row of a table at a time. 
+The single row of data goes through all the operators in the query before the next row is processed, This mode of processing is very inefficient in terms of CPU usage
+By using vectorized query execution, it prcoess a block of 1024 rows at a time instead of prcoessing single row of a table at a time. 
+Internally Within the block, each column is stored as a vector   Simple operations like arithmetic and comparisons are done by quickly iterating through the vectors in a tight loop, with no or very few function calls or conditional branches inside the loop
+
+Vectorized query execution improves performance of operations like scans, aggregations, filters and joins, by performing them in batches of (1024) rows at once instead of single row each time.
+Vectorization is a parallel processing technique in which operation are applied on multiple rows rather than single row. 
+Vectorized execution is off by default. 
+
+set hive.vectorized.execution.enabled=true.
+
+Note : Having access to data in columnar format is crucial for vectorization, so it only works with ORC formatted tables.
+
+ex : select * from post41 order by id desc (With out Vectorization, query will take more time. With Vectorization, query will take less time 
+
+Cost-Based Optimization(CBO):
+--------------
+Hive optimizes each query’s logical and physical execution plan before submitting for final execution. These optimizations are not based on the cost of the query.
+By using Cost-Based Optimization, it performs further optimizations based on query cost, resulting in potentially different decisions: how to order joins, which type of join to perform, degree of parallelism and others.
+
+set hive.cbo.enable=true;
+
+Parallel execution:
+--------------
+single, complex Hive queries commonly are translated to a number of MapReduce jobs that are executed by default sequencing. 
+Often though, some of a query’s MapReduce stages are not interdependent and could be executed in parallel.
+
+Hive converts a query into one or more stages. Stages could be map reduce stage, merge stage, a limit stage etc. By default hive executes these stages one at a time. A particular job may consists of some stages that are not dependednt on each other and could be executed in parallel. This helps the overall job to complete more quickly. Parallel execution can be enables using below properties.
+
+
+
+SET hive.exec.parallel=true.
+
+By default, the parallelism is dictated by the size of the data set and the default block size of 64 MB.
+               To increase number of mapper , reduce split size :  
+
+                SET mapred.max.split.size=1000000; (1 MB)    
+        
+               And adjust following parameters :  
+                SET mapreduce.input.fileinputformat.split.maxsize    
+                SET mapreduce.input.fileinputformat.split.minsize 
+
+
+Compress map/reduce output:
+--------------
+Compression techniques significantly reduce the intermediate data volume, which internally reduces the amount of data transfers between mappers and reducers. 
+All this generally occurs over the network. Compression can be applied on the mapper and reducer output individually. 
+Keep in mind that gzip compressed files are not splittable.
+For map output compression set mapred.compress.map.output to true
+For job output compression set mapred.output.compress to true
+
+Hive Indexing:
+--------------
+Indexing will definitely help to increase our query performance, use of indexing will create a separate called index table which acts as a reference for the original table. 
+If we want to perform queries only on some columns without indexing, it will take large amount of time because queries will be executed on all the columns present in the table.
+The major advantage of using indexing is; whenever we perform a query on a table that has an index, there is no need for the query to scan all the rows in the table.
+Further, it checks the index first and then goes to the particular column and performs the operation. 
+
+The goal of Hive indexing is to improve the speed of query lookup on certain columns of a table.
+Hive doesn’t provide automatic index maintenance, so we need to rebuild the index if we overwrite or append data to the table. 
+Also, Hive indexes support table partitions, so a rebuild can be limited to a partition.
+
+Usage of Suitable File format: 
+--------------
+Using appropriate file format based on our data will drastically increase our query performance
+For example JSON, the text type of input formats, is not a good choice for a large volume of data.
+These type of readable formats actually take a lot of space and have some overhead of parsing ( e.g JSON parsing ). 
+To address these problems, Generally ORC file format is best suitable for increasing our query performance.  
+ORC stands for Optimized Row Columnar which means it can store data in an optimized way than the other file formats. 
+ORC reduces the size of the original data up to 75%. As a result the speed of data processing also increases.
+ORC shows better performance than Text, Sequence and RC file formats.
+
+De-normalizing data:
+--------------
+if we normalize our data sets, we will end up creating multiple relational tables which can be joined at the run time to produce the results. 
+Joins are expensive and difficult operations to perform, requires extra map-reduce phase to accomplish query job. Joins are one of the common reasons for performance issues
+With Hive, a good practice is to denormalize our data in the same table so there is no need for any joins, hence the selects are very fast
+
+Unit Testing ans Sampling and writing good sql:
+--------------
+unit testing determines whether the smallest testable piece of your code works exactly as you expect.
+you can unit test UDFs, SerDes, streaming scripts, Hive queries and more. 
+To a large extent, it is possible to verify the correctness of your whole HiveQL query by running quick local unit tests without even touching a Hadoop cluster.
+
+There are several tools available that helps you to test Hive queries. Some of them that you might want to look at HiveRunner, Hive_test and Beetest.
+
+
+Sampling allows users to take a subset of dataset and analyze it, without having to analyze the entire data set. If a representative sample is used, then a query can return meaningful results as well as finish quicker and consume fewer compute resources.
+Hive offers a built-in TABLESAMPLE clause that allows you to sample your tables. TABLESAMPLE can sample at various granularity levels – it can return only subsets of buckets (bucket sampling), or HDFS blocks (block sampling), or only first N records from each input split. Alternatively, you can implement your own UDF that filters out records according to your sampling algorithm.
+

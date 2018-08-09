@@ -1,0 +1,279 @@
+Spark Properties
+===============
+--Spark properties can be configured in SparkConf object (or through Java system properties). or conf/spark-defaults.conf or runt time parameters in the sheel or spark-submit 
+spark-defaults.conf example key and a value separated by whitespace
+spark.master            spark://5.6.7.8:7077
+spark.executor.memory   4g
+spark.eventLog.enabled  true
+spark.serializer        org.apache.spark.serializer.KryoSerializer
+
+val conf = new SparkConf()
+             .setMaster("local[2]")
+             .setAppName("CountingSheep")
+			 .set("propName", "propValue")
+val sc = new SparkContext(conf)
+
+Note that we run with local[2], meaning two threads - which represents “minimal” parallelism, which can help detect bugs that only exist when we run in a distributed context.
+
+In some cases, you may want to avoid hard-coding certain configurations in a SparkConf. For instance, if you’d like to run the same application with different masters or different amounts of memory. Spark allows you to simply create an empty conf:
+
+val sc = new SparkContext(new SparkConf())
+
+Then, you can supply configuration values at runtime:
+
+./bin/spark-submit --name "My app" --master local[4] --conf spark.eventLog.enabled=false
+  --conf "spark.executor.extraJavaOptions=-XX:+PrintGCDetails -XX:+PrintGCTimeStamps" myApp.jar
+  
+spark-submit --help to see list of available properties
+
+http://spark.apache.org/docs/latest/configuration.html#spark-properties
+
+Order first priority SparkConf  and then passing parameters throguh sheel or spark-submit and then last spark-defaults.conf
+
+  
+
+--Environment variables can be used to set per-machine settings, such as the IP address, through the conf/spark-env.sh script on each node.
+--Logging can be configured through log4j.properties.
+
+
+apache-spark-best-practices-and-tuning
+=====================================
+Best practices :
+--Avoid GroupByKey : Avoid groupByKey when performing a group of multiple items by key
+ Avoid groupByKey when performing an associative reductive operation
+
+--Avoid reduceByKey when the input and output value types are different 
+
+--Don't copy all elements of a large RDD to the driver.
+
+If your RDD is so large that all of it's elements won't fit in memory on the drive machine, don't do this:
+
+val values = myVeryLargeRDD.collect() instead if really required call saveAsTextFile()
+
+Collect will attempt to copy every single element in the RDD onto the single driver program, and then run out of memory and crash.
+
+Instead, you can make sure the number of elements you return is capped by calling take or takeSample, or perhaps filtering or sampling your RDD.
+
+Similarly, be cautious of these other actions as well unless you are sure your dataset size is small enough to fit in memory:
+
+    countByKey
+    countByValue
+    collectAsMap
+
+If you really do need every one of these values of the RDD and the data is too big to fit into memory, you can write out the RDD to files or export the RDD to a database that is large enough to hold all the data.
+
+--Don't use count() : To check RDD has elements or not 
+RDD.count() !== 0 //wrong 
+RDD.isEmpty() //right
+
+--Avoid List of Iterators : Often when reading in a file, we want to work with the individual values contained in each line separated by some delimiter
+val inputData = sc.parallelize (Array ("foo,bar,baz", "larry,moe,curly", "one,two,three") ).cache ()
+
+val mapped = inputData.map (line => line.split (",") )  //wrong //o/p would be 3 String objects 
+val flatMapped = inputData.flatMap (line => line.split (",") )  //right //o/p would be foo,bar,baz,larry.....
+
+The combineByKey function takes 3 functions as arguments:
+
+    A function that creates a combiner. In the aggregateByKey function the first argument was simply an initial zero value. In combineByKey we provide a function that will accept our current value as a parameter and return our new value that will be merged with addtional values.
+    The second function is a merging function that takes a value and merges/combines it into the previously collecte value(s).
+    The third function combines the merged values together. Basically this function takes the new values produced at the partition level and combines them until we end up with one singular value.
+
+Data Serialization : use Kryo serialization conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+Serialization plays an important role in the performance of any distributed application	
+Java serialization By default, Spark serializes objects using Java’s ObjectOutputStream framework by implementating java.io.Serializable. You can also control the performance of your serialization more closely by extending java.io.Externalizable. 
+Java serialization is flexible but often quite slow, and leads to large serialized formats for many classes.
+Kryo serialization: Spark can also use the Kryo library to serialize objects more quickly.
+Kryo is significantly faster and more compact than Java serialization, but does not support all Serializable types and requires you to register the classes 
+The only reason Kryo is not the default is because of the custom registration requirement
+To register your own custom classes with Kryo, use the registerKryoClasses method.
+val conf = new SparkConf().setMaster(...).setAppName(...)
+conf.registerKryoClasses(Array(classOf[MyClass1], classOf[MyClass2]))
+val sc = new SparkContext(conf)
+
+Serialized RDD Storage
+http://spark.apache.org/docs/latest/tuning.html	
+Broadcasting Large Variables
+	
+https://umbertogriffo.gitbooks.io/apache-spark-best-practices-and-tuning/content/tuning-java-garbage-collection.html
+
+
+Spark SQL’s Performance Tuning Tips and Tricks
+==============================
+Number of Partitions for groupBy Aggregation
+By default Spark SQL uses spark.sql.shuffle.partitions number of partitions for aggregations and joins, i.e. 200 by default.
+val groupingExpr = 'id % 2 as "group"
+val q = ids.
+  groupBy(groupingExpr).
+  agg(count($"id") as "count")
+  
+val groupingExpr = 'id % 2 as "group"
+val q = ids.
+  repartition(numPartitions = 2, groupingExpr). // <-- repartition per groupBy expression
+  groupBy(groupingExpr).
+  agg(count($"id") as "count")
+
+
+Let us first decide the number of partitions based on the input dataset size. The Thumb Rule to decide the partition size while working with HDFS is 128 MB. As our input dataset size is about 1.5 GB (1500 MB) and going with 128 MB per partition, the number of partitions will be:
+
+Total input dataset size / partition size => 1500 / 128 = 11.71 = ~12 partitions
+
+This is equal to the Spark default parallelism (spark.default.parallelism) value. The metrics based on default parallelism is shown in the above section.
+
+Now, let us perform a test by reducing the partition size and increasing number of partitions.
+
+Consider partition size as 64 MB
+
+Number of partitions = Total input dataset size / partition size => 1500 / 64 = 23.43 = ~23 partitions
+
+  
+  
+spark.default.parallelism = 12 by default 
+spark.sql.shuffle.partitions=200 by default
+  
+Note: spark.sql.shuffle.partitions property is not applicable for RDD API based implementation.
+./bin/spark-submit --name FireServiceCallAnalysisDataFramePartitionTest --master yarn --deploy-mode cluster --executor-memory 2g --executor-cores 2 --num-executors 2 --conf spark.sql.shuffle.partitions=23 --conf spark.default.parallelism=23 --class com.treselle.fscalls.analysis.FireServiceCallAnalysisDF /data/SFFireServiceCall/SFFireServiceCallAnalysis.jar /user/tsldp/FireServiceCallDataSet/Fire_Department_Calls_for_Service.csv
+
+https://github.com/vaquarkhan/vk-wiki-notes/wiki/Apache-Spark-Join-guidelines-and-Performance-tuning
+https://medium.com/teads-engineering/spark-performance-tuning-from-the-trenches-7cbde521cf60
+
+Optimizing Spark SQL JOIN statements for High Performance
+=====================================
+Optimization Rule #1:  Include predicates for all tables in Spark SQL query. 
+ex : instead of scanning/reading the whole table  try to apply where condition
+Optimization Rule #2:  Minimize number of spark tasks in scan/read phase
+Spark plan creates multiple stages in read phase to read each table. There is a separate stage for each table. The number of tasks in each stage depends on the number of data partitions spark has to read into memory. By having efficient partitioning strategy on tables and utilizing proper predicates against partitions you can minimize the number of tasks in read stage.
+Optimization Rule #3:  Order of tables in FROM clause matters. Keep the table with the largest size at the top.
+Optimization Rule #4:  Keep consistent partitioning strategy across JOINing tables  
+By having common partition keys it makes it easier to write queries with filters that can be applied across many of the joining tables
+Optimization Rule #5:  Minimize the number of tables in JOIN.
+ex Use proper denormalization techniques to reduce the number of tables in your data model. 
+	
+PairRDDFunctions
+================
+aggregateByKey
+combineByKey
+cogroup
+collectAsMap() : Return the key-value pairs in this RDD to the master as a Map.
+Warning: this doesn't return a multimap (so if you have multiple values to the same key, only one value per key is preserved in the map returned)
+Note :this method should only be used if the resulting data is expected to be small, as all the data is loaded into the driver's memory.	
+countApproxDistinctByKey : Return approximate number of distinct values for each key in this RDD.
+countByKey(): Map[K, Long] : Count the number of elements for each key, collecting the results to a local Map.
+foldByKey
+fullOuterJoin
+groupByKey
+join
+keys: RDD[K] : Return an RDD with the keys of each tuple.
+leftOuterJoin : 
+lookup(key: K): Seq[V] : Return the list of values in the RDD for key key.
+partitionBy(partitioner: Partitioner): RDD[(K, V)] : Return a copy of the RDD partitioned using the specified partitioner.
+mapValues[U](f: (V) ⇒ U): RDD[(K, U)] : Pass each value in the key-value pair RDD through a map function without changing the keys; this also retains the original RDD's partitioning.
+reduceByKey(func: (V, V) ⇒ V): RDD[(K, V)] : Merge the values for each key using an associative and commutative reduce function.
+reduceByKeyLocally(func: (V, V) ⇒ V): Map[K, V] : Merge the values for each key using an associative and commutative reduce function, but return the results immediately to the master as a Map.
+rightOuterJoin : 
+saveAsHadoopFile : 
+values: RDD[V] : Return an RDD with the values of each tuple.
+
+Exceptions 
+==============
+Job aborted due to stage failure: Task not serializable:
+If you see this error:
+org.apache.spark.SparkException: Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: ...
+it means that you use a reference to an instance of a non-serializable class inside a transformation
+
+When to use broad cast variables
+=========================
+Joining a large and a small RDD :If the small RDD is small enough to fit into the memory of each worker we can turn it into a broadcast variable and turn the entire operation into a so called map side join for the larger RDD
+
+Which storage level to choose
+=====================
+By dafault Spark will cache() data using MEMORY_ONLY level,
+MEMORY_AND_DISK_SER can help cut down on GC and avoid expensive recomputations.
+
+Spark java.lang.OutOfMemoryError: Java heap space
+==================================================
+Increase the driver memory
+increase the off-heap memory
+val spark = SparkSession
+     .builder()
+     .master("local[*]")
+     .config("spark.executor.memory", "70g")
+     .config("spark.driver.memory", "50g")
+     .config("spark.memory.offHeap.enabled",true)
+     .config("spark.memory.offHeap.size","16g")   
+     .appName("sampleCodeForReference")
+     .getOrCreate()`
+Tips :  - spark.executor.memory Make sure you're using as much memory as possible by checking the UI (it will say how much mem you're using)
+ - Watch out for memory leaks
+ - use broadcast variables if you really do need large objects.
+ - Finally optimize your code 
+  
+How to find memory leaks in spark
+===============================
+Java plugin using Memory Analyze Tool or Jprofiler 
+
+How may default number of partition to use when doing shuflling in spark SQL
+===========================================
+200 but its configurable 
+
+In spark sql : spark.sql.shuflle.partition
+In regual spark RDD application:   rdd.repartition() or rdd.coalesec()
+
+Note : 2 GB is limit for spark shufflue blocks
+ 
+How to limit the number of retries on Spark job failure?
+========================================================
+spark.yarn.maxAppAttempts
+yarn.resourcemanager.am.max-attempts - in yarn-default.xml file YARN's own setting with default being 2.	 
+
+    SPARK DEFINITIONS:
+
+    It may be useful to provide some simple definitions for the Spark nomenclature:
+
+    Node: A server
+
+    Worker Node: A server that is part of the cluster and are available to run Spark jobs
+
+    Master Node: The server that coordinates the Worker nodes.
+
+    Executor: A sort of virtual machine inside a node. One Node can have multiple Executors.
+
+    Driver Node: The Node that initiates the Spark session. Typically, this will be the server where sparklyr is located.
+
+    Driver (Executor): The Driver Node will also show up in the Executor list.
+
+Why your Spark job is failing 
+--com.esotericsoftware.kryo. KryoException: Unable to find class: 
+--org.apache.spark.SparkException: Job aborted due to stage failure: Task 0.0:0 failed 4 times, most recent failure: 
+Exception failure in TID 6 on host bottou02-10g.pa.cloudera.com: java.lang.ArithmeticException: / by zero
+--Exception in task ID 286 6 java.io.IOException: Filesystem closed at 
+--Exception in thread main java.lang.NoClassDefFoundError : Missing external JARs
+--OOM on Spark driver  iava.lang.OutOfMemoryError java heap space 
+--OOM on executors
+--iava.lang.OutOfMemoryError GC Overlimit exceed
+spark default is --XX:UseParallelGC instead use --XX:UseG1GC
+GC tuning flags for executors can be specified by setting spark.executor.extraJavaOptions in a job’s configuration.
+--org.apache.spark.SparkException: Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: ...
+--java.io.IOException: No space left on device
+Complains about ‘/tmp’ is full Controlled by ‘spark.local.dir’ parameter Default is ‘/tmp’ 
+it Stores map output files and RDDs 
+‘/tmp’ usually is a single disk, a potential IO bottleneck 
+To fix, add the following line to ‘spark-defaults.conf’ file: spark.local.dir /data/disk1/tmp,/data/disk2/tmp,/data/disk3/tmp,/data/disk4/tmp,… 
+org.apache.spark.SparkException: Job aborted due to stage failure: Total size of serialized results of 381610 tasks (5.0 GB) is bigger than spark.driver.maxResultSize (5.0 GB)
+Likely to occur with complex SQL on large data volumes 
+Limit of total size of serialized results of all partitions for each Spark action (e.g., collect) 
+ Controlled by ‘spark.driver.maxResultSize’ parameter -  Default is 1G - Can be ‘0’ or ‘unlimited’ -  ‘unlimited’ will throw OOM on driver 
+  To fix, add the following line to ‘spark-defaults.conf’ file: spark.driver.maxResultSize 5g *
+-- Catalyst errors org.apache.spark.sql.catalyst.errors.package$TreeNodeException: java.util.concurrent.TimeoutException: Futures timed out after [800 seconds] at scala.concurrent.impl.Promise$DefaultPromise.ready(Promise.scala:219) 
+ On surface appears to be Catalyst error (optimizer), actually an internal Spark timeout error most likely to occur under concurrency java.util.concurrent.TimeoutException: Futures timed out after [800 seconds] 
+ Controlled by an unpublished Spark setting ‘spark.sql.broadcastTimeout’ parameter 
+ Default in source code shows 300 seconds 
+ To fix, add the following line to ‘spark-defaults.conf’ file or as CLI --conf spark.sql.broadcastTimeout 1200 
+--spark.ContextCleaner: Error cleaning broadcast 28267 org.apache.spark.rpc.RpcTimeoutException: Futures timed out after [800 seconds]
+ Depending on system resource usage, any of the above can occur (e.g., no heartbeats) §  You can tune each individual setting OR use an “umbrella” timeout setting §  Controlled by ‘spark.network.timeout’ parameter -  Default is 120 seconds -  Overrides all above timeout values §  To fix, add the following line to ‘spark-defaults.conf’ file: spark.network.timeout 700  
+ --java.lang.IllegalArgumentException: Size exceeds Integer.MAX_VALUE
+  Overflow exception if shuffle block size > 2 GB
+  To fix Reduce the shufulee block parition or rdd repartition or coalesec
+  
+ 
+https://spark.apache.org/docs/2.1.0/sql-programming-guide.html
+https://sreejithrpillai.wordpress.com/2017/02/19/log-analyzer-example-using-spark-and-scala/

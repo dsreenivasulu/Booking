@@ -1,0 +1,223 @@
+Spark is written in scala
+Do i need install hadoop for spark ?
+ -Spark can run without Hadoop.
+ -We can run it as a Standalone mode without any resource manager.
+ -But if we want to run in multi-node setup, We need a resource manager like YARN or Mesos and a distributed file system like HDFS,S3 etc
+-Distributed Storage:
+	Since Spark does not have its own distributed storage system, it has to depend on one of these storage systems for distributed computing.
+	S3 – Non-urgent batch jobs. S3 fits very specific use cases when data locality isn’t critical.
+	Cassandra – Perfect for streaming data analysis and an overkill for batch jobs.
+	HDFS – Great fit for batch jobs without compromising on data locality.
+-Distributed processing:
+	You can run Spark in three different modes: Standalone, YARN and Mesos
+What is Data locality
+Data locality is the process of moving the computation close to where the actual data resides on the node, instead of moving large data to computation. This minimizes network congestion and increases the overall throughput of the system. 
+ex : When a user runs the MapReduce job then NameNode sent this MapReduce code to the datanodes on which data is available related to MapReduce job.	
+	
+How do we execute programs on a spark cluster ?
+ -Interactive Clients (Spark shell(Scala shell), Pyspark(Python shell), Notebooks(Jupiter notebook))
+   Easy for development . Best suitable for exploring
+ -Spark submit utility (submit a job)
+   Used in production. Packed jobs as spark application and submit a job to cluster
+   (ex 1. news filtering using machine learning, 2.user videos interest in youtube)
+   
+How does the spark execute our programs on a cluster ?
+ -Spark is distributed processing engine. It follows master-slave architecture. In spark terminology master is driver and slave is executor
+  When we submit a spark application, spark creates one driver process and one or more executor processes
+  Driver is responsible for Analyzing, Distributing, Scheduling, Monitoring the work across the executors and also maintains all necessary application information 
+  Executor is responsible for to complete assigned work/task by the driver and reporting status to driver
+  
+  Spark offers two deployment modes for an application
+   Client mode : Driver on client machine and executors on cluster
+                 Driver is embedded in Interactive clients. Interactive clients and driver run on same jvm process
+                 suitable for exploring and debugging driver process. All Interactive Clients are in client mode 
+   Cluster mode : Driver and executors on cluster
+   we can submit spark application from client machine to driver on cluster  
+   each application will run independently on cluster
+   suitable in production 
+
+Who controls the cluster or How spark gets the resources for the driver and executors ?
+ -spark supports 4 types of cluster managers
+   Apache YARN : YARN is the cluster manager for Hadoop. Mostly wide used cluster manager in spark 
+   Apache Mesos : General purpose cluster manager from Apache. Useful non-hadoop environment 
+   Kubernets : General purpose cluster manager from google. 
+   Standalone : cluster manager Build in spark. Easy to step
+   
+   YARN workflow
+   Client mode : 
+     -Spark client tool (Interactive Clients) : When you start application, driver starts in local machine
+       Driver creates the spark session (In the spark session driver maintains executors location and status)
+---------------------------------------------------------------------------------------------------------------	   
+	      
+Typical spark application workflow:
+   --Load the data from the source
+   --Process the data
+   --Hold the results
+   --Store the data to the destination 
+To hold the results, we need data structure like data frames, data sets, RDD
+Note : 2.x recommends to use data frames and data sets. Finally they will use RDD
+
+
+Immutable other ex : String in java, collections in scala. Big data by default immutable in nature(HDFS)
+What is the use/benefit of Immutable : we can achieve parallelism and caching
+
+How can achieve parallelism or what is parallelism : Immutable is thread safety. This means that multiple threads/programs can access the same object at the same time, without clashing with another thread.
+Immutable is about value but not reference. Reference can be reassign 
+Challenges of immutability : immutability is great for parallelism but not good for space.
+
+Challenges of laziness : since laziness defers evaluation, determine the type of data is challenge 
+If we can't identify the right type, we will get semantic issues
+
+Type inference : The type is identified automatically by the value. it is part of compiler 
+it will solve semantic issues
+var collection = List(1,2,3)
+var result  = collection.count (internally compiler knows result is Int type)
+result.map(x=>x*2) //semantic error at the compile time. Map cannot apply on integers
+Caching : Immutable data allows to cache the data longer time
+Caching data improves execution engine performance
+Map/Reduce is immutable but not lazy
+	
+---------------------------------------------------------------------------------------------------------------------	
+SparkContext :  
+A SparkContext represents the connection to a Spark cluster, and can be used to create RDDs, accumulators and broadcast variables on that cluster.
+Spark context sets up internal services and establishes a connection to a Spark execution environment.
+The first step of any Spark driver application is to create a SparkContext. 
+The SparkContext allows the Spark driver application to access the cluster through a resource manager. (The resource manager can be YARN, or Spark’s Cluster Manager.)
+So SparkContext is Main entry point for Spark functionality.
+
+Only one SparkContext may be active per JVM. You must stop() the active SparkContext before creating a new one
+In Spark shell, a special interpreter-aware SparkContext is already created for the user, in the variable called sc.
+
+Few functionalities which SparkContext offers are: 
+1. We can get the current status of a Spark application like configuration, app name.
+2. We can set Configuration like master URL, default logging level.
+3. We can create Distributed Entities like RDDs.
+
+How to setup multiple spark context 
+Set spark.driver.allowMultipleContexts in sparkconfig  
+Although configuration option spark.driver.allowMultipleContexts exists, it is misleading because usage of multiple Spark contexts is discouraged. 
+This option is used only for Spark internal tests and is not supposed to be used in user programs.
+You can get unexpected results while running more than one Spark context in a single JVM.
+
+What is spark core ? 
+spark core is the base fundamental unit in spark
+All the basic functionality of Spark Like in-memory computation, fault tolerance, memory management, monitoring, task scheduling is provided by Spark Core
+It is also home to the API that defines RDDs
+spark core also provides connectivity to the storage system. For example HDFS, HBase, Amazon S3, etc.
+On top of spark core, spark provides MLlib, SparkSQL, GraphX, Spark Streaming. 
+
+What is SparkSession
+The entry point into all functionality in Spark is the SparkSession
+In Spark 2.0, SparkSession represents a unified point for manipulating data in Spark. 
+It minimizes the number of different contexts a developer has to use while working with Spark. SparkSession replaces multiple context objects, such as the SparkContext, SQLContext, and HiveContext. These contexts are encapsulated within the SparkSession object.
+In Spark programs, we use the builder design pattern to instantiate a SparkSession object. However, in the REPL environment (that is, in a Spark shell session), the SparkSession is automatically created and made available to you via an instance object called Spark.
+
+SparkContext vs SparkSession
+Prior to Spark 2.x sparkContext was used to represents the connection to a Spark cluster
+SPARK 2.0.0 onwards, SparkSession provides a single point of entry into all functionality in Spark
+All the functionality available with sparkContext are also available in sparkSession.
+In order to use APIs of SQL, HIVE, and Streaming, no need to create separate contexts as sparkSession includes all the APIs.
+We can get sparkContext using sparkSession.sparkContext() and for SQL, sparkSession.sqlContext()
+
+What is SQLContext
+SQLContext is entry point for working with structured data
+Prior to Spark 2.x SQLContext is entry point of SparkSQL which can be received from sparkContext
+After Spark 2.x SQLContext is entry point of SparkSQL which can be received from sparkSession
+
+Features of Apache Spark
+Processing : Using Apache Spark, we achieve a high data processing speed of about 100x faster in memory and 10x faster on the disk
+In-Memory Computation: With in-memory processing, we can increase the processing speed. Here the data is being cached so we need not fetch data from the disk every time thus the time is saved. 
+Spark has DAG execution engine which facilitates in-memory computation and acyclic data flow resulting in high speed.
+Fault Tolerance: Spark provides fault tolerance through Spark abstraction-RDD. Spark RDDs are designed to handle the failure of any worker node in the cluster. 
+Thus, it ensures that the loss of data is reduced to zero
+Lazy Evaluation: All the transformations Spark RDD are Lazy in nature. this increases the efficiency of the system.
+Support Multiple Languages: In Spark, there is Support for multiple languages like Java, R, Scala, Python. Thus, it provides dynamicity and overcomes the limitation of Hadoop that it can build applications only in Java
+Real-Time Stream Processing: Spark has a provision for real-time stream processing. Earlier the problem with Hadoop MapReduce was that it can handle and process data which is already present, but not the real-time data. but with Spark Streaming we can solve this problem.
+Spark GraphX: Spark has GraphX, which is a component for graph and graph-parallel computation. It simplifies the graph analytics tasks by the collection of graph algorithm and builders.
+Spark SQL: 
+Spark Mlib:
+Spark has an interactive language shell as it has an independent Scala (the language in which Spark is written) interpreter.
+Spark consists of RDD’s (Resilient Distributed Datasets), which can be cached across computing nodes in a cluster
+Integrated with Hadoop: Spark can run independently and also on Hadoop YARN Cluster Manager and thus it can read existing Hadoop data. Thus, Spark is flexible
+
+What is Spark 
+Apache Spark is a fast and general-purpose cluster computing framework Written in Scala
+It provides rich set of tools Spark SQL for SQL and structured data processing, 
+MLlib for machine learning, GraphX for graph processing, and Spark Streaming for stream processing.
+It provides high-level APIs in Java, Scala, Python and R to write spark applications
+
+Disadvantages of spark
+No File Management System: Apache Spark does not have its own file management system, thus it relies on some other platform like Hadoop or another cloud-based platform which is one of the Spark known issues.
+Expensive: In-memory capability, Apache Spark requires lots of RAM to run in-memory, thus the cost of Spark is quite high.
+
+What file systems Spark support?
+Hadoop Distributed File System (HDFS).
+Local File system.
+Amazon S3
+
+Do you need to install Spark on all nodes of Yarn cluster while running Spark on Yarn?
+No because Spark runs on top of Yarn. So, you just have to install Spark on one node.
+
+
+Parquet  
+Parquet is an open source file format for Hadoop. Parquet stores nested data structures in a flat columnar format compared to a traditional approach where data is stored in row-oriented approach, parquet is more efficient in terms of storage and performance.
+There are several advantages to columnar formats:
+1)Organizing by column allows for better compression, as data is more homogeneous. The space savings are very noticeable at the scale of a Hadoop cluster.
+2)I/O operation will be reduced as we can efficiently scan only a subset of the columns while reading the data. Better compression also reduces the bandwidth required to read the input.
+3)As we store data of the same type in each column, Columnar storage gives better-summarized data and follows type-specific encoding
+
+If your dataset has many columns, and your use case typically involves working with a subset of those columns rather than entire records, Parquet is optimized for that kind of work.
+Parquet has higher execution speed compared to other standard file formats like Avro,JSON etc and it also consumes less disk space in compare to AVRO and JSON.
+------------------------------------------------------------
+What is RDD Lineage Graph
+Lineage Graph is the graph that has all the parent RDDs for an RDD.
+By applying a different transformation on an RDD results in lineage graph.
+So It is a graph of all transformation operation that needs to execute when an action operation is called. 
+In Lineage Graph, All the transformations are materialized and creates a logical execution plan.
+When we derives the new RDD from existing (previous) RDD using transformation, Spark keeps the track of all the dependencies between RDD is called lineage graph.
+
+Lineage Graph is useful
+(1) When there is a demand for computing the new RDD.
+(2) In case of data loss, lineage graph is used to rebuild the data.
+
+We can see RDD lineage graph by using RDD.toDebugString method. or 
+With spark.logLineage property enabled, toDebugString is included when executing an action.
+$ ./bin/spark-shell --conf spark.logLineage=true
+
+Why RDD Lineage?
+Spark does not support data replication in the memory and thus, In case of data loss, lineage graph is used to rebuild the data.
+
+How is fault tolerance achieved in Apache Spark?
+If any partition of an RDD is lost due to a worker node failure, then that partition can be re-computed from the original dataset using the lineage graph.
+
+Does Apache Spark provide check pointing?
+Lineage graphs are always useful to recover RDDs from a failure but this is generally time consuming if the RDDs have long lineage chains. 
+Spark has an API for check pointing i.e. a REPLICATE flag to persist. However, the decision on which data to checkpoint - is decided by the user. 
+Checkpoints are useful when the lineage graphs are long and have wide dependencies.
+
+------------------------------------------------------------
+
+   
+Why a New Programming Model?
+MapReduce greatly simplified big data analysis
+But as soon as it got popular, users wanted more:
+»More complex, multi-stage applications (e.g. iterative graph algorithms and machine learning)
+»More interactive ad-hc queries
+Require faster data sharing across parallel jobs
+Data Sharing in MapReduce
+Input ->HDFS read >iter1 ->HDFS write and again
+Input ->HDFS read >iter2 ->HDFS write and ...
+Slow due to replication, serialization, and disk IO
+
+Where you use spark 
+Exploring log analysis
+   
+-----------------------------------------------------------------------------
+
+Iterative algorithms in Hadoop
+The general idea for iterative algorithms in MapReduce is to chain multiple jobs together, using the output of the last one as the input of the next one. An important consideration is that, given the usual size of the data, the termination condition must be computed within the MapReduce program.
+The standard MapReduce model does not offer simple elegant ways to do this, but Hadoop has some added features that simplify this task: Counters.
+To check for a termination condition with Hadoop counters, you run the job and collect statistics while its running. Then you access the counters and get their values, you might also compute derivate measures from counters and finally decide whether to continue iterating or to stop.   
+   
+	
+  

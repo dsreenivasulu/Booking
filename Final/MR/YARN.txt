@@ -1,0 +1,33 @@
+What is Hadoop
+Apache Hadoop is an open source software framework that can be installed on a cluster of commodity machines so the machines can communicate and work together to store and process large amounts of data in a highly distributed manner. 
+Hadoop consisted of two main components: a Hadoop Distributed File System (HDFS) and a distributed computing engine that lets you implement and run programs as MapReduce jobs.
+
+Apache Hadoop YARN
+
+The fundamental idea of YARN is to split up the functionalities of resource management and job scheduling/monitoring into separate daemons. 
+YARN will have a global ResourceManager (RM) and one ApplicationMaster (AM) per-application . An application is either a single job or a DAG of jobs.
+
+The ResourceManager and the NodeManager form the data-computation framework. 
+The ResourceManager is the ultimate authority that arbitrates resources among all the applications in the system. 
+The NodeManager is responsible for launching containers(could either be a map or reduce task), monitoring their resource usage (cpu, memory, disk, network) and reporting the same to the ResourceManager/Scheduler.
+
+The ApplicationMaster is responsible negotiating resources from the ResourceManager and work with the NodeManager(s) to execute and monitor the tasks.
+
+Internally, The ResourceManager has two main components: Scheduler and ApplicationsManager.
+
+The Scheduler is responsible for allocating resources to the various running applications.
+It is pure scheduler it doesn't performs monitoring or tracking of status for the application. 
+It performs its scheduling function based on the resource requirements of the applications.
+
+The Scheduler has a pluggable policy which is responsible for partitioning the cluster resources among the various queues, applications etc.
+CapacityScheduler and the FairScheduler would be some examples of plug-ins.
+
+The ApplicationsManager is responsible for accepting job-submissions, negotiating the first container for executing the application specific ApplicationMaster 
+and provides the service for restarting the ApplicationMaster container on failure.
+
+MapReduce in hadoop-2.x maintains API compatibility with previous stable release (hadoop-1.x). 
+This means that all MapReduce jobs should still run unchanged on top of YARN with just a recompile.
+
+In order to scale YARN beyond few thousands nodes, YARN supports the notion of Federation via the YARN Federation feature. 
+Federation allows to transparently wire together multiple yarn (sub-)clusters, and make them appear as a single massive cluster. 
+This can be used to achieve larger scale, and/or to allow multiple independent clusters to be used together for very large jobs, or for tenants who have capacity across all of them.

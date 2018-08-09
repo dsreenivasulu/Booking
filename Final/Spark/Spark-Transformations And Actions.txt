@@ -1,0 +1,103 @@
+Why RDD?
+When it comes to iterative distributed computing, i.e. processing data over multiple jobs in computations, it is fairly common to reuse or share the data among multiple jobs or we may want to do multiple ad-hoc queries over a shared data set.
+There is an underlying problem with data reuse or data sharing in existing distributed computing systems (such as MapReduce) and that is , we need to store data in some intermediate stable distributed store such as HDFS or Amazon S3.
+This makes the overall computations of jobs slower since it involves multiple IO operations, replications and serializations in the process.
+RDDs , tries to solve these problems by enabling fault tolerant distributed In-memory computations.
+
+RDD
+------
+Resilient Distributed Dataset (RDD) is the fundamental data structure in Spark, which is a distributed collection of data elements across cluster nodes and can perform parallel operations. 
+RDDs are immutable, lazy-evaluated and cachable.
+RDD : (Resilient Distributed Dataset)
+Resilient Distributed Datasets (RDD) is a fundamental data structure of Spark. 
+   Spark RDD is Resilient, Partitioned, Distributed and Immutable collection of data.
+   Resilient : RDD's are fault tolerant
+   Partitioned : Spark breaks the RDD into smaller chunks of data. These pieces are called Partitions.
+   Distributed : Instead of keeping these Partitions on a single machine, Spark spreads them across the cluster
+   Immutable : Once We defined RDD, we can't change them. So Spark RDD is read-only data structure
+
+An RDD is an immutable distributed collection of objects. Where Each RDD is split into multiple partitions, which may be computed on different nodes of the cluster. RDDs can contain any type ofScala ,Python , orJava objects, including user-defined classes.
+   
+   
+Decomposing the name RDD:
+
+Resilient, i.e. fault-tolerant, with the help of RDD lineage graph(DAG) can recompute missing or damaged partitions due to node failures.
+Distributed, It is Distributed since Data resides on multiple nodes.
+Dataset represents collection of data records which we work with. 
+(The user can load the data set externally which can be either JSON file, CSV file, text file or database via JDBC with no specific data structure.)
+
+There are three ways to create RDD in Spark
+Parallelized collections – We can create RDD from the parallelized collections by invoking parallelize method in the driver program.
+External datasets – We can create RDD by calling a textFile method. This method takes URL of the file and reads it as a collection of lines.
+Existing RDDs – We can create new RDD by applying transformation operation on existing RDDs
+
+Features of RDD in Spark
+Fault Tolerance : RDDs are fault tolerant, with the help of RDD lineage graph(DAG) can recompute missing or damaged partitions due to node failures.
+In-memory Computation : RDDs have a provision of in-memory computation. It stores intermediate results in distributed memory(RAM) instead of stable storage(disk).
+They rebuild lost data on failure using lineage, each RDD remembers how it was created from other datasets (by transformations like a map, join or groupBy) to recreate itself.
+Immutability :Once We defined RDD, we can't change them. So Spark RDD is read-only data structure
+Lazy Evaluations : Transformations are lazy in nature.They are not executed immediately they get execute when we call an action. 
+Partitioning:Partitioning is the fundamental unit of parallelism in RDD. Each partition is one logical division of data which is mutable. We can create a partition through some transformations on existing partitions.
+Partitioned : Spark breaks the RDD into smaller chunks of data. These pieces are called Partitions.
+Persistence : We can store RDD state by choosing storage strategy (e.g., in-memory storage or on Disk).so that RDD will reuse 
+Coarse-grained Operations : It applies to all elements in datasets through maps or filter or group by operation.
+Location-Stickiness :RDDs are capable of defining placement preference to compute partitions. Placement preference refers to information about the location of RDD. The DAGScheduler places the partitions in such a way that task is close to data as much as possible. Thus, speed up computation. Follow this guide to learn What is DAG?
+
+RDDs support two types of operations:
+Transformations:
+Spark Transformation is a function that produces new RDD from the existing RDDs. It takes RDD as input and produces one or more RDDs as output. 
+Each time it creates new RDD when we apply any transformation. Input RDDs are cannot be changed since RDDs are immutable in nature.
+
+By applying transformations built an RDD lineage with all the parent RDDs of the final RDD
+
+Transformations are lazy in nature.They are not executed immediately they get execute when we call an action. 
+
+There are two types of transformations:
+Narrow transformation:– In Narrow transformation, all the elements that are required to compute the records in single partition live in the single partition of parent RDD. 
+A limited subset of partition is used to calculate the result. Narrow transformations are the result of map(), filter().
+
+Wide transformation:– In wide transformation, all the elements that are required to compute the records in the single partition may live in many partitions of parent RDD. 
+The partition may live in many partitions of parent RDD. Wide transformations are the result of groupbyKey() and reducebyKey().
+
+Actions:
+Actions return final results of RDD computations. 
+Actions triggers execution using lineage graph to load the data into original RDD, carry out all intermediate transformations and return final results to Driver program or write it out to file system.
+
+persistence and caching
+----------------------
+RDD persistence and caching are optimization techniques.
+By default RDD is recomputed each time, when an action is run on it.
+The default behavior of recomputing the RDDs on each action can be overridden by persisting the RDDs, so that no re-computation is done each time an action is called on the RDD. 
+When persisted, each node that compute the RDD store the result in their Partitions
+
+Need of Persistence in Apache Spark
+we can use some RDD’s multiple times. That means each time we repeat the same process of RDD evaluation when it is required into action. 
+This process can be time and memory consuming (especially for iterative algorithms that look at data multiple times.) 
+To solve the problem of repeated computation, the technique of persistence came into the picture.
+
+Storage levels of Persisted RDDs
+Using persist() we can use various storage levels to Store Persisted RDDs
+MEMORY_ONLY : Store RDD as deserialized Java objects in the JVM. If the RDD does not fit in memory, some partitions will not be cached and will be recomputed on the fly each time they're needed. This is the default level.
+DISK_ONLY : Store the RDD partitions only on disk.
+MEMORY_AND_DISK : Store RDD as deserialized Java objects in the JVM. If the RDD does not fit in memory, it stores the remaining part on disk, and read them from there when they're needed.
+MEMORY_ONLY_SER (Java and Scala): Store RDD as serialized Java objects (one byte array per partition). This is generally more space-efficient than deserialized objects, especially when using a fast serializer, but more CPU-intensive to read.
+MEMORY_AND_DISK_SER (Java and Scala) :Similar to MEMORY_ONLY_SER, but spill partitions that don't fit in memory to disk instead of recomputing them on the fly each time they're needed.
+
+Difference between RDD Persistence and caching
+only one difference between cache ( ) and persist ( ) method is When we apply cache ( ) method the resulted RDD can be stored only in default storage level, default storage level is MEMORY_ONLY. 
+While we apply persist method, resulted RDDs are stored in different storage levels. 
+
+Unpersist RDD in Spark?
+Spark monitor the cache of each node automatically and drop out the old data partition in the LRU (least recently used) fashion. 
+We can also remove the cache manually using RDD.unpersist() method.
+
+
+-----------------------------------------------------------------------------
+
+
+count() : counts and returns the number of elements in RDD.
+take(n) : we can take and returns specified n number of elements from RDD. It tries to cut the number of partition it accesses, so it represents a biased collection.
+We cannot presume the order of the elements.
+For example, consider RDD {1, 2, 2, 3, 4, 5, 5, 6} in this RDD “take (4)” will give result { 2, 2, 3, 4}
+top(n) : If ordering is present in our RDD, then we can extract top elements from our RDD using top(n). Action top(n) use default ordering of data.
+	

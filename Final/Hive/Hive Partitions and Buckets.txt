@@ -1,0 +1,304 @@
+Hive Partitions
+---------------
+Hive organizes table into partition 
+Partition means, We can divide a table into related sub parts based on value of a particular column 
+In a table we can define one or more partitions. Each partition is stored as a sub-directory within the table’s directory on HDFS. 
+By using the partition we can query portion of the data. this decreases the I/O time required by the query and increases the performance of query speed.
+
+Partitioned tables can be created using the PARTITIONED BY clause
+While creating partitioned table no need to include partitioned column in TABLE DEFINITION as it will taken care by PARTITIONED column.
+If you add partitioned column as a field in create table statement, HIVE will not allow it so will throw ERROR. FAILED: Error in semantic analysis: Column repeated in partitioning columns
+
+Syntax: CREATE TABLE table_name (column1 data_type, column2 data_type) PARTITIONED BY (partition1 data_type, partition2 data_type,….);
+
+Advantages or when to apply or why partition ?
+A simple query in Hive table reads the entire dataset even if we have where clause filter. This becomes a bottleneck for running MapReduce jobs over a large table.
+This becomes slow and expensive since all data has to be read. We can overcome this issue by implementing partitions.
+
+To apply the partitioning in hive , we need to understand the domain of the data on which we are doing analysis.
+Very often we need to filter the data on specific column values. 
+With this knowledge, identification of the frequently queried columns becomes easy and then partitioning can be applied on the selected columns.
+
+Partition is of two types:
+1.STATIC PARTITION: 
+STATIC PARTITIONING means each and every thing is controlled by user, starting from mentioning the PARTITION column and to loading data in that partitioned folder
+We need to mention segregation unit, by using column value of the file to be loaded (or creating virtual column(not part of the file) with values).
+We “statically” add a partition in table and move the file into the partition of the table
+
+If we want to use the Static partition in the hive then the mode should be in strict mode.(set hive.mapred.mode = strict This property set by default in hive-site.xml)
+We can alter the static partition
+We should use where clause to use limit in the static partition.
+STATIC PARTITION columns values are known at COMPILE TIME (since given by user).
+Usually when loading files (big files) into Hive Tables static partitions are preferred
+
+We can Insert input data files individually into a partition table is Static Partition, When we run LOAD statement we need to specify partition column value 
+
+ex : hive>LOAD DATA INPATH '<path>' INTO TABLE <table-name> PARTITION <partition spec>
+     hive>LOAD DATA INPATH '/hdfs path of the file' INTO TABLE t1 PARTITION(country="US")
+     hive>LOAD DATA INPATH '/hdfs path of the file' INTO TABLE t1 PARTITION(country="UK")
+	 
+Static Partition saves your time in loading data compared to dynamic partition
+
+Note : You can get the partition column value from the filename, day of date etc without reading the whole big file
+
+2. DYNAMIC PARTITION: 
+DYNAMIC PARTITIONING means hive will intelligently get the distinct values for partitioned column and segregate data
+We need just mention the column, on which partition is required. REST is taken care by hive itself. 
+It will create segregation units based on the distinct column values.
+
+If you want to use the Dynamic partition in the hive then the mode is in non-strict mode.
+Dynamic partition there is no required where clause to use limit.
+we can’t perform alter on the Dynamic partition
+Dynamic Partition columns values are only known at EXECUTION TIME.
+
+If you want to partition a number of columns but you don’t know how many columns then dynamic partition is suitable
+When you have large data that should store as single insert in to table partition then Dynamic partition is suitable.
+
+Dynamic Partition takes more time in loading data compared to static partition
+
+Note :The dynamic partition columns must be specified last among the columns in the SELECT statement and in the same order in which they appear in the PARTITION() clause. 
+
+Usually dynamic partition load the data from non partitioned table
+Ex :
+hive>INSERT INTO TABLE <table-name> PARTITION <partition-spec> SELECT * FROM <table-name2>
+hive>INSERT INTO TABLE t2 PARTITION(country) SELECT * from T1;
+create a non-partitioned table t2 and insert data into it.
+now create a table t1 partitioned on intended column(say country).
+load data in t1 from t2 as above
+
+---------------------------------------------------------------------------------------------------------
+Dynamic partitioning nonstrict mode disabled by default why ?
+set hive.exec.dynamic.partition.mode=nonstrict;
+This is because Dynamic Partitioning is disabled in Hive to prevent accidental creation of huge number of partitions
+
+In case of dynamic partition what if the partition column value is null or empty
+It will be bad file. We can provide the default partition name in the configuration
+hive.exec.default.partition.name (The default value is HIVE_DEFAULT_PARTITION{}) 
+
+A.By default The maximum dynamic partitions that can be created by each mapper or reducer is 100. If it exceeds the whole job will be killed.
+hive>set hive.exec.max.dynamic.partitions.pernode=1000    	
+
+B.By default total number of dynamic partitions can be created by one DML is 1000
+hive>hive.exec.max.dynamic.partitions = 10000
+
+C.By default the maximum total number of files created by all mappers and reducers is 100000
+hive>hive.exec.max.created.files =99999999
+
+D>By default dynamic partitioning is enabled in HIVE. 
+hive.exec.dynamic.partition=true/false (default is true) to control whether to allow dynamic partition or not
+ 
+E.If we require to do one level of STATIC partitioning before HIVE can do DYNAMIC partitioning inside this STATIC segregation units.
+Then mode should be strict. Which is default mode in HIVe
+hive.exec.dynamic.partition.mode=strict 
+
+F. While creating STATIC partitioned table, you can directly load files into partitioned table as loading depends on user.
+However DYNAMIC partitioned table is handled by hive and hive doesn't know anything about file,
+we have to first load file in some temp table and than use that temp table to create dynamic partitioned table.
+Note : Dynamic partition not require data_type in the partition column
+
+Say I created the table with PARTITION and Manually created partition folder in the file system and then moved data files 
+Is that metadata reflects ? How to reflect the metadata ?
+ex : create external table salesdata_ext
+(salesperson_id int,
+product_id int)
+partitioned by (date_of_sale string)
+location ‘/user/hive/salesdata_ext/’
+
+Now, we will create a subdirectory under this location manually, and move the file here.
+hadoop fs -mkdir /user/hive/salesdata_ext/date_of_sale=10-27-2017
+hadoop fs -cp /user/hive/text1.dat /user/hive/salesdata_ext/date_of_sale=10-27-2017/
+
+Show partitions salesdata_ext;
+--0
+
+For the partition to reflect in the table metadata, we will either have to repair the table or add partition by using the alter command
+msck repair table salesdata_ext;
+or 
+alter table salesdata_ext add partition (date_of_sale=’10-27-2017’);
+
+show partitions salesdata_ext;
+O/p:
+date_of_sale=10-27-2017
+
+Note : If partition mode is non-strict then We cannot perform ALTER on the Dynamic partition.
+
+-----------------------------------------------------------------------------------
+ALTER TABLE employee PARTITION (year=’1203’) RENAME TO PARTITION (Yoj=’1203’);
+ALTER TABLE employee DROP [IF EXISTS] PARTITION (year=’1203’);
+ALTER TABLE employee ADD PARTITION (year=’2013’) location '/2012/part2012';
+
+Your Ex : activity log, principals user and group. actions
+
+How to see the all the partition in the table ?	
+SHOW PARTITIONS table_name; 
+----------------------------------------------------------------------------------------------------------------
+Buckets
+---------
+Partitioning table gives effective results when,
+There are limited number of partitions
+Comparatively equal sized partitions
+But this may not possible in all scenarios. Like (country)One partition may have 80% of data and another partition may have 20% of data 
+So, In these cases Partitioning will not be ideal..
+
+To overcome the problem of partitioning, Hive provides Bucketing concept, another technique for decomposing table data sets into more manageable parts.
+
+Partition divides table into number of partitions and these partitions can be further subdivided into more manageable parts known as Buckets or Clusters
+
+Bucketing concept is based on hash_function depends on the type of the bucketing column that is selected in the table
+Records with the same bucketed column will always be stored in the same bucket.
+We use CLUSTERED BY clause to divide the table into buckets.
+
+Physically, each bucket is just a file in the table directory, (and Bucket numbering is 1-based).
+In Hive Partition, each partition will be created as directory. But in Hive Buckets, each bucket will be created as file.
+Bucketing can be done along with Partitioning on Hive tables and Bucketing can also be done even without partitioning on Hive tables.
+Bucketed tables will create almost equally distributed data file parts.
+
+
+To populate the bucketed table, we need to set the property hive.enforce.bucketing = true, 
+so that Hive knows to create the number of buckets declared in the table definition.
+The above hive.enforce.bucketing = true property sets the number of reduce tasks to be equal to the number of buckets mentioned in the table definition 
+
+The property hive.enforce.bucketing = true similar to hive.exec.dynamic.partition=true property in partitioning. 
+By Setting this property we will enable dynamic bucketing while loading data into hive table
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions.pernode=1000;
+set hive.enforce.bucketing = true;
+
+CREATE TABLE user_info_bucketed(user_id BIGINT, firstname STRING, lastname STRING)
+COMMENT 'A bucketed copy of user_info'
+PARTITIONED BY(ds STRING)
+CLUSTERED BY(user_id) INTO 256 BUCKETS;
+
+FROM user_id
+INSERT OVERWRITE TABLE user_info_bucketed
+PARTITION (ds='2009-02-25')
+SELECT userid, firstname, lastname WHERE ds='2009-02-25';
+
+#Insert data into Bucketed table employee
+INSERT OVERWRITE TABLE Employee SELECT * from Employee_old;
+
+Note : set hive.enforce.bucketing = true;  -- (Note: Not needed in Hive 2.x onward)
+
+How does Hive distribute the rows across the buckets?
+The bucket number is determined by the expression hash_function(bucketing_column) mod num_buckets.
+
+Advantages
+Bucketed tables offer efficient sampling than by non-bucketed tables. With sampling, we can try out queries on a fraction of data for testing and debugging purpose when the original data sets are very huge.
+As the data files are equal sized parts, map-side joins will be faster on bucketed tables than non-bucketed tables. In Map-side join, a mapper processing a bucket of the left table knows that the matching rows in the right table will be in its corresponding bucket, so it only retrieves that bucket (which is a small fraction of all the data stored in the right table).
+Similar to partitioning, bucketed tables provide faster query responses than non-bucketed tables.
+Bucketing concept also provides the flexibility to keep the records in each bucket to be sorted by one or more columns. 
+This makes map-side joins even more efficient, since the join of each bucket becomes an efficient merge-sort.
+Limitations
+Specifying bucketing doesn’t ensure that the table is properly populated. Data Loading into buckets needs to be handled by our-self.
+
+example CREATE TABLE bucketed_user(
+	        firstname VARCHAR(64),
+        	lastname  VARCHAR(64),
+        	address   STRING,
+        	city 	  VARCHAR(64),
+        state     VARCHAR(64),
+        	post      STRING,
+        	phone1    VARCHAR(64),
+        	phone2    STRING,
+        	email     STRING,
+        	web       STRING
+        	)
+        COMMENT 'A bucketed sorted user table'
+        	PARTITIONED BY (country VARCHAR(64))
+        CLUSTERED BY (state) SORTED BY (city) INTO 32 BUCKETS
+        	STORED AS SEQUENCEFILE
+			
+Loading : Similar to partitioned tables, we can not directly load bucketed tables with LOAD DATA (LOCAL) INPATH command, 
+rather we need to use INSERT OVERWRITE TABLE … SELECT …FROM clause from another table to populate the bucketed tables. 
+For this, we will create one temporary table in hive with all the columns in input file from that table we will copy into our target bucketed table.
+
+--How can we decide the total no. of buckets for a hive table  
+  Its depend on use case we can follow one formula like using total blocks of that file or filesize/blocksize  
+   
+   Get the block size 
+   hdfs getconf -confKey dfs.blocksize
+   
+   Get the number of block of that file
+   hadoop fs -stat %o /filename
+   
+--How to find or determine number of buckets in hive 
+    DESCRIBE formatted table-name partition( partitionName)
+	
+	we can get the partitation name 
+	SHOW PARTITIONS table-name
+
+https://github.com/vaquarkhan/vk-wiki-notes/wiki/What-is-the-difference-between-partitioning-and-bucketing-a-table-in-Hive-%3Fs
+
+Explain the difference between partitioning and bucketing.
+
+Partitioning and Bucketing of tables used to improve the query performance. 
+Partitioning helps execute queries faster, only if the partitioning scheme has some common range filtering i.e. either by timestamp ranges, by location, etc. 
+Bucketing does not work by default.
+Partitioning helps eliminate data when used in WHERE clause. Bucketing helps organize data inside the partition into multiple files so that same set of data will always be written in the same bucket. Bucketing helps in joining various columns.
+In partitioning technique, a partition is created for every unique value of the column and there could be a situation where several tiny partitions may have to be created. 
+However, with bucketing, one can limit it to a specific number and the data can then be decomposed in those buckets.
+Basically, a bucket is a file in Hive whereas partition is a directory.
+--------------------------------------------------------------------------------------------------------------------------------
+How to add the partition in existing without the partition table?
+Basically, we cannot add/create the partition in the existing table, especially which was not partitioned while creation of the table
+So, first create partition
+CREATE TABLE tab02 (foo INT, bar STRING) PARTITIONED BY (mon STRING);
+ALTER TABLE tab02 ADD PARTITION (mon =’10’) location ‘/home/hdadmin/hive-0.13.1-cdh5.3.2/examples/files/kv5.txt’;
+
+How to add the partition with existing partition table?
+ALTER TABLE tab02 ADD PARTITION (mon =’11’) location ‘/home/hdadmin/hive-0.13.1-cdh5.3.2/examples/files/kv6.txt’;
+
+Mention how can you stop a partition form being queried?
+Partitions can be added, renamed, exchanged (moved), dropped, or (un)archived by using the PARTITION clause in an ALTER TABLE statement,
+You can stop a partition form being queried by using the ENABLE OFFLINE clause with ALTER TABLE statement.
+ALTER TABLE table_name [PARTITION particol1=value1] ENABLE|DISABLE OFFLINE;
+ex : ALTER TABLE log_messages PARTITION(year = 2012, month = 1, day = 1) ENABLE OFFLINE;
+To enable partition form being queried
+ex : ALTER TABLE log_messages PARTITION(year = 2012, month = 1, day = 1) DISABLE OFFLINE;
+
+Update the partition with new data
+ALTER TABLE table_name [PARTITION partition_spec] SET LOCATION "new location";
+ex: ALTER TABLE logs PARTITION(year = 2012, month = 12, day = 18) SET LOCATION 'hdfs://user/darcy/logs/2012/12/18';
+old data will not removed. we are just pointing to new location data
+
+How to drop the partition
+ALTER TABLE table_name DROP [IF EXISTS] PARTITION partition_spec PURGE;
+ALTER TABLE logs DROP PARTITION (dt='2008-08-08', country='us');
+If PURGE is specified, the partition data does not go to the .Trash/Current directory    
+
+How to rename partition
+ALTER TABLE table_name PARTITION partition_spec RENAME TO PARTITION partition_spec;
+ALTER TABLE logs PARTITION (dt='2008-08-08', country='us') RENAME TO PARTITION (dt='2009-08-08', country='in')
+
+How to exchange partition
+The EXCHANGE PARTITION command will move a partition from a source table to target table
+When the command is executed, the source table's partition folder in HDFS will be renamed to move it to the destination table's partition folder.  
+The Hive metastore will be updated to change the metadata of the source and destination tables accordingly
+
+ALTER TABLE <dest_table> EXCHANGE PARTITION (partition spec) WITH TABLE <src_table>
+--Alter the table, moving all the three partitions data where ds='1' from table T1 to table T2 (ds=1)
+ALTER TABLE T2 EXCHANGE PARTITION (ds='1') WITH TABLE T1;
+
+Note : The tables have different schemas. Their partitions cannot be exchanged
+Exchange Partition Constraints
+    The destination table cannot contain the partition to be exchanged.
+    The operation fails in the presence of an index. 
+    Exchange partition is not allowed with transactional tables either as source or destination. Alternatively, use LOAD DATA or INSERT OVERWRITE commands to move partitions across transactional tables. 
+    This command requires both the source and destination table names to have the same table schema.  
+    If the schemas are different, the following exception is thrown:
+    The tables have different schemas. Their partitions cannot be exchanged
+	
+How do we check if a particular partition exists?
+SHOW PARTITIONS table_name PARTITION(partitioned_column=’partition_value’)
+
+	
+How does partitioning help in the faster execution of queries? 
+With the help of partitioning, a subdirectory will be created with the name of the partitioned column and when you perform a query using the WHERE clause, 
+only the particular sub-directory will be scanned instead of scanning the whole table. This gives you faster execution of queries.
+
+The partition of hive table has been modified to point to a new directory location. Do I have to move the data to the new location or the data will be moved automatically to the new location?
+Changing the point of partition will not move the data to the new location. It has to be moved manually to the new location from the old one.
+
+

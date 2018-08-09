@@ -1,0 +1,198 @@
+MapReduce framework allows to  process large volume of data-sets in-parallel on large clusters of commodity hardware in a reliable, fault-tolerant manner.
+
+InputSplit
+----------
+File(HDFS)-->InputFileFormat
+             |
+			 | --> InputSplits
+			 |  
+			 | --> InputSplits
+			 
+			 
+InputSplit is the logical representation of data block which is processed by an individual Mapper. 
+InputFormat creates the Inputsplit and divide into records, Hence, the mapper process each record (which is a key-value pair)
+InputFormat, by default, breaks a file into 128MB chunks (same as blocks in HDFS) and we can also set InputSplit size using mapred.min.split.size parameter in mapred-site.xml 
+Inputsplit does not contain the input data, it is just a reference to the data
+The number of map tasks is equal to the number of InputSplits
+
+RecordReader : 
+---------------
+The RecordReader load’s inputSplits data converts into key-value pairs suitable for reading by the mapper.
+InputFormat defines the RecordReader, which is responsible for reading actual records from the input files
+
+Map Only Job :
+-------------
+let us consider a scenario where we just need to perform the operation and no aggregation required, in such case, we will prefer ‘Map-Only job’
+We can achieve this by setting job.setNumreduceTasks(0) in the configuration in a driver. 
+This will make a number of reducer as 0 and thus the only mapper will be doing the complete task
+
+Reducer:
+----------
+Reducer takes as input a set of an intermediate key-value pair produced by the mapper and runs a reducer function on them to generate output that is again zero or more key-value pairs
+
+RecordWriter:
+-------------
+RecordWriter writes Reducer output key-value pairs to output files.
+
+Binary File Format:
+------------
+A binary file is computer-readable but not human-readable format
+A binary format is a format in which file information is stored in the form of ones and zeros
+
+InputFormat:
+------------
+InputFormat describes the Input-Specification of the job
+How the input files are split up and read from HDFS is defined by the InputFormat.
+InputFormat defines the InputSplits, which is responsible to split up the files
+InputFormat defines the RecordReader, which is responsible for reading actual records from the input files
+
+TextInputFormat:
+It is the default InputFormat in MapReduce. 
+TextInputFormat treats each line of input file as a separate record 
+    Key – It is the byte offset of the beginning of the line
+    Value – It is the contents of the line (excluding line terminators.)
+This is useful for unformatted data or line-based records like log files.	
+
+KeyValueTextInputFormat:
+It also treats each line of input file as a separate record. 
+While TextInputFormat treats entire line as the value, but the KeyValueTextInputFormat breaks the line itself into key and value by a tab character (‘/t’). 
+Here Key is everything up to the tab character while the value is the remaining part of the line after tab character.
+
+SequenceFileInputFormat:
+It reads sequence files. Sequence files are binary files that stores sequences of binary key-value pairs. 
+Sequence files are block-compressed and provide direct serialization and deserialization of several arbitrary data types (not just text). 
+Here Key & Value both are user-defined.
+
+SequenceFileAsTextInputFormat:
+Another form of SequenceFileInputFormat which converts the sequence file key values to Text objects.
+
+SequenceFileAsBinaryInputFormat:
+Another form of SequenceFileInputFormat which we can extract the sequence file’s keys and values as an binary object
+
+NLineInputFormat
+Another form of TextInputFormat where the keys are byte offset of the line and values are contents of the line. 
+Each mapper receives a variable number of lines of input with TextInputFormat and KeyValueTextInputFormat and the number depends on the size of the split and the length of the lines.
+And if we want our mapper to receive a fixed number of lines of input, then we use NLineInputFormat.
+
+N is the number of lines of input that each mapper receives. By default (N=1), each mapper receives exactly one line of input. 
+If N=2, then each split contains two lines. One mapper will receive the first two Key-Value pairs and another mapper will receive the second two key-value pairs.
+
+DBInputFormat:
+It reads data from a relational database, using JDBC. 
+Here Key is LongWritables while Value is DBWritables.
+
+Output Format:
+--------------
+Output Format describes the Output-Specification of the job. 
+It determines how RecordWriter implementation is used to write reducer output key-value pairs to output files.
+
+TextOutputFormat :
+TextOutputFormat is default Output Format.
+It writes (key, value) pairs on individual lines of text files 
+Each key-value pair is separated by a tab character, which can be changed using MapReduce.output.textoutputformat.separator property
+
+SequenceFileOutputFormat:
+SequenceFileOutputFormat writes keys and values to sequence file as output
+Note : SequenceFileInputFormat will de-serialize this sequence file with same type and used for another mapper
+
+SequenceFileAsBinaryOutputFormat: 
+It is another form of SequenceFileInputFormat which writes keys and values to sequence file in binary format.
+
+DBOutputFormat: 
+Writes to relational databases and HBase
+
+MapFileOutputFormat:
+Writes to map files. The key in a MapFile must be added in order
+
+MultipleOutputs: 
+It allows writing data to files whose names are derived from the output keys and values, 
+
+LazyOutputFormat: 
+Sometimes FileOutputFormat will create output files, even if they are empty. 
+LazyOutputFormat writes output file and will be created only when the record is present 
+
+
+Counters
+---------
+counters used to collect statistics from a job
+In MapReduce Framework, whenever any MapReduce job gets executed, the MapReduce Framework initiates counters to keep track of the job statistics like
+Number of mapper and reducer launched..
+The number of bytes was read and written
+The number of tasks was launched and successfully ran
+The amount of CPU and memory consumed is appropriate or not for our job and cluster nodes
+
+We have build in counters and we can also defined customer counters
+Built-In counters :
+Mapreduce Task Counters
+File system counters
+Job Counters
+Custom Counters : 
+Custom Counters are defined by a Java enum. The name of the enum is the group name, and the enum’s fields are the counter names.
+
+Ex : To demonstrate the use of counters we will create counter to count number of
+PULMONARY_DISEASE and
+BRONCHITIS_ASTHMA
+
+Find the counters in Mapper and increase the counter as
+  if(dignosis.contains("PULMONARY") && state.contains("CA")){ context.getCounter(DIAGNOSIS_COUNTER.PULMONARY_DISEASE).increment(1);
+ 
+}
+ 
+if(dignosis.contains(" BRONCHITIS") && state.contains("CA") ){ context.getCounter(DIAGNOSIS_COUNTER.BRONCHITIS_ASTHMA).increment(1);
+}
+
+Print : // get all the job related counters
+ Counters cn=job.getCounters();
+ // Find the specific counters that you want to print
+ Counter c1=cn.findCounter(DIAGNOSIS_COUNTER.PULMONARY_DISEASE);
+ System.out.println(c1.getDisplayName()+":"+c1.getValue());
+
+
+Another example custom counters used to determine the number of BAD records
+Note : In Job Tracker UI tool we can find the status and statistics of all jobs. 
+Using the job tracker UI, developers can view the Counters that have been created and build in counters
+
+Combiners
+---------
+Combiners also known as Mini-reducers
+
+when we run MapReduce job On a large dataset, Mapper generates large chunks of intermediate data. 
+Then this intermediate data will pass to the Reducer for further processing, which leads to massive network congestion
+
+Hadoop framework provides a function known as Combiner that plays a key role in reducing network congestion
+The primary job of Combiner is to process the intermediate data from the Mapper, before passing it to Reducer
+
+Combiner will decreases the amount of data that reducer has to process and improves the performance of the reducer.
+
+Speculative Execution : 
+-------------------------
+MapReduce breaks jobs into tasks and these tasks run parallel.
+when a task is running slower than expected time due to like hardware problem or network congestion, Hadoop does not fix slow-running tasks. 
+Instead, it will launch an equivalent task as a backup (the backup task is called as speculative task). This process is called speculative execution
+
+The speculative task is killed if the original task completes before the speculative task,
+on the other hand, the original task is killed if the speculative task finishes before it
+
+Speculative execution is a MapReduce job optimization technique in Hadoop that is enabled by default. 
+You can disable speculative execution for mappers and reducers in mapred-site.xml 
+mapred.map.tasks.speculative.execution as false and mapred.reduce.tasks.speculative.execution as false
+
+Data Locality 
+------------
+Data locality is the process of moving the computation logic close to where the actual data resides on the node, instead of moving large data to computation.
+This minimizes network congestion and increases the overall throughput of the system
+
+Hadoop Optimization | Job Optimization & Performance Tuning
+-----------------------------------------------------------
+LZO compression usage : Enable LZO compression for Map output intermediate data.This decreases IO time during the shuffle
+In order to enable LZO compression set mapred.compress.map.output to true
+-By Proper tuning of the number of MapReduce tasks
+-By using Combiner between mapper and reduce
+-By using most appropriate and compact writable type for data
+-Reuse the Writables
+-Proper configuration of our cluster
+
+
+
+
+

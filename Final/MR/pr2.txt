@@ -1,0 +1,11 @@
+explain project architecture. What are source of data for your project. What is cluster size . what is CDH ?
+Where you used in your project RDD, DataFrame, DataSet, shared variables  ?
+Hive performance technique How you improved performance of HIve query and Spark explain ?
+Which file format used in your project explain
+When to use HIve and when to use Spark. Where you used Hive in your project Where you used Spark in your project
+Hive exception and spark exception. How will you handle. List frequently used exception
+
+
+
+
+ 

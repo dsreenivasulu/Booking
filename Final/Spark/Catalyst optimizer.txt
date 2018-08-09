@@ -1,0 +1,23 @@
+Catalyst optimizer :
+The core of Spark SQL is catalyst optimizer. It is based on functional programming construct in Scala.
+catalyst optimizer, optimize all the queries written both in spark sql and dataframe API. 
+This optimizer makes queries run much faster than their RDD counterparts.This increases the performance of the system.
+
+Internally, Catalyst contains the tree and the set of rules to manipulate the tree.
+
+Catalyst Optimizer supports both rule-based and cost-based optimization.
+In rule-based optimization,set of rules are used to determine how to execute the query. 
+While the cost based optimization finds the most suitable way to carry out SQL statement. 
+In cost-based optimization, multiple plans are generated using rules and then their cost is computed.
+
+It offers a general framework for transforming trees in four phases
+analysis : The analysis phase involved looking at a SQL query or a DataFrame, creating a logical plan out of it, 
+which is still unresolved (the columns referred may not exist or may be of wrong datatype) and then resolving this plan using the Catalog object
+Logical plan optimization : In this phase, the standard rule-based optimization is applied to the logical plan. 
+Physical planning : In this phase, one or more physical plan is formed from the logical plan
+Runtime Code generation : The final phase of query optimization involves generating Java bytecode to run on each machine.
+(catalyst uses the special Scala feature, “Quasiquotes”)
+
+Catalyst optimizer has two primary goals:
+Make adding new optimization techniques easy
+Enable external developers to extend the optimizer

@@ -1,0 +1,543 @@
+---How to load files into tables or How to insert files into tables and Will any transform apply while loading the file into table ?
+  Hive does not do any transformation while loading data into tables. It is pure copy/move operations that move datafiles into table location.
+  
+  LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE] INTO TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)] [INPUTFORMAT 'inputformat' SERDE 'serde'] (3.0 or later)
+  
+   filepath can be relative path (ex project/data1)
+                   absolute path, (ex /user/hive/project/data1)
+                   full URI with scheme  ( hdfs://namenode:9000/user/hive/project/data1  or file:///user/hive/project/data1)
+                   Note : fs.default.name that specifies the Namenode URI.
+				   
+   filepath can be file or directory (Will move all the files inside directory to table location)			   
+   
+   If the OVERWRITE keyword is used then target table (or partition) will be deleted and replaced by the filepath file; otherwise the files referred by filepath will be added to the table.   
+    
+   If the table is partitioned, then we must specify partition column value
+
+  Additional load operations internally rewrites the load into an INSERT AS SELECT.
+  -------------------------------------------------------------
+  Table has partitions, not specified partition column value in the load statement then the load would be converted into INSERT AS SELECT If last set of columns are partition columns. It will throw an error if the file does not conform to the expected schema.
+  If table is bucketed 
+    In strict mode : launches an INSERT AS SELECT job.
+    In non-strict mode : if the file names conform to the naming convention (if the file belongs to bucket 0, it should be named 000000_0 or 000000_0_copy_1, or if it belongs to bucket 2 the names should be like 000002_0 or 000002_0_copy_3, etc.) then it will be a pure copy/move operation, else it will launch an INSERT AS SELECT job.
+  
+  CREATE TABLE tab1 (col1 int, col2 int) PARTITIONED BY (col3 int) STORED AS ORC;
+  LOAD DATA LOCAL INPATH 'filepath' INTO TABLE tab1;  	(here col3 should present in filepath with same schema) 
+  
+---Hive Logging ?
+ set hive.log.dir in $HIVE_HOME/conf/hive-log4j.properties  default is /tmp/<username>/hive.log
+ Note : Note that setting hive.root.logger via the 'set' command does not change logging properties since they are determined at initialization time.
+ 
+ Debug change as hive.root.logger=DEBUG,console in hive-log4j.properties
+ 
+---How to store table data into directory in Hive ? 
+   INSERT OVERWRITE LOCAL DIRECTORY 'path' SELECT a.* FROM events a; (Local)
+   INSERT OVERWRITE DIRECTORY 'path' SELECT a.* FROM events a;  (HDFS)
+   
+--How do I run a single test?
+   mvn test -Dtest=ClassName
+   mvn test -Dtest=ClassName#methodName
+
+--How do I publish Hive artifacts to my local Maven repository?
+  mvn clean install -DskipTests 
+
+--How do I add a test case?
+   create filename.q
+   Compile the Hive source
+   mvn clean install -DskipTests
+
+--How do I debug into a single test in Eclipse?
+   "Debug As -> Debug Configurations -> Remote Java Application" then provide "localhost" and the port is "5005"
+    Listening for transport dt_socket at address: 5005
+
+--How do I debug my queries in Hive?
+  "Debug As -> Debug Configurations -> Remote Java Application" then provide "localhost" and the port is "5005"
+   Listening for transport dt_socket at address: 5005
+   Note : This method should work great if your queries are simple fetch queries that do not kick off MapReduce jobs. If a query runs in a distributed mode, it becomes very hard to debug. Therefore, it is advisable to run in a "local" mode for debugging. In order to run Hive in local mode, do the following:	
+  	SET mapreduce.framework.name=local (possible option values yarn or local )
+	
+--What is HCATALOG or WEBHCAT ?
+    HCatalog is built on top of the Hive metastore. HCatalog supports to read and write files  by other data processing tools — like Pig and MapReduce.
+	HCatalog also supports to manipulate the Hive metastore by data processing tools
+    WebHCat used a submit jobs (MapReduce, Pig, Hive jobs or)in an RESTful (using HTTP interface) way if you configure webhcat along Hcatalog. and supports perform Hive metadata operations using an HTTP (REST style) interface.	
+
+--How to write unit test in Hive 
+  Tools and frameworks : HiveRunner: Test cases are declared using Java, Hive SQL and JUnit and can execute locally in your IDE. This library focuses on ease of use and execution speed. No local Hive/Hadoop installation required. Provides full test isolation, fine grained assertions, and seamless UDF integration (they need only be on the project classpath). The metastore is backed by an in-memory database to increase test performance.	   
+  Java, JUnit , Mvn 
+  Steps :
+    Configure Hive execution environment.
+    Setup test input data.
+    Execute SQL script under test.
+    Extract data written by the executed script.
+    Make assertions on the data extracted.
+   
+  Examples :  https://github.com/klarna/HiveRunner 
+
+--To measure Hive's internal performance, we use the YourKit Java Profiler.
+
+--Hive architecture 
+  https://cwiki.apache.org/confluence/display/Hive/Design  
+  
+--Hive serde
+  https://cwiki.apache.org/confluence/display/Hive/SerDe
+  
+------------------------------------------------------------------------------------------------------
+Schema On Write
+creating a schema for data before writing into the database. Structured data . SQL
+Schema On Read
+Store the data into the data base. Apply/Create the schema while reading the data. Unstructured data. NoSQL
+
+
+--Suppose, I create a table that contains details of all the transactions done by the customers of year 2016:
+CREATE TABLE transaction_details (cust_id INT, amount FLOAT, month STRING, country STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ‘,’ ;
+Now, after inserting 50,000 tuples in this table, I want to know the total revenue generated for each month. But, Hive is taking too much time in processing this query. How will you solve this problem and list the steps that I will be taking in order to do so?
+We can solve this problem of query latency by partitioning the table according to each month. So, for each month we will be scanning only the partitioned data instead of whole data sets.
+As we know, we can’t partition an existing non-partitioned table directly. So, we will be taking following steps to solve the very problem: 
+
+Create a partitioned table, say partitioned_transaction:
+CREATE TABLE partitioned_transaction (cust_id INT, amount FLOAT, country STRING) PARTITIONED BY (month STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ‘,’ ; 
+
+2. Enable dynamic partitioning in Hive:
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+3. Transfer the data from the non – partitioned table into the newly created partitioned table:
+
+INSERT OVERWRITE TABLE partitioned_transaction PARTITION (month) SELECT cust_id, amount, country, month FROM transaction_details;
+Now, we can perform the query using each partition and therefore, decrease the query time.
+
+--I am inserting data into a table based on partitions dynamically. 
+But, I received an error – FAILED ERROR IN SEMANTIC ANALYSIS: Dynamic partition strict mode requires at least one static partition column. 
+How will you remove this error?
+To remove this error one has to execute following commands:
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict; (default is strict)
+
+Why do we need buckets?
+There are two main reasons for performing bucketing to a partition:
+A map side join requires the data belonging to a unique join key to be present in the same partition. 
+But what about those cases where your partition key differs from that of join key? 
+Therefore, in these cases you can perform a map side join by bucketing the table using the join key.
+
+What will happen in case you have not issued the command:  ‘SET hive.enforce.bucketing=true;’ before bucketing a table in Hive in Apache Hive 0.x or 1.x?
+The command:  ‘SET hive.enforce.bucketing=true;’ allows one to have the correct number of reducer while using ‘CLUSTER BY’ clause for bucketing a column.
+In case it’s not done, one may find the number of files that will be generated in the table directory to be not equal to the number of buckets. As an alternative, one may also set the number of reducer equal to the number of buckets by using set mapred.reduce.task = num_bucket.
+
+Suppose, I have a CSV file – ‘sample.csv’ present in ‘/temp’ directory with the following entries:
+
+id first_name last_name email gender ip_address
+
+1 Hugh Jackman hughjackman@cam.ac.uk Male 136.90.241.52
+
+2 David Lawrence dlawrence1@gmail.com Male 101.177.15.130
+
+3 Andy Hall andyhall2@yahoo.com Female 114.123.153.64
+
+4 Samuel Jackson samjackson231@sun.com Male 89.60.227.31
+
+5 Emily Rose rose.emily4@surveymonkey.com Female 119.92.21.19
+
+How will you consume this CSV file into the Hive warehouse using built SerDe?
+
+SerDe stands for serializer/deserializer. A SerDe allows us to convert the unstructured bytes into a record that we can process using Hive. SerDes are implemented using Java. Hive comes with several built-in SerDes and many other third-party SerDes are also available. 
+
+Hive provides a specific SerDe for working with CSV files. We can use this SerDe for the sample.csv by issuing following commands:
+
+CREATE EXTERNAL TABLE sample
+
+(id int, first_name string, 
+
+last_name string, email string,
+
+gender string, ip_address string) 
+
+ROW FORMAT SERDE ‘org.apache.hadoop.hive.serde2.OpenCSVSerde’ 
+
+STORED AS TEXTFILE LOCATION ‘/temp’;
+
+Now, we can perform any query on the table ‘sample’:
+
+SELECT first_name FROM sample WHERE gender = ‘male’;
+
+Suppose, I have a lot of small CSV files present in /input directory in HDFS and I want to create a single Hive table corresponding to these files. The data in these files are in the format: {id, name, e-mail, country}. Now, as we know, Hadoop performance degrades when we use lots of small files.
+
+So, how will you solve this problem where we want to create a single Hive table for lots of small files without degrading the performance of the system?
+
+One can use the SequenceFile format which will group these small files together to form a single sequence file. The steps that will be followed in doing so are as follows:
+
+Create a temporary table:
+CREATE TABLE temp_table (id INT, name STRING, e-mail STRING, country STRING)
+
+ROW FORMAT FIELDS DELIMITED TERMINATED BY ‘,’ STORED AS TEXTFILE;
+
+Load the data into temp_table:
+LOAD DATA INPATH ‘/input’ INTO TABLE temp_table;
+
+Create a table that will store data in SequenceFile format:
+CREATE TABLE sample_seqfile (id INT, name STRING, e-mail STRING, country STRING)
+
+ROW FORMAT FIELDS DELIMITED TERMINATED BY ‘,’ STORED AS SEQUENCEFILE;
+
+Transfer the data from the temporary table into the sample_seqfile table:
+INSERT OVERWRITE TABLE sample SELECT * FROM temp_table;
+Hence, a single SequenceFile is generated which contains the data present in all of the input files and therefore, the problem of having lots of small files is finally eliminated.
+
+Mention what are the different modes of Hive?
+Local mode
+Map reduce mode
+
+Mention key components of Hive Architecture?
+Key components of Hive Architecture includes,
+•User Interface (UI): It acts as a communicator between users and drivers when the user writes the queries the UI accepts it and runs it on the driver, there are two types of interface available they are Command line and GUI interface.
+•Driver: It maintains the life cycle of HiveQL query. It receives the queries from the user interface and creates the session to process the query.
+•Compiler: It receives the query plans from the driver and gets the required information from Metastore in order to execute the plan.
+•Metastore: It stores the information about the data like a table; it can be of an internal or external table. It sends the metadata information to the compiler to execute the query.
+•Execute Engine: Hive service will execute the result in execution engine; it executes the query in MapReduce to process the data. It is responsible for controlling each stage for all these components.
+
+Explain the function of Execution Engine in Hive Architecture?
+Execution Engine (EE) is a key component of Hive. It is used to execute the query by directly communicating with Job Tracker, Name Node and Data Nodes. When we execute a Hive query, it will generate series of MR Jobs in the backend. In this scenario, the execution engine acts as a bridge between Hive and Hadoop to process the query. For DFS operations, Execution Engine communicate with the Name Node.
+
+What is the importance of .hiverc file
+It is a file containing list of commands needs to run when the hive CLI starts. For example setting the strict mode to be true etc.
+
+How do we specify table creator name when creating table?
+TBLPROPERTIES(‘creator’= ‘Joan’)
+
+
+
+
+
+
+
+
+
+ 
+  
+---------------------------------------------------------------------------------------------------------
+How to load xml into Hive 
+student.xml
+<student> <id>1</id> <name>Milind</name> <age>25</age> </student>
+<student> <id>2</id> <name>Ramesh</name> <age>Testing</age> </student>
+
+create table student_xml( studinfo string) ;
+load data local inpath '/home/hduser/student.xml' into table student_xml;
+
+create table student_xml_view 
+       as SELECT xpath_int(studinfo ,'student/id'),
+	   xpath_string(studinfo ,'student/name'),
+	   xpath_string(studinfo ,'student/age') 
+	   FROM student_xml;
+
+select * from student_xml_view;
+1, Milind, 25
+2, Ramesh, Testing
+
+
+Using xmlSerde
+CREATE TABLE student_xml_views(id string,name string,age string )
+ROW FORMAT SERDE 'com.ibm.spss.hive.serde2.xml.XmlSerDe'
+WITH SERDEPROPERTIES (
+"column.xpath.id"="/student/id/text()",
+"column.xpath.name"="/student/name/text()"
+"column.xpath.age"="/student/age/text()"
+)
+STORED AS
+INPUTFORMAT 'com.ibm.spss.hive.serde2.xml.XmlInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+TBLPROPERTIES (
+"xmlinput.start"="<student",
+"xmlinput.end”=“</student>"
+);
+
+How to read json data into hive ?
+{
+    "Foo": "ABC",
+    "Bar": "20090101100000",
+    "Quux": {
+        "QuuxId": 1234,
+        "QuuxName": "Sam"
+    }
+}
+
+CREATE TABLE json_table ( json string );
+LOAD DATA LOCAL INPATH  '/tmp/simple.json' INTO TABLE json_table;
+
+$' represents the root of the document.
+select get_json_object(json_table.json, '$') from json_table; 
+Returns the full JSON document.
+
+select get_json_object(json_table.json, '$.Foo') as foo, 
+       get_json_object(json_table.json, '$.Bar') as bar,
+       get_json_object(json_table.json, '$.Quux.QuuxId') as qid,
+       get_json_object(json_table.json, '$.Quux.QuuxName') as qname
+from json_table;
+
+0/p
+foo    bar              qid     qname
+ABC    20090101100000   1234    Sam
+
+json_tuple
+----------
+select v.foo, v.bar, v.quux, v.qid 
+from json_table jt
+     LATERAL VIEW json_tuple(jt.json, 'Foo', 'Bar', 'Quux', 'Quux.QuuxId') v
+     as foo, bar, quux, qid;
+foo  bar             quux                              qid
+ABC  20090101100000  {"QuuxId":1234,"QuuxName":"Sam"}  NULL
+
+CREATE TABLE json_serde (
+  Foo string,
+  Bar string,
+  Quux struct<QuuxId:int, QuuxName:string>
+)
+ROW FORMAT SERDE 'org.openx.data.jsonserde.JsonSerDe';
+LOAD DATA LOCAL INPATH '/tmp/simple.json' INTO TABLE json_serde;
+
+SELECT Foo, Bar, Quux.QuuxId, Quux.QuuxName FROM json_serde;
+0/p
+foo    bar              qid     qname
+ABC    20090101100000   1234    Sam  
+  
+--------------------------------------------------------------------------------------------------  
+--Window functions or ranking functions or  Analytic Functions ? ROW_NUMBER() RANK() DENSE RANK()
+   Find highest paid persons in each department ?
+    SELECT last_name, 
+       salary, 
+       department, 
+       rank() OVER (
+        PARTITION BY department 
+        ORDER BY salary 
+        DESC
+       ) 
+FROM employees;
+
+last_name    salary   department    rank
+Jones        45000    Accounting    1
+Williams     37000    Accounting    2
+Smith        55000    Sales         1
+Adams        50000    Sales         2
+Johnson      40000    Marketing     1
+ 
+  
+     Find top paid persons only in each department ?	 
+	 SELECT * 
+FROM (
+    SELECT 
+           last_name, 
+           salary, 
+           department, 
+           rank() OVER (
+             PARTITION BY department 
+             ORDER BY salary 
+             DESC
+            ) 
+    FROM employees) sub_query 
+WHERE rank = 1;
+
+last_name    salary   department    rank
+Jones        45000    Accounting    1
+Smith        55000    Sales         1
+Johnson      40000    Marketing     1
+
+Find highest paid persons in each department with out giving rank 
+SELECT DeptID, MAX(Salary) FROM EmpDetails GROUP BY DeptID 
+
+If we need to have order 
+SELECT DeptID, MAX(Salary) FROM EmpDetails GROUP BY DeptID ORDER BY MAX(Salary) 
+
+If we need only top employees for each department
+SELECT DeptID, MAX(Salary) FROM EmpDetails GROUP BY DeptID ORDER BY MAX(Salary) limit 1
+
+--ROW_NUMBER() vs RANK() DENSE_RANK() 
+	SELECT v, ROW_NUMBER() OVER(ORDER BY v) FROM t
+The above query returns:
+
+| V | ROW_NUMBER |
+|---|------------|
+| a |          1 |
+| a |          2 |
+| a |          3 |
+| b |          4 |
+| c |          5 |
+| c |          6 |
+| d |          7 |
+| e |          8 |
+
+RANK() : behaves like ROW_NUMBER(), except that “equal” rows are ranked the same. If we substitute RANK() into our previous query:
+
+SELECT v, RANK() OVER(ORDER BY v) FROM t
+
+| V | RANK |
+|---|------|
+| a |    1 |
+| a |    1 |
+| a |    1 |
+| b |    4 |
+| c |    5 |
+| c |    5 |
+| d |    7 |
+| e |    8 |
+
+DENSE_RANK() : DENSE_RANK() is a rank with no gaps, i.e. it is “dense”. We can write:
+
+SELECT v, DENSE_RANK() OVER(ORDER BY v) FROM t
+
+| V | DENSE_RANK |
+|---|------------|
+| a |          1 |
+| a |          1 |
+| a |          1 |
+| b |          2 |
+| c |          3 |
+| c |          3 |
+| d |          4 |
+| e |          5 |
+
+More Examples  
+https://blogs.oracle.com/taylor22/hive-011-may,-15-2013-and-rank-within-a-category
+
+http://shzhangji.com/blog/2017/09/04/hive-window-and-analytical-functions/
+
+https://cwiki.apache.org/confluence/display/Hive/LanguageManual+WindowingAndAnalytics
+
+custom rank
+http://www.edwardcapriolo.com/roller/edwardcapriolo/entry/doing_rank_with_hive
+--------------------------------------------------------------------------------------------------  
+  
+--Total sales per month ? 
+   SELECT YEAR(date) as SalesYear,
+         MONTH(date) as SalesMonth,
+         SUM(Price) AS TotalSales
+    FROM Sales
+GROUP BY YEAR(date), MONTH(date)
+ORDER BY YEAR(date), MONTH(date)
+
+How to do calculating-cumulative-sum ? 
+My base table like this
+ea_month    id       amount    ea_year    circle_id
+April       92570    1000      2014        1
+April       92571    3000      2014        2
+April       92572    2000      2014        3
+March       92573    3000      2014        1
+March       92574    2500      2014        2
+March       92575    3750      2014        3
+February    92576    2000      2014        1
+February    92577    2500      2014        2
+February    92578    1450      2014        3          
+
+I want my target table to look something like this: by circle_id region 
+
+ea_month    id       amount    ea_year    circle_id    cum_amt
+February    92576    1000      2014        1           1000 
+March       92573    3000      2014        1           4000
+April       92570    2000      2014        1           6000
+February    92577    3000      2014        2           3000
+March       92574    2500      2014        2           5500
+April       92571    3750      2014        2           9250
+February    92578    2000      2014        3           2000
+March       92575    2500      2014        3           4500
+April       92572    1450      2014        3           5950
+
+SELECT ea_month, id, amount, ea_year, circle_id
+     , sum(amount) OVER (PARTITION BY circle_id ORDER BY ea_year, ea_month) AS cum_amt
+FROM   tbl
+ORDER  BY circle_id, month;
+
+=========================================================
+spark scala
+spark-scala-getting-cumulative-sum-running-total-using-analytical-functions
+https://stackoverflow.com/questions/48607253/spark-scala-getting-cumulative-sum-running-total-using-analytical-functions
+
+Pivot and GROUP based column names 
+https://stackoverflow.com/questions/46228331/spark-dataframe-pivot-and-group-based-on-columns?rq=1
+
+Extract column values of Dataframe as List in Apache Spark ?
+dataFrame.select("YOUR_COLUMN_NAME").rdd.map(r => r(0)).collect()
+
+Reshaping/Pivoting data in Spark RDD and/or Spark DataFrames
+rdd = sc.parallelize([('X01',41,'US',3),
+                       ('X01',41,'UK',1),
+                       ('X01',41,'CA',2),
+                       ('X02',72,'US',4),
+                       ('X02',72,'UK',6),
+                       ('X02',72,'CA',7),
+                       ('X02',72,'XX',8)])
+
+o/p should be 
+ID    Age  US  UK  CA  
+'X01'  41  3   1   2  
+'X02'  72  4   6   7  
+
+pivoted = (df
+    .groupBy("ID", "Age")
+    .pivot(
+        "Country",
+        ['US', 'UK', 'CA'])  # Optional list of levels
+    .sum("Score"))  # alternatively you can use .agg(expr))
+pivoted.show()
+
+syntax df
+  .groupBy(grouping_columns)
+  .pivot(pivot_column, [values]) 
+  .agg(aggregate_expressions)
+
+How to define partitioning of DataFrame?
+val df = Seq(
+  ("A", 1), ("B", 2), ("A", 3), ("C", 1)
+).toDF("k", "v")
+
+val partitioned = df.repartition($"k")
+partitioned.explain
+
+Aggregating multiple columns with custom function in spark
+https://stackoverflow.com/questions/37737843/aggregating-multiple-columns-with-custom-function-in-spark?rq=1
+
+Spark Scala: Aggregate DataFrame Column Values into a Ordered List
+https://stackoverflow.com/questions/40295107/spark-scala-aggregate-dataframe-column-values-into-a-ordered-list?rq=1
+https://stackoverflow.com/questions/41354710/spark-dataframe-data-aggregation?rq=1  
+  
+Join two ordinary RDDs with/without Spark SQL ? 
+Let say you have two RDDs:
+    patient: (patientId, name, deptId)
+    dept: (dname, deptId)
+  
+val mappedItems = items.map(item => (item.companyId, item))
+val mappedComp = companies.map(comp => (comp.companyId, comp))
+mappedItems.join(mappedComp).take(10).foreach(println)
+
+The output would be:
+(c1,(Item(1,first,2,c1),Company(c1,company-1,city-1)))
+(c1,(Item(2,second,2,c1),Company(c1,company-1,city-1)))
+(c2,(Item(3,third,2,c2),Company(c2,company-2,city-2)))
+
+OR  
+scala> case class Item(id:String, name:String, unit:Int, companyId:String)
+scala> case class Company(companyId:String, name:String, city:String)  
+val groupedItems = items.groupBy( x => x.companyId) 
+val groupedComp = companies.groupBy(x => x.companyId)
+ groupedItems.join(groupedComp).take(10).foreach(println)
+ 
+// Inner Join
+val join_data = manipulated_emp.join(manipulated_dept)
+// Left Outer Join
+val left_outer_join_data = manipulated_emp.leftOuterJoin(manipulated_dept)
+// Right Outer Join
+val right_outer_join_data = manipulated_emp.rightOuterJoin(manipulated_dept)
+// Full Outer Join
+val full_outer_join_data = manipulated_emp.fullOuterJoin(manipulated_dept)
+
+// Formatting the Joined Data for better understandable (using map)
+val cleaned_joined_data = join_data.map(t => (t._2._1._1, t._2._1._2, t._1, t._2._2._1)) 
+ 
+OR  
+    companies.registerAsTable("companies")
+    val items = sc.parallelize(List(i1,i2,i3))
+    items.registerAsTable("items")
+    val result = sqlContext.sql("SELECT * FROM companies C JOIN items I ON C.companyId= I.companyId").collect
+    result.foreach(println)
+
+Window function example	
+https://blog.einext.com/apache-spark/df-samples	
+
+https://databricks.com/blog/2015/07/15/introducing-window-functions-in-spark-sql.html

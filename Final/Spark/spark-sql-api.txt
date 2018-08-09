@@ -1,0 +1,57 @@
+year: Returns the year component of the date/timestamp.
+> SELECT year('2016-07-30');
+ 2016
+>SELECT weekofyear('2008-02-20');
+ 8 
+----------------------------------
+xpath(xml, xpath) - Returns a string array of values within the nodes of xml that match the XPath expression.
+> SELECT xpath('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>','a/b/text()');
+ ['b1','b2','b3']
+>SELECT xpath_string('<a><b>b</b><c>cc</c></a>','a/c');
+ cc
+>SELECT xpath_boolean('<a><b>1</b></a>','a/b');
+ true
+>SELECT xpath_double('<a><b>1</b><b>2</b></a>', 'sum(a/b)');
+ 3.0
+Similarlly we have xpath_float, xpath_int, xpath_long, xpath_number, xpath_short.
+----------------------------------
+CASE WHEN expr1 THEN expr2 [WHEN expr3 THEN expr4] [ELSE expr5] END
+if expr1 is true then expr2 will print else expr5 will print 
+> SELECT CASE WHEN 1 > 0 THEN 1 ELSE 1.2 END;
+ 1
+> SELECT CASE WHEN 1 < 0 THEN 1 WHEN 2 < 0 THEN 2.0 END;
+ NULL
+----------------------------------
+> SELECT ucase('SparkSql');
+ SPARKSQL
+> SELECT upper('SparkSql');
+ SPARKSQL
+> SELECT unix_timestamp();
+ 1476884637
+uuid() - Returns an universally unique identifier (UUID) string 
+>SELECT uuid();
+ 46707d92-02f4-4817-8116-a4c3b23e6266
+----------------------------------
+timestamp(expr) - Casts the value expr to the target data type timestamp.
+tinyint(expr) - Casts the value expr to the target data type tinyint.
+to_date(date_str[, fmt]) - Parses the date_str expression with the fmt expression to a date. Returns null with invalid input
+> SELECT to_date('2009-07-30 04:17:52');
+ 2009-07-30
+> SELECT to_date('2016-12-31', 'yyyy-MM-dd');
+ 2016-12-31
+to_json(expr[, options]) - Returns a json string with a given struct value 
+ > SELECT to_json(named_struct('a', 1, 'b', 2));
+ {"a":1,"b":2}
+> SELECT to_json(named_struct('time', to_timestamp('2015-08-26', 'yyyy-MM-dd')), map('timestampFormat', 'dd/MM/yyyy'));
+ {"time":"26/08/2015"}
+> SELECT to_json(array(named_struct('a', 1, 'b', 2));
+ [{"a":1,"b":2}]
+> SELECT to_json(map('a', named_struct('b', 1)));
+ {"a":{"b":1}}
+> SELECT to_json(map(named_struct('a', 1),named_struct('b', 2)));
+ {"[1]":{"b":2}}
+> SELECT to_json(map('a', 1));
+ {"a":1}
+> SELECT to_json(array((map('a', 1))));
+ [{"a":1}]
+ http://spark.apache.org/docs/latest/api/sql/#coalesce

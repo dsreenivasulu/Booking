@@ -1,0 +1,10 @@
+createOrReplaceTempView vs createGlobalTempView
+df.createOrReplaceTempView("tempViewName")
+df.createGlobalTempView("tempViewName")
+
+Drop temp table 
+spark.catalog.dropTempView("tempViewName")
+spark.catalog.dropGlobalTempView("tempViewName")
+
+check temp table exists or not 
+spark.catalog.tableExists("foo"))

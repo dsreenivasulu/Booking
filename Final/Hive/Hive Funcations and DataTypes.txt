@@ -1,0 +1,539 @@
+SHOW FUNCTIONS– lists Hive functions and operators
+DESCRIBE FUNCTION [function name]– displays short description of the function
+DESCRIBE FUNCTION EXTENDED [function name]– access extended description of the function
+
+Date Functions:
+to_date(string timestamp)	Returns the date part of a timestamp string: to_date(“1970-01-01 00:00:00”) = “1970-01-01”
+year(string date)	Returns the year part of a date or a timestamp string: year(“1970-01-01 00:00:00”) = 1970, year(“1970-01-01”) = 1970
+month(string date)	Returns the month part of a date or a timestamp string: month(“1970-11-01 00:00:00”) = 11, month(“1970-11-01”) = 11
+weekofyear(string date)	Return the week number of a timestamp string: weekofyear(“1970-11-01 00:00:00”) = 44, weekofyear(“1970-11-01”) = 44
+day(string date) dayofmonth(date)	Return the day part of a date or a timestamp string: day(“1970-11-01 00:00:00”) = 1, day(“1970-11-01”) = 1
+hour(string date)	Returns the hour of the timestamp: hour(‘2009-07-30 12:58:59′) = 12, hour(’12:58:59’) = 12
+minute(string date)	Returns the minute of the timestamp
+second(string date)	Returns the second of the timestamp
+datediff(string enddate, string startdate)	Return the number of days from startdate to enddate: datediff(‘2009-03-01’, ‘2009-02-27’) = 2
+date_add(date/timestamp/string startdate, tinyint/smallint/int days)	Add a number of days to startdate: date_add(‘2008-12-31’, 1) = ‘2009-01-01’
+date_sub(date/timestamp/string startdate, tinyint/smallint/int days)	Subtract a number of days to startdate: date_sub(‘2008-12-31’, 1) = ‘2008-12-30’
+date_format(date/timestamp/string ts, string fmt)	Converts a date/timestamp/string to a value of string in the format specified by the date format fmt (as of Hive 1.2.0). Supported formats are Java SimpleDateFormat formats – https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html. The second argument fmt should be constant. Example: date_format(‘2015-04-08’, ‘y’) = ‘2015’. date_format can be used to implement other UDFs, e.g.: dayname(date) is date_format(date, ‘EEEE’); dayofyear(date) is date_format(date, ‘D’)
+current_date	Returns the current date at the start of query evaluation (as of Hive 1.2.0). All calls of current_date within the same query return the same value.
+current_timestamp	Returns the current timestamp at the start of query evaluation (as of Hive 1.2.0). All calls of current_timestamp within the same query return the same value.
+
+String Functions
+concat(string|binary A, string|binary B…)	Returns the string or bytes resulting from concatenating the strings or bytes passed in as parameters in order. e.g. concat(‘foo’, ‘bar’) results in ‘foobar’. Note that this function can take any number of input strings.
+length(string A)	Returns the length of the string
+lower(string A) lcase(string A)	 Returns the string resulting from converting all characters of B to lower case. For example, lower(‘fOoBaR’) results in ‘foobar’.
+upper(string A) ucase(string A)	Returns the string resulting from converting all characters of A to upper case e.g. upper(‘fOoBaR’) results in ‘FOOBAR’
+reverse(string A)	Returns the reversed string
+trim(string A)	Returns the string resulting from trimming spaces from both ends of A e.g. trim(‘ foobar ‘) results in ‘foobar’
+substr(string|binary A, int start) substring(string|binary A, int start)	Returns the substring or slice of the byte array of A starting from start position till the end of string A 
+e.g. substr(‘foobar’, 4) results in ‘bar
+repeat(string str, int n)	Repeat str n times
+get_json_object(string json_string, string path)	Extract json object from a json string based on json path specified, and return json string of the extracted json object. 
+It will return null if the input json string is invalid.NOTE: The json path can only have the characters [0-9a-z_],
+i.e., no upper-case or special characters. Also, the keys *cannot start with numbers.* This is due to restrictions on Hive column names.
+in_file(string str, string filename)	Returns true if the string str appears as an entire line in filename.
+str_to_map(text[, delimiter1, delimiter2]) (return type map<string,string>) : 
+Splits text into key-value pairs using two delimiters. Delimiter1 separates text into K-V pairs, and Delimiter2 splits each K-V pair. Default delimiters are ',' for delimiter1 and ':' for delimiter2.
+
+find_in_set(string str, string strList) : Returns the first occurance of str in strList where strList is a comma-delimited string. 
+Returns null if either argument is null. Returns 0 if the first argument contains any commas. For example, find_in_set('ab', 'abc,b,ab,c,def') returns 3.
+
+parse_url(string urlString, string partToExtract [, string keyToExtract])
+Returns the specified part from the URL. Valid values for partToExtract include HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, and USERINFO. For example, parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST') returns 'facebook.com'. Also a value of a particular key in QUERY can be extracted by providing the key as the third argument, for example, parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY', 'k1') returns 'v1'.
+
+regexp_extract(string subject, string pattern, int index)
+Returns the string extracted using the pattern. For example, regexp_extract('foothebar', 'foo(.*?)(bar)', 2) returns 'bar.' Note that some care is necessary in using predefined character classes: using '\s' as the second argument will match the letter s; '\\s' is necessary to match whitespace, etc. The 'index' parameter is the Java regex Matcher group() method index. See docs/api/java/util/regex/Matcher.html for more information on the 'index' or Java regex group() method
+regexp_replace(string INITIAL_STRING, string PATTERN, string REPLACEMENT)
+Returns the string resulting from replacing all substrings in INITIAL_STRING that match the java regular expression syntax defined in PATTERN with instances of REPLACEMENT. For example, regexp_replace("foobar", "oo|ar", "") returns 'fb.' Note that some care is necessary in using predefined character classes: using '\s' as the second argument will match the letter s; '\\s' is necessary to match whitespace, etc
+
+
+
+
+
+
+Collection Functions
+size(Map)	Returns the number of elements in the map type
+size(Array)	Returns the number of elements in the array type
+map_keys(Map)	Returns an unordered array containing the keys of the input map
+map_values(Map)	Returns an unordered array containing the values of the input map
+array_contains(Array, value)	Returns TRUE if the array contains value
+sort_array(Array)	Sorts the input array in ascending order according to the natural ordering of the array elements and returns it (as of version 0.9.0)
+
+Built-in Aggregate Functions (UDAF)
+count(*), count(expr), count(DISTINCT expr[, expr_.])	count(*) – Returns the total number of retrieved rows, including rows containing NULL values; count(expr) – Returns the number of rows for which the supplied expression is non-NULL; count(DISTINCT expr[, expr]) – Returns the number of rows for which the supplied expression(s) are unique and non-NULL.
+sum(col), sum(DISTINCT col)	Returns the sum of the elements in the group or the sum of the distinct values of the column in the group
+min(col)	Returns the minimum of the column in the group
+max(col)	Returns the maximum value of the column in the group
+avg(col), avg(DISTINCT col)	Returns the average of the elements in the group or the average of the distinct values of the column in the group
+
+Built-in Table-Generating Functions (UDTF)
+explode(ARRAY<T> a)	explode() takes in an array as an input and outputs the elements of the array as separate rows. UDTF’s can be used in the SELECT expression list and as a part of LATERAL VIEW.
+
+Conditional Functions
+if(boolean testCondition, T valueTrue, T valueFalseOrNull)	Return valueTrue when testCondition is true, returns valueFalseOrNull otherwise
+CASE a WHEN b THEN c [WHEN d THEN e]* [ELSE f] END	When a = b, returns c; when a = d, return e; else return f
+CASE WHEN a THEN b [WHEN c THEN d]* [ELSE e] END	When a = true, returns b; when c = true, return d; else return e
+
+Mathematical Functions
+sqrt(double a), sqrt(DECIMAL a)	Returns the square root of a
+
+TYPES OF HIVE FUNCTIONS
+UDF– is a function that takes one or more columns from a row as argument and returns a single value or object. Eg: concat(col1, col2)
+UDTF— takes zero or more inputs and and produces multiple columns or rows of output. Eg: explode()
+Macros— a function that uses other Hive functions.
+
+HOW TO DEPLOY / DROP UDFS
+At start of each session:
+ADD JAR /full_path_to_jar/YourUDFName.jar;
+CREATE TEMPORARY FUNCTION YourUDFName AS 'org.apache.hadoop.hive.contrib.udf.example.YourUDFName';
+
+At the end of each session:
+DROP TEMPORARY FUNCTION IF EXISTS YourUDFName;
+
+
+Hive has build operators like relational operators, arithmetic operators and logical operators
+
+
+Primitive Types
+Types are associated with the columns in the tables. The following Primitive types are supported:
+Integers
+TINYINT—1 byte integer
+SMALLINT—2 byte integer
+INT—4 byte integer
+BIGINT—8 byte integer
+
+Boolean type
+BOOLEAN—TRUE/FALSE
+
+Floating point numbers
+FLOAT—single precision
+DOUBLE—Double precision
+
+Fixed point numbers
+DECIMAL—a fixed point value of user defined scale and precision
+
+String types
+STRING—sequence of characters in a specified character set
+VARCHAR—sequence of characters in a specified character set with a maximum length
+CHAR—sequence of characters in a specified character set with a defined length
+
+Date and time types
+TIMESTAMP— a specific point in time, up to nanosecond precision
+DATE—a date
+
+Binary types
+BINARY—a sequence of bytes
+===============================================
+
+nvl(filed1, filed2(default_value)): takes two parameters and returns the first parameter value if it is not NULL, otherwise it returns the second parameter value.
+Note : Second parameter can be default_value or another column
+
+COALESCE(filed1, filed2, ...) : Returns the first non-null value from list of fields provided as arguments. If all the fields values are null then it returns null
+
+---------------------------------------------------------
+Lateral view is used in conjunction with user-defined table generating functions such as explode()
+
+CREATE TABLE docs (line STRING);
+LOAD DATA INPATH 'text' OVERWRITE INTO TABLE docs;
+
+SELECT word, COUNT(*) FROM docs LATERAL VIEW explode(split(text, ' ')) WordCountTable as word GROUP BY word;
+
+My use case is I am having one table in hive which has one column as INT and one as Array data type. I want to display it horizontally
+Table content:
+Amar    ["Btech","Mtech"]
+Amala   ["Bsc","Msc","Mtech"]
+Akash   ["Btech","Mba"]
+
+Table Creation:
+create table raw2(name string, qual  array<string>);
+
+Query:
+select name, myq from <table> lateral view explode(qual) q as myq;
+
+assume we have key value pairs in columns then we can use
+select name, myq.key as expected_columnname_alias from <table> lateral view explode(qual) q as myq;
+==========================================================
+
+Database
+========
+Create Database
+---------------
+CREATE DATABASE [IF NOT EXISTS] database_name
+  [COMMENT database_comment]
+  [LOCATION hdfs_path]
+  [WITH DBPROPERTIES (property_name=property_value, ...)];
+  
+Drop Database
+-------------
+DROP DATABASE [IF EXISTS] database_name [RESTRICT|CASCADE];
+default is RESTRICT. if not mention CASCADE then database should be empty
+
+Alter Database
+--------------
+ALTER DATABASE database_name SET DBPROPERTIES (property_name=property_value, ...);
+ 
+ALTER DATABASE database_name SET OWNER [USER|ROLE] user_or_role;
+  
+ALTER DATABASE database_name SET LOCATION hdfs_path;
+Existing location of the tables/partitions data will not move to new location. New tables will use new location.
+  
+Use Database
+--------------
+USE database_name; 
+
+-------------------------------------------------------------------------------------------------------------------
+Alter Column
+===========
+Note : Column names are not case sensitive.
+column names can be alphanumeric and underscore characters. (and also backticks (`), dot (.) and colon (:))
+Change Column Name/Type/Position/Comment
+--------------------------------------
+ALTER TABLE table_name [PARTITION partition_spec] CHANGE [COLUMN] col_old_name col_new_name column_type
+  [COMMENT col_comment] [FIRST|AFTER column_name] [CASCADE|RESTRICT];
+
+Ex : 
+CREATE TABLE test_change (a int, b int, c int);
+ 
+// First change column a's name to a1.
+ALTER TABLE test_change CHANGE a a1 INT;
+ 
+// Next change column a1's name to a2, its data type to string, and put it after column b.
+ALTER TABLE test_change CHANGE a1 a2 STRING AFTER b;
+// The new table's structure is:  b int, a2 string, c int.
+  
+// Then change column c's name to c1, and put it as the first column.
+ALTER TABLE test_change CHANGE c c1 INT FIRST;
+// The new table's structure is:  c1 int, b int, a2 string.
+  
+// Add a comment to column a1
+ALTER TABLE test_change CHANGE a1 a1 INT COMMENT 'this is column a1';
+
+Note : The column change command will only modify Hive's metadata, and will not modify data
+CASCADE command changes the columns of a table's metadata, and all the partition metadata 
+
+Add/Replace Columns
+--------------------
+ALTER TABLE table_name 
+  [PARTITION partition_spec]                
+  ADD|REPLACE COLUMNS (col_name data_type [COMMENT col_comment], ...)
+  [CASCADE|RESTRICT]                        
+
+ADD COLUMNS lets you add new columns to the end of the existing columns but before the partition columns.
+REPLACE COLUMNS removes all existing columns and adds the new set of columns
+
+-------------------------------------------------------------------------------------------------------------------
+
+Table
+=======
+Drop Table
+---------
+DROP TABLE [IF EXISTS] table_name [PURGE]; 
+ The data is actually moved to the .Trash/Current directory if Trash is configured (and PURGE is not specified). The metadata is completely lost.
+ 
+Alter Table
+----------
+Rename Table :
+ALTER TABLE table_name RENAME TO new_table_name;
+
+Alter Table Properties :
+LTER TABLE table_name SET TBLPROPERTIES ('comment' = new_comment);
+
+Add SerDe Properties :
+ALTER TABLE table_name SET SERDEPROPERTIES ('field.delim' = ',');
+
+Alter Table Storage Properties :
+ALTER TABLE table_name CLUSTERED BY (col_name, col_name, ...) [SORTED BY (col_name, ...)]
+  INTO num_buckets BUCKETS;
+  
+Alter Table Not Skewed :
+ALTER TABLE table_name NOT SKEWED;
+table non-skewed and turns off the list bucketing feature
+
+Alter Table Not Stored as Directories :
+ALTER TABLE table_name NOT STORED AS DIRECTORIES;
+This turns off the list bucketing feature, although the table remains skewed.  
+
+Alter Table Set Skewed Location :
+ALTER TABLE table_name SET SKEWED LOCATION (col_name1="location1" [, col_name2="location2", ...] );
+
+
+Partial Partition Specification :
+// hive.exec.dynamic.partition needs to be set to true to enable dynamic partitioning with ALTER PARTITION
+SET hive.exec.dynamic.partition = true;
+  
+// This will alter all existing partitions in the table with ds='2008-04-08' -- be sure you know what you are doing!
+ALTER TABLE foo PARTITION (ds='2008-04-08', hr) CHANGE COLUMN dec_column_name dec_column_name DECIMAL(38,18);
+
+Similar to dynamic partitioning, hive.exec.dynamic.partition must be set to true to enable use of partial partition specs during ALTER PARTITION. This is supported for the following operations:
+    Change column
+    Add column
+    Replace column
+    File Format
+    Serde Properties
+
+Alter partition:	
+Partitions can be added, renamed, exchanged (moved), dropped, or (un)archived by using the PARTITION clause in an ALTER TABLE statement,
+ALTER TABLE table_name ADD [IF NOT EXISTS] PARTITION (partition_column = partition_col_value,..) [LOCATION 'location'][, PARTITION (partition_column = partition_col_value,..) [LOCATION 'location'], ...];
+	
+ex : ALTER TABLE page_view ADD PARTITION (dt='2008-08-08', country='us') location '/path/to/us/part080808'
+
+Rename partition:
+ALTER TABLE table_name PARTITION partition_spec RENAME TO PARTITION partition_spec;
+
+Exchange Partition:
+Partitions can be exchanged (moved) between tables.
+- Move partition from table_name_1 to table_name_2
+ALTER TABLE table_name_2 EXCHANGE PARTITION (partition_spec) WITH TABLE table_name_1;
+
+Recover Partitions (MSCK REPAIR TABLE)
+Hive stores a list of partitions for each table in its metastore. 
+If, however, new partitions are directly added to HDFS (say by using hadoop fs -put command), 
+the metastore (and hence Hive) will not be aware of these partitions unless the user runs ALTER TABLE table_name ADD PARTITION commands on each of the newly added partitions.
+
+However, users can run a metastore check command with the repair table option:
+MSCK REPAIR TABLE table_name;
+
+which will add metadata about partitions to the Hive metastore for partitions for which such metadata doesn't already exist. 
+In other words, it will add any partitions that exist on HDFS but not in metastore to the metastore. 
+When there is a large number of untracked partitions, there is a provision to run MSCK REPAIR TABLE batch wise to avoid OOME (Out of Memory Error). By giving the configured batch size for the property hive.msck.repair.batch.size it can run in the batches internally. The default value of the property is zero, it means it will execute all the partitions at once.
+
+Drop Partitions:
+ALTER TABLE table_name DROP [IF EXISTS] PARTITION partition_spec[, PARTITION partition_spec, ...] [IGNORE PROTECTION] [PURGE];
+For tables that are protected by NO_DROP CASCADE, you can use the predicate IGNORE PROTECTION to drop a specified partition
+If PURGE is specified, the partition data does not go to the .Trash/Current directory and so cannot be retrieved in the event of a mistaken DROP:
+
+ex : ALTER TABLE page_view DROP PARTITION (dt='2008-08-08', country='us');
+
+(Un)Archive Partition :
+ALTER TABLE table_name ARCHIVE PARTITION partition_spec;
+ALTER TABLE table_name UNARCHIVE PARTITION partition_spec;
+Archiving is a feature to moves a partition's files into a Hadoop Archive (HAR)
+
+
+Alter Table/Partition File Format
+ALTER TABLE table_name [PARTITION partition_spec] SET FILEFORMAT file_format;
+
+Alter Table/Partition Location
+ALTER TABLE table_name [PARTITION partition_spec] SET LOCATION "new location";
+
+
+Alter Table/Partition Touch
+ALTER TABLE table_name TOUCH [PARTITION partition_spec];
+TOUCH reads the metadata, and writes it back. This has the effect of causing the pre/post execute hooks to fire.
+An example use case is if you have a hook that logs all the tables/partitions that were modified, along with an external script that alters the files on HDFS directly. Since the script modifies files outside of hive, the modification wouldn't be logged by the hook. The external script could call TOUCH to fire the hook and mark the said table or partition as modified.
+
+Note that TOUCH doesn't create a table or partition if it doesn't already exist.
+
+Alter Table/Partition Protections
+ALTER TABLE table_name [PARTITION partition_spec] ENABLE|DISABLE NO_DROP [CASCADE];
+ALTER TABLE table_name [PARTITION partition_spec] ENABLE|DISABLE OFFLINE;
+
+Protection on data can be set at either the table or partition level. Enabling NO_DROP prevents a table from being dropped. Enabling OFFLINE prevents the data in a table or partition from being queried, but the metadata can still be accessed.
+If any partition in a table has NO_DROP enabled, the table cannot be dropped either. Conversely, if a table has NO_DROP enabled then partitions may be dropped, but with NO_DROP CASCADE partitions cannot be dropped either unless the drop partition command specifies IGNORE PROTECTION.
+
+Alter Table/Partition Update columns
+let the user sync serde stored schema information to metastore.
+ALTER TABLE table_name [PARTITION (partition_key = 'partition_value' [, ...])] UPDATE COLUMNS;
+. For example when a user creates an Avro stored table using a schema url or schema literal, the schema will be inserted into HMS and then will never be changed in HMS regardless of url or literal changes within the serde. 
+This can lead to problems especially when integrating with other Apache components
+
+	
+-------------------------------------------------------------------------------------------------------------------
+Create/Drop/Alter View
+-------------------
+CREATE VIEW [IF NOT EXISTS] [db_name.]view_name [(column_name [COMMENT column_comment], ...) ]
+  [COMMENT view_comment]
+  [TBLPROPERTIES (property_name = property_value, ...)]
+  AS SELECT ...;
+
+If no column names are supplied, the names of the view's columns will be derived automatically from the defining SELECT expression. (If the SELECT contains unaliased scalar expressions such as x+y, the resulting view column names will be generated in the form _C0, _C1, etc.)
+
+Views are read-only and may not be used as the target of LOAD/INSERT/ALTER
+
+SHOW VIEWS displays a list of views in a database.
+
+DROP VIEW: 
+DROP VIEW [IF EXISTS] [db_name.]view_name;  
+
+Alter View Properties:
+ALTER VIEW [db_name.]view_name SET TBLPROPERTIES (property_name = property_value, property_name = property_value, ...);
+
+Alter View As Select:
+ALTER VIEW [db_name.]view_name AS select_statement; 
+
+-------------------------------------------------------------------------------------------------------------------
+
+Create/Drop/Alter Index
+--------------------------
+Create Index :
+CREATE INDEX index_name ON TABLE table_name (col_name, ...);
+
+Drop Index :
+DROP INDEX [IF EXISTS] index_name ON table_name; 
+
+Alter Index :
+ALTER INDEX index_name ON table_name [PARTITION partition_spec] REBUILD;
+
+-------------------------------------------------------------------------------------------------------------------
+
+Create/Drop Macro
+----------------
+Macros exist for the duration of the current session.
+Create Temporary Macro
+CREATE TEMPORARY MACRO macro_name([col_name col_type, ...]) expression;
+ex : 
+CREATE TEMPORARY MACRO fixed_number() 42;
+CREATE TEMPORARY MACRO string_len_plus_two(x string) length(x) + 2;
+CREATE TEMPORARY MACRO simple_add (x int, y int) x + y;
+
+drop Temporary Macro
+DROP TEMPORARY MACRO [IF EXISTS] macro_name;
+
+-------------------------------------------------------------------------------------------------------------------
+
+Create/Drop/Reload Function
+-----------------------------
+used to register User Defined Functions (UDF's) available with in current session
+
+CREATE TEMPORARY FUNCTION function_name AS class_name;
+
+DROP TEMPORARY FUNCTION [IF EXISTS] function_name;
+
+Permanent Functions
+CREATE FUNCTION [db_name.]function_name AS class_name
+  [USING JAR 'file_uri'];
+ 
+DROP FUNCTION [IF EXISTS] function_name;
+
+RELOAD FUNCTION; 
+
+-------------------------------------------------------------------------------------------------------------------
+SHOW DATABASES
+SHOW DATABASES [LIKE 'identifier_with_wildcards'];
+
+SHOW TABLES
+SHOW TABLES [IN database_name] ['identifier_with_wildcards'];
+
+SHOW VIEWS;    -- show all views in the current database
+
+SHOW PARTITIONS table_name;
+It is also possible to specify parts of a partition specification to filter the resulting list.
+Examples:
+SHOW PARTITIONS table_name PARTITION(ds='2010-03-03');           
+SHOW PARTITIONS table_name PARTITION(hr='12');                   
+SHOW PARTITIONS table_name PARTITION(ds='2010-03-03', hr='12')
+
+SHOW TBLPROPERTIES table_name;
+SHOW TBLPROPERTIES table_name("foo");
+
+SHOW CREATE TABLE ([db_name.]table_name|view_name);
+SHOW CREATE TABLE shows the CREATE TABLE statement that creates a given table, or the CREATE VIEW statement that creates a given view.
+
+SHOW [FORMATTED] (INDEX|INDEXES) ON table_with_index [(FROM|IN) db_name];
+SHOW INDEXES shows all of the indexes on a certain column, as well as information about them: index name, table name, names of the columns used as keys, index table name, index type, and comment. If the FORMATTED keyword is used, then column titles are printed for each column.
+
+SHOW COLUMNS (FROM|IN) table_name [(FROM|IN) db_name];
+SHOW COLUMNS shows all the columns in a table including partition columns.
+ex : SHOW COLUMNS FROM table_name; 
+
+SHOW FUNCTIONS "a.*";
+
+SHOW CONF <configuration_name>;
+
+-------------------------------------------------------------------------------------------------------------------
+
+DESCRIBE DATABASE [EXTENDED] db_name;
+
+DESCRIBE [EXTENDED|FORMATTED] table_name
+DESCRIBE shows the list of columns including partition columns for the given table. 
+If the EXTENDED keyword is specified then it will show all the metadata for the table in Thrift serialized form. This is generally only useful for debugging and not for general use. 
+If the FORMATTED keyword is specified, then it will show the metadata in a tabular format.
+
+DESCRIBE FORMATTED [db_name.]table_name column_name;                           
+DESCRIBE FORMATTED [db_name.]table_name column_name PARTITION (partition_spec);
+
+partition
+show partitions table_name;
+DESCRIBE extended part_table partition (d='abc');
+DESCRIBE formatted part_table partition (d='abc');
+
+-----------------------------------------------------
+
+CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.]table_name    -- (Note: TEMPORARY available in Hive 0.14.0 and later)
+  [(col_name data_type [COMMENT col_comment], ... [constraint_specification])]
+  [COMMENT table_comment]
+  [PARTITIONED BY (col_name data_type [COMMENT col_comment], ...)]
+  [CLUSTERED BY (col_name, col_name, ...) [SORTED BY (col_name [ASC|DESC], ...)] INTO num_buckets BUCKETS]
+  [SKEWED BY (col_name, col_name, ...)                  -- (Note: Available in Hive 0.10.0 and later)]
+     ON ((col_value, col_value, ...), (col_value, col_value, ...), ...)
+     [STORED AS DIRECTORIES]
+  [
+   [ROW FORMAT row_format] 
+   [STORED AS file_format]
+     | STORED BY 'storage.handler.class.name' [WITH SERDEPROPERTIES (...)]  -- (Note: Available in Hive 0.6.0 and later)
+  ]
+  [LOCATION hdfs_path]
+  [TBLPROPERTIES (property_name=property_value, ...)]   -- (Note: Available in Hive 0.6.0 and later)
+  [AS select_statement];   -- (Note: Available in Hive 0.5.0 and later; not supported for external tables)
+ 
+CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.]table_name
+  LIKE existing_table_or_view_name
+  [LOCATION hdfs_path];
+ 
+data_type
+  : primitive_type
+  | array_type
+  | map_type
+  | struct_type
+  | union_type  -- (Note: Available in Hive 0.7.0 and later)
+ 
+primitive_type
+  : TINYINT
+  | SMALLINT
+  | INT
+  | BIGINT
+  | BOOLEAN
+  | FLOAT
+  | DOUBLE
+  | DOUBLE PRECISION -- (Note: Available in Hive 2.2.0 and later)
+  | STRING
+  | BINARY      -- (Note: Available in Hive 0.8.0 and later)
+  | TIMESTAMP   -- (Note: Available in Hive 0.8.0 and later)
+  | DECIMAL     -- (Note: Available in Hive 0.11.0 and later)
+  | DECIMAL(precision, scale)  -- (Note: Available in Hive 0.13.0 and later)
+  | DATE        -- (Note: Available in Hive 0.12.0 and later)
+  | VARCHAR     -- (Note: Available in Hive 0.12.0 and later)
+  | CHAR        -- (Note: Available in Hive 0.13.0 and later)
+ 
+array_type
+  : ARRAY < data_type >
+ 
+map_type
+  : MAP < primitive_type, data_type >
+ 
+struct_type
+  : STRUCT < col_name : data_type [COMMENT col_comment], ...>
+ 
+union_type
+   : UNIONTYPE < data_type, data_type, ... >  -- (Note: Available in Hive 0.7.0 and later)
+ 
+row_format
+  : DELIMITED [FIELDS TERMINATED BY char [ESCAPED BY char]] [COLLECTION ITEMS TERMINATED BY char]
+        [MAP KEYS TERMINATED BY char] [LINES TERMINATED BY char]
+        [NULL DEFINED AS char]   -- (Note: Available in Hive 0.13 and later)
+  | SERDE serde_name [WITH SERDEPROPERTIES (property_name=property_value, property_name=property_value, ...)]
+ 
+file_format:
+  : SEQUENCEFILE
+  | TEXTFILE    -- (Default, depending on hive.default.fileformat configuration)
+  | RCFILE      -- (Note: Available in Hive 0.6.0 and later)
+  | ORC         -- (Note: Available in Hive 0.11.0 and later)
+  | PARQUET     -- (Note: Available in Hive 0.13.0 and later)
+  | AVRO        -- (Note: Available in Hive 0.14.0 and later)
+  | INPUTFORMAT input_format_classname OUTPUTFORMAT output_format_classname
+ 
+constraint_specification:
+  : [, PRIMARY KEY (col_name, ...) DISABLE NOVALIDATE ]
+    [, CONSTRAINT constraint_name FOREIGN KEY (col_name, ...) REFERENCES table_name(col_name, ...) DISABLE NOVALIDATE 
+	
+https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-AlterColumn
