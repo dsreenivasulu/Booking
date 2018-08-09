@@ -26,7 +26,7 @@ The shuffle stage is really expensive since it needs to sort and merge. Saving t
 
 1. Join table ordering (Largest table last)
 ----------------------------
-When Hive executes a join query, it needs to be select which table is streamed and which table is cached. 
+When Hive executes a join query, it needs to be select which table is streamed and which table is cached(buffered). 
 Hive takes the last table in the JOIN statement for streaming, so we need to ensure that this streaming table is largest among the two.
 
 For example : person and group table, person table data will keep grow. group table data would be static most of time
@@ -35,14 +35,23 @@ select person.id, person.name, type from group join person on group.personId = p
 Or, you can also explicitly tell Hive which table it should stream.
 select /*+ streamtable(person) */ person.id, person.name, type from group join person on group.personId = person.id
 
+here group table is buffered in memory in the reducer. Then for each row retrieved from person, the join is computed with the buffered rows.
+
+ex2: SELECT a.val, b.val, c.val FROM a JOIN b ON (a.key = b.key1) JOIN c ON (c.key = b.key2)
+there are two map/reduce jobs involved in computing the join. The first of these joins a with b and buffers the values of a while streaming the values of b in the reducers. The second of one of these jobs buffers the results of the first join while streaming the values of c through the reducers.
+
+
+
 2. Map Side Join or Replicated Join
 -----------------------
 A map-side join is a special type of join where a smaller table is loaded in memory and join is performed in map phase of MapReduce job. 
 Since there is no reducer involved in the map-side join, it is much faster when compared to regular join.
 
 Enable below two properties in hive-site.xml or HIVECL
-hive> set hive.auto.convert.join=true;
-hive> set hive.auto.convert.join.noconditionaltask=true;
+hive> set hive.auto.convert.join=true; (default is true)
+hive> set hive.auto.convert.join.noconditionaltask=true; (default is true)
+hive>set hive.auto.convert.join.noconditionaltask.size = 10000000 (default is 10MB)
+Note : sum of size for n-1 of the tables/partitions for an n-way join is smaller than the size specified by hive.auto.convert.join.noconditionaltask.size, the join is directly converted to a mapjoin
  
 ex: select person.id, person.name, type from group join person on group.personId = person.id 
 
@@ -50,6 +59,31 @@ OR
 select /*+ mapjoin(person) */ person.id, person.name, type from group join person on group.personId = person.id
 This isn't a good user experience because sometimes the user may give the wrong hint or may not give any hint at all. 
 It's much better to convert the common join into a map join without user hints.
+
+How the map-join will work?
+Before original join Map Reduce task is running, Map Reduce Local task 
+read records via standard table scan (including filters and projections) from source on local machine
+build hashtable in memory
+write hashtable to local disk
+upload hashtable to dfs and add hashtable to distributed cache
+Then Map task  
+read hashtable from local disk (distributed cache) into memory
+match records' keys against hashtable
+combine matches and write to output
+
+Advantages of using map side join:
+    Map-side join improve the performance of query by avoding shuffle and reduce stages.
+
+Disadvantages of Map-side join:
+    Map side join is useful when small table to fit into the memory.  Hence it is not suitable to perform map-side join on the tables which are huge data in both of them.
+Note : 1)An outer join(left/right) can only be converted if the table(s) apart from the one that needs to be streamed can be fit in the size configuration
+2)A full outer join cannot be converted to a map-join at all since both tables need to be streamed.    
+3)Sort-Merge-Bucket (SMB) joins can be converted to SMB map joins as well. SMB joins are used wherever the tables are sorted and bucketed.
+The following configuration settings enable the conversion of an SMB to a map-join SMB:
+set hive.auto.convert.sortmerge.join=true;
+set hive.optimize.bucketmapjoin = true;
+set hive.optimize.bucketmapjoin.sortedmerge = true;
+3)Map side join is equal to Broadcast join in spark
 
 
 3. Sort-Merge-Bucket (SMB) Map Join:
@@ -77,7 +111,59 @@ SELECT u.name,u.salary FROM tmp_group d INNER JOIN tmp_person u ON d.id = u.id;
 
 Note : 4 mapper tasks will be running (as we had 4 buckets). This helps in performing faster join operation when compared to regular
 
+Note :SMB Join across Tables with Different Keys
+
+If the tables have differing number of keys, for example Table A has 2 SORT columns and Table B has 1 SORT column, then you might get an index out of bounds exception.
+
+The following query results in an index out of bounds exception because emp_person let us say for example has 1 sort column while emp_pay_history has 2 sort columns.
+Error Hive 0.11
+SELECT p.*, py.*
+FROM emp_person p INNER JOIN emp_pay_history py
+ON   p.empid = py.empid
+
+This works fine.
+Working query Hive 0.11
+SELECT p.*, py.*
+FROM emp_pay_history py INNER JOIN emp_person p
+ON   p.empid = py.empid
 
 https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Joins
 
 https://cwiki.apache.org/confluence/display/Hive/LanguageManual+JoinOptimization
+
+Joins note
+--------------
+-If every table same column used in join then Hive converts single map/reduce job
+ ex : SELECT a.val, b.val, c.val FROM a JOIN b ON (a.key = b.key1) JOIN c ON (c.key = b.key1) //here b.key1 is used 
+ Two map/reduce jobs in below 
+ ex : SELECT a.val, b.val, c.val FROM a JOIN b ON (a.key = b.key1) JOIN c ON (c.key = b.key2) //here b.key1 and b.key 2 is used 
+ 
+-Joins occur BEFORE WHERE CLAUSES 
+ ex : SELECT a.val, b.val FROM a LEFT OUTER JOIN b ON (a.key=b.key) WHERE a.ds='2009-07-07' AND b.ds='2009-07-07' //wrong way
+ ex : SELECT a.val, b.val FROM a LEFT OUTER JOIN b ON (a.key=b.key AND b.ds='2009-07-07' AND a.ds='2009-07-07')
+ 
+-LEFT SEMI JOIN implements the uncorrelated IN/EXISTS subquery semantics in an efficient way.   
+ But The restrictions of using LEFT SEMI JOIN are that the right-hand-side table should only be referenced in the join condition (ON-clause), but not in WHERE- or SELECT-clauses etc.
+ 
+  SELECT a.key, a.value
+FROM a
+WHERE a.key in
+ (SELECT b.key
+  FROM B);
+
+can be rewritten to:
+SELECT a.key, a.val
+FROM a LEFT SEMI JOIN b ON (a.key = b.key)
+
+-If the tables being joined are bucketized on the join columns, and the number of buckets in one table is a multiple of the number of buckets in the other table, the buckets can be joined with each other. If table A has 4 buckets and table B has 4 buckets, the following join
+SELECT /*+ MAPJOIN(b) */ a.key, a.value FROM a JOIN b ON a.key = b.key
+But we need to set hive.optimize.bucketmapjoin = true
+
+-If the tables being joined are sorted and bucketized on the join columns, and they have the same number of buckets, a sort-merge join can be performed. The corresponding buckets are joined with each other at the mapper. If both A and B have 4 buckets,
+SELECT /*+ MAPJOIN(b) */ a.key, a.value FROM A a JOIN B b ON a.key = b.key
+But we need to set hive.optimize.bucketmapjoin = true;
+set hive.optimize.bucketmapjoin.sortedmerge = true;
+
+Note : BuckeMapSideJoin different and BucketSortMergeMapSideJoin is different as above
+
+
