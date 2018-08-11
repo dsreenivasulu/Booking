@@ -87,7 +87,6 @@ creating a schema for data before writing into the database. Structured data . S
 Schema On Read
 Store the data into the data base. Apply/Create the schema while reading the data. Unstructured data. NoSQL
 
-
 --Suppose, I create a table that contains details of all the transactions done by the customers of year 2016:
 CREATE TABLE transaction_details (cust_id INT, amount FLOAT, month STRING, country STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ‘,’ ;
 Now, after inserting 50,000 tuples in this table, I want to know the total revenue generated for each month. But, Hive is taking too much time in processing this query. How will you solve this problem and list the steps that I will be taking in order to do so?
@@ -98,12 +97,10 @@ Create a partitioned table, say partitioned_transaction:
 CREATE TABLE partitioned_transaction (cust_id INT, amount FLOAT, country STRING) PARTITIONED BY (month STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ‘,’ ; 
 
 2. Enable dynamic partitioning in Hive:
-
 SET hive.exec.dynamic.partition = true;
 SET hive.exec.dynamic.partition.mode = nonstrict;
 
 3. Transfer the data from the non – partitioned table into the newly created partitioned table:
-
 INSERT OVERWRITE TABLE partitioned_transaction PARTITION (month) SELECT cust_id, amount, country, month FROM transaction_details;
 Now, we can perform the query using each partition and therefore, decrease the query time.
 
@@ -124,51 +121,38 @@ What will happen in case you have not issued the command:  ‘SET hive.enforce.b
 The command:  ‘SET hive.enforce.bucketing=true;’ allows one to have the correct number of reducer while using ‘CLUSTER BY’ clause for bucketing a column.
 In case it’s not done, one may find the number of files that will be generated in the table directory to be not equal to the number of buckets. As an alternative, one may also set the number of reducer equal to the number of buckets by using set mapred.reduce.task = num_bucket.
 
-Suppose, I have a CSV file – ‘sample.csv’ present in ‘/temp’ directory with the following entries:
-
+--Suppose, I have a CSV file – ‘sample.csv’ present in ‘/temp’ directory with the following entries:
 id first_name last_name email gender ip_address
-
 1 Hugh Jackman hughjackman@cam.ac.uk Male 136.90.241.52
-
 2 David Lawrence dlawrence1@gmail.com Male 101.177.15.130
-
 3 Andy Hall andyhall2@yahoo.com Female 114.123.153.64
-
 4 Samuel Jackson samjackson231@sun.com Male 89.60.227.31
-
 5 Emily Rose rose.emily4@surveymonkey.com Female 119.92.21.19
 
 How will you consume this CSV file into the Hive warehouse using built SerDe?
-
 SerDe stands for serializer/deserializer. A SerDe allows us to convert the unstructured bytes into a record that we can process using Hive. SerDes are implemented using Java. Hive comes with several built-in SerDes and many other third-party SerDes are also available. 
 
 Hive provides a specific SerDe for working with CSV files. We can use this SerDe for the sample.csv by issuing following commands:
 
 CREATE EXTERNAL TABLE sample
-
 (id int, first_name string, 
-
 last_name string, email string,
-
 gender string, ip_address string) 
-
 ROW FORMAT SERDE ‘org.apache.hadoop.hive.serde2.OpenCSVSerde’ 
-
 STORED AS TEXTFILE LOCATION ‘/temp’;
 
 Now, we can perform any query on the table ‘sample’:
-
 SELECT first_name FROM sample WHERE gender = ‘male’;
 
-Suppose, I have a lot of small CSV files present in /input directory in HDFS and I want to create a single Hive table corresponding to these files. The data in these files are in the format: {id, name, e-mail, country}. Now, as we know, Hadoop performance degrades when we use lots of small files.
+--Suppose, I have a lot of small CSV files present in /input directory in HDFS and I want to create a single Hive table corresponding to these files. 
+The data in these files are in the format: {id, name, e-mail, country}.As we know, Hadoop performance degrades when we use lots of small files.
 
 So, how will you solve this problem where we want to create a single Hive table for lots of small files without degrading the performance of the system?
 
-One can use the SequenceFile format which will group these small files together to form a single sequence file. The steps that will be followed in doing so are as follows:
+One can use the SequenceFile format which will group these small files together to form a single sequence file. 
 
 Create a temporary table:
 CREATE TABLE temp_table (id INT, name STRING, e-mail STRING, country STRING)
-
 ROW FORMAT FIELDS DELIMITED TERMINATED BY ‘,’ STORED AS TEXTFILE;
 
 Load the data into temp_table:
@@ -176,7 +160,6 @@ LOAD DATA INPATH ‘/input’ INTO TABLE temp_table;
 
 Create a table that will store data in SequenceFile format:
 CREATE TABLE sample_seqfile (id INT, name STRING, e-mail STRING, country STRING)
-
 ROW FORMAT FIELDS DELIMITED TERMINATED BY ‘,’ STORED AS SEQUENCEFILE;
 
 Transfer the data from the temporary table into the sample_seqfile table:
@@ -189,14 +172,21 @@ Map reduce mode
 
 Mention key components of Hive Architecture?
 Key components of Hive Architecture includes,
-•User Interface (UI): It acts as a communicator between users and drivers when the user writes the queries the UI accepts it and runs it on the driver, there are two types of interface available they are Command line and GUI interface.
+•User Interface (UI): It acts as a communicator between users and drivers when the user writes the queries the UI accepts it and runs it on the driver.
+there are two types of interface available they are Command line and GUI interface.
 •Driver: It maintains the life cycle of HiveQL query. It receives the queries from the user interface and creates the session to process the query.
 •Compiler: It receives the query plans from the driver and gets the required information from Metastore in order to execute the plan.
-•Metastore: It stores the information about the data like a table; it can be of an internal or external table. It sends the metadata information to the compiler to execute the query.
-•Execute Engine: Hive service will execute the result in execution engine; it executes the query in MapReduce to process the data. It is responsible for controlling each stage for all these components.
+•Metastore: It stores the information about the data like a table; it can be of an internal or external table. 
+It sends the metadata information to the compiler to execute the query.
+•Execute Engine: Hive service will execute the result in execution engine; 
+it executes the query in MapReduce to process the data. It is responsible for controlling each stage for all these components.
 
 Explain the function of Execution Engine in Hive Architecture?
-Execution Engine (EE) is a key component of Hive. It is used to execute the query by directly communicating with Job Tracker, Name Node and Data Nodes. When we execute a Hive query, it will generate series of MR Jobs in the backend. In this scenario, the execution engine acts as a bridge between Hive and Hadoop to process the query. For DFS operations, Execution Engine communicate with the Name Node.
+Execution Engine (EE) is a key component of Hive. 
+It is used to execute the query by directly communicating with Job Tracker, Name Node and Data Nodes. 
+When we execute a Hive query, it will generate series of MR Jobs in the backend. 
+In this scenario, the execution engine acts as a bridge between Hive and Hadoop to process the query. 
+For DFS operations, Execution Engine communicate with the Name Node.
 
 What is the importance of .hiverc file
 It is a file containing list of commands needs to run when the hive CLI starts. For example setting the strict mode to be true etc.
@@ -205,15 +195,6 @@ How do we specify table creator name when creating table?
 TBLPROPERTIES(‘creator’= ‘Joan’)
 
 
-
-
-
-
-
-
-
- 
-  
 ---------------------------------------------------------------------------------------------------------
 How to load xml into Hive 
 student.xml
