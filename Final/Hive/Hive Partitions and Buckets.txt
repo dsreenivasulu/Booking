@@ -122,6 +122,8 @@ date_of_sale=10-27-2017
 
 Note : If partition mode is non-strict then We cannot perform ALTER on the Dynamic partition.
 
+
+
 -----------------------------------------------------------------------------------
 ALTER TABLE employee PARTITION (year=’1203’) RENAME TO PARTITION (Yoj=’1203’);
 ALTER TABLE employee DROP [IF EXISTS] PARTITION (year=’1203’);
