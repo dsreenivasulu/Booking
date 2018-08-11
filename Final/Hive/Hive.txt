@@ -433,18 +433,15 @@ ALTER TABLE table_name [PARTITION partition_spec] CHANGE [COLUMN] col_old_name c
 ALTER TABLE CHANGE COLUMN with CASCADE command changes the columns of a table's metadata, and cascades the same change to all the partition metadata. 
 RESTRICT is the default, limiting column change only to table metadata.
 
-
 How to skip header rows from a table in Hive?
-Header records in log files
-System=….
-Version=…
-Sub-version=….
+Header records in log files 
+id  name    department
+35    sree   java   
 In the above three lines of headers that we do not want to include in our Hive query. To skip header lines from our tables in the Hive,set a table property that will allow us to skip the header lines.
-CREATE EXTERNAL TABLE employee (
-name STRING,
-salary INT)
-ROW FORMAT DELIMITED FIELDS TERMINATED BY ‘ ‘ STORED AS TEXTFILE
-LOCATION ‘/user/data’
+CREATE EXTERNAL TABLE employee (id INT, name STRING, department INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ‘ ‘ S
+TORED AS TEXTFILE
+LOCATION ‘/user/data’ 
 TBLPROPERTIES("skip.header.line.count"="2”);
 
 What is the maximum size of string data type supported by hive?
