@@ -167,8 +167,11 @@ INSERT OVERWRITE TABLE sample SELECT * FROM temp_table;
 Hence, a single SequenceFile is generated which contains the data present in all of the input files and therefore, the problem of having lots of small files is finally eliminated.
 
 Mention what are the different modes of Hive?
-Local mode
-Map reduce mode
+Local mode (local)
+Map reduce mode (yarn)
+mapreduce.framework.name = local or yarn in (mapred-site.xml)
+In hive set mapreduce.framework.name = local
+
 
 Mention key components of Hive Architecture?
 Key components of Hive Architecture includes,
@@ -194,6 +197,20 @@ It is a file containing list of commands needs to run when the hive CLI starts. 
 How do we specify table creator name when creating table?
 TBLPROPERTIES(‘creator’= ‘Joan’)
 
+I have file like this. How to do static and dynamic parition by city
+name city
+sreni   chennai
+sasi  pulivendula
+note : static partition we can't do directly 
+Load this to temp_table
+then create another sta_table 
+insert into table tem_table partition(city=chennai) select name, city where city = 'chennai'
+insert into table tem_table partition(city=pulivendula) select name, city where city = 'pulivendula'
+dynamic parition :
+set hive.exec.dynamic.partition=true  
+set hive.exec.dynamic.partition.mode=nonstrict
+
+insert into table tem_table partition(city) select name, city from temp_table; 
 
 ---------------------------------------------------------------------------------------------------------
 How to load xml into Hive 
