@@ -8,16 +8,24 @@ Vectorization:
 --------------
 By default, the Hive query execution engine processes one row of a table at a time. 
 The single row of data goes through all the operators in the query before the next row is processed, This mode of processing is very inefficient in terms of CPU usage
-By using vectorized query execution, it prcoess a block of 1024 rows at a time instead of prcoessing single row of a table at a time. 
-Internally Within the block, each column is stored as a vector   Simple operations like arithmetic and comparisons are done by quickly iterating through the vectors in a tight loop, with no or very few function calls or conditional branches inside the loop
-
-Vectorized query execution improves performance of operations like scans, aggregations, filters and joins, by performing them in batches of (1024) rows at once instead of single row each time.
+By using vectorized query execution, it prcoess a batch (block of 1024) of rows at a time instead of prcoessing single row of a table at a time. 
+Vectorized query execution greatly reduces the CPU usage and improves performance of operations like scans, aggregations, filters and joins
 Vectorization is a parallel processing technique in which operation are applied on multiple rows rather than single row. 
 Vectorized execution is off by default. 
 
 set hive.vectorized.execution.enabled=true.
 
-Note : Having access to data in columnar format is crucial for vectorization, so it only works with ORC formatted tables.
+Internally Within the block, each column is stored as a vector (an array of a primitive data type).  Simple operations like arithmetic and comparisons are done by quickly iterating through the vectors in a tight loop, with no or very few function calls or conditional branches inside the loop
+
+Note : --Having access to data in columnar format is crucial for vectorization, so it only works with ORC formatted tables.
+--CDH 5 Vectorization is enabled by default 
+--In CDH 6, query vectorization is supported for Parquet tables in Hive.
+--In case you want to use vectorized execution for fetch then 
+set hive.fetch.task.conversion=none
+
+Limitations
+
+    Timestamps only work correctly with vectorized execution if the timestamp value is between 1677-09-20 and 2262-04-11. bcoz vectorized timestamp value is stored as a long value representing nanoseconds before/after the Unix Epoch time of 1970-01-01 00:00:00 UTC
 
 ex : select * from post41 order by id desc (With out Vectorization, query will take more time. With Vectorization, query will take less time 
 
