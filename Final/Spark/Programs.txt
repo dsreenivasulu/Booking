@@ -217,8 +217,10 @@ Then the output is:
 +--------------------+----------+---------+
 
 ----------------------------------------------------------
-
-
+spark scala log analyzer 
+https://github.com/sreejithpillai/LogAnalyzerSparkScala
+https://github.com/skrusche63/spark-weblog
+https://alvinalexander.com/scala/analyzing-apache-access-logs-files-spark-scala
 
 Spark SQL build in functions
 http://spark.apache.org/docs/latest/api/sql/
