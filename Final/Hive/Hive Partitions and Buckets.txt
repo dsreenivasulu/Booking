@@ -22,7 +22,7 @@ With this knowledge, identification of the frequently queried columns becomes ea
 Partition is of two types:
 1.STATIC PARTITION: 
 STATIC PARTITIONING means each and every thing is controlled by user, starting from mentioning the PARTITION column and to loading data in that partitioned folder
-We need to mention segregation unit, by using column value of the file to be loaded (or creating virtual column(not part of the file) with values).
+We need to mention segregation unit, by using column value of the file to be loaded or creating virtual column(not part of the file) with values.
 We “statically” add a partition in table and move the file into the partition of the table
 
 If we want to use the Static partition in the hive then the mode should be in strict mode.(set hive.mapred.mode = strict This property set by default in hive-site.xml)
@@ -71,7 +71,7 @@ Dynamic partitioning nonstrict mode disabled by default why ?
 set hive.exec.dynamic.partition.mode=nonstrict;
 This is because Dynamic Partitioning is disabled in Hive to prevent accidental creation of huge number of partitions
 
-In case of dynamic partition what if the partition column value is null or empty
+In case of dynamic partition what if the partition column value is null or empty ?
 It will be bad file. We can provide the default partition name in the configuration
 hive.exec.default.partition.name (The default value is HIVE_DEFAULT_PARTITION{}) 
 
@@ -89,7 +89,8 @@ hive.exec.dynamic.partition=true/false (default is true) to control whether to a
  
 E.If we require to do one level of STATIC partitioning before HIVE can do DYNAMIC partitioning inside this STATIC segregation units.
 Then mode should be strict. Which is default mode in HIVe
-hive.exec.dynamic.partition.mode=strict 
+hive.exec.dynamic.partition.mode=strict means when ever you are populating hive table it must have at least one static partition column.
+set hive.exec.dynamic.partition.mode=nonstrict In this mode you don't need any static partition column.
 
 F. While creating STATIC partitioned table, you can directly load files into partitioned table as loading depends on user.
 However DYNAMIC partitioned table is handled by hive and hive doesn't know anything about file,
@@ -122,7 +123,7 @@ date_of_sale=10-27-2017
 
 Note : If partition mode is non-strict then We cannot perform ALTER on the Dynamic partition.
 
-
+see example https://github.com/malli3131/HadoopTutorial/blob/master/Partitioning%20in%20HIVE%20(static%2C%20dynamic)
 
 -----------------------------------------------------------------------------------
 ALTER TABLE employee PARTITION (year=’1203’) RENAME TO PARTITION (Yoj=’1203’);
@@ -265,6 +266,12 @@ ALTER TABLE table_name [PARTITION partition_spec] SET LOCATION "new location";
 ex: ALTER TABLE logs PARTITION(year = 2012, month = 12, day = 18) SET LOCATION 'hdfs://user/darcy/logs/2012/12/18';
 old data will not removed. we are just pointing to new location data
 
+ALTER TABLE name [PARTITION (partition_spec)]
+  SET { FILEFORMAT file_format
+  | LOCATION 'hdfs_path_of_directory'
+  | TBLPROPERTIES (table_properties)
+  | SERDEPROPERTIES (serde_properties) }
+
 How to drop the partition
 ALTER TABLE table_name DROP [IF EXISTS] PARTITION partition_spec PURGE;
 ALTER TABLE logs DROP PARTITION (dt='2008-08-08', country='us');
@@ -294,6 +301,20 @@ Exchange Partition Constraints
 	
 How do we check if a particular partition exists?
 SHOW PARTITIONS table_name PARTITION(partitioned_column=’partition_value’)
+
+Can we have both Static and dynamic partition in same query ? if yes then how the folder will be created.?
+Yes. It's possible.
+
+CREATE TABLE table_name (column1 INT, column2 STRING
+   ....   
+) PARTITIONED BY (country STRING, state STRING);
+
+Now provide static value for country and dynamic value for state
+INSERT OVERWRITE TABLE table_name PARTITION (country = 'US', state)
+SELECT T.column1, T.column2, ..., T.country, T.state FROM your_table T WHERE T.country = 'US';
+o/p is .../table_name/country=US/state=CA
+...
+.../table_name/country=US/state=NY
 
 	
 How does partitioning help in the faster execution of queries? 
