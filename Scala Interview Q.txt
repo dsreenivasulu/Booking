@@ -514,10 +514,51 @@ SBT stands for Scala Build Tool. Its a Simple Build Tool to develop Scala-based 
 Most of the people uses SBT Build tool for Play and Scala Applications. For example, IntelliJ IDEA Scala Plugin by default uses SBT as Build tool for this purpose.
 
 What are the available Unit Testing, Functional Testing and/or BDD Frameworks for Play and Scala Based applications?
-Spec2
-ScalaTest
-ScalaCheck
+ScalaTest 
+  --support test-driven development (TDD) style unit tests
+   class PizzaTests extends FunSuite
+   {
+     test("new pizza has zero toppings") {
+     assert(pizza.getToppings.size == 0)
+    }
+   }
+  --behavior-driven development (BDD) style
+  class PizzaSpec extends FunSpec with BeforeAndAfter {
+  var pizza: Pizza = _
+  before {
+    pizza = new Pizza
+  }
+  describe("A Pizza") {
+    it ("should allow the addition of toppings") {
+      Given("a new pizza")
+      pizza = new Pizza
+
+      When("a topping is added")
+      pizza.addTopping(Topping("green olives"))
+
+      Then("the topping count should be incremented")
+      expectResult(1) {
+        pizza.getToppings.size
+      }
+
+      And("the topping should be what was added")
+      val t = pizza.getToppings(0)
+      assert(t === new Topping("green olives"))
+    }
+  }
+  -To disable method from execution (instead of it change to ignore)
+    ignore ("A new pizza has zero toppings", DatabaseTest) {
+  Given("a new pizza")
+  pizza = new Pizza
+  Then("the topping count should be zero")
+  assert(pizza.getToppings.size == 0)
+}
+ - mocking the class
+ val service = mock[LoginService]
+   
 Mokito
+Spec2
+ScalaCheck
 
 Which IDEs support Play and Scala-Based Applications Development and how?
 IntelliJ IDEA
