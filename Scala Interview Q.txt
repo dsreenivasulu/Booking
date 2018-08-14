@@ -107,10 +107,13 @@ What is PreDef in Scala? What is the main purpose of PreDef in Scala?
 In Scala, PreDef is an object defined in scala package as “scala.PreDef”. It is an utility object.
 It defines many utility methods as shown below:
     Console IO (print,println etc)
-    Collection utility methods
-    String utility methods
-    Implicit conversion methods
+    Collection utility methods(scala.collection.immutable.Map,scala.collection.immutable.Set,scala.collection.immutable.List) 
+    Implicit conversion methods 
+        Java to Scala : (Boolean2boolean(b), Byte2byte(b), Character2char(c), Double2double(d), Float2float(f), Integer2int(i),  Long2long(l), Short2short(s)
+Scala to Java :Implicit conversion from Scala AnyVals to Java primitive wrapper types equivalents.
+ boolean2Boolean(b), byte2Byte(b), char2Character(c), double2Double(d), float2Float(f), int2Integer(i), long2Long(l), short2Short(s)
     Assertion utility methods etc.
+    String utility methods
 print, println, readLine, readInt, require etc methods are defined in PreDef object.	
 We no need to import this object. Automatically all the methods in available in class/object/trait
 
@@ -145,11 +148,11 @@ Tell me some features which are supported by Java, but not by Scala and Vice ver
     Java does not support Operator Overloading, but Scala supports it.
     Java supports ++ and — operators , but Scala does not support them.
     Java has Checked and Unchecked Exceptions, but Scala does not have Checked Exceptions.
-    Scala does not support break and continue statements, but Java uses them.
-    Scala does not have explicit Type casting, but Java supports this feature.
-    Scala supports Pattern Matching, but Java does not.
     Java uses Primitive Data types, but Scala does not have.
     Java supports static members, but Scala does not have static members concept.
+    Scala does not support break and continue statements, but Java uses them.
+    Scala does not have explicit Type casting, but Java supports this feature.
+    Scala supports Pattern Matching, but Java does not.    
     Scala supports Implicits and Traits, Java does not support them
 	
 Is Scala an Expression-Based Language or Statement-Based Language? Is Java an Expression-Based Language or Statement-Based Language?
@@ -157,7 +160,7 @@ In Scala, everything is a value. All Expressions or Statements evaluates to a Va
 In Java, Statements are not Expressions or Values. We cannot assign them to a Variable. So Java is not an Expression-Oriented Language. It is a Statement-Based Language	
 
 What is the difference between Java’s “If..Else” and Scala’s “If..Else”?
-Java’s “If..Else”:In Java, “If..Else” is a statement, not an expression. It does not return a value and cannot assign it to a variable.
+Java’s “If..Else”: In Java, “If..Else” is a statement, not an expression. It does not return a value and cannot assign it to a variable.
 Example:-
  int year;
  if( count == 0) 
@@ -165,7 +168,7 @@ Example:-
  else 
    year = 2015;
 
-Scala’s “If..Else”:In Scala, “If..Else” is an expression. It evaluates a value i.e. returns a value. We can assign it to a variable.
+Scala’s “If..Else”: In Scala, “If..Else” is an expression. It evaluates a value i.e. returns a value. We can assign it to a variable.
  val year = if( count == 0) 2014 else 2015
 Note : we can also java's style if else in scala
 
@@ -501,8 +504,6 @@ Scala’s OOP constructs, which are not supported by Java:
 Scala Traits
 Solving Inheritance Diamond Problem automatically.
 
-
-
 What are the available Build Tools to develop Play and Scala based Applications?
 SBT
 Maven
@@ -531,19 +532,3 @@ SORM(Scala ORM)
 
 What are the Popular Scala-Based Frameworks to develop RESTful Web Services or REST API?
 Play Framework
-
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
-
