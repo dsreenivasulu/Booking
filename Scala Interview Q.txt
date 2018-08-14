@@ -259,7 +259,35 @@ A class can inherit from multiple traits but only one abstract class.
 Abstract classes can have constructor parameters as well as type parameters. Traits can have only type parameters.
 
 What is the difference between a call-by-value and call-by-name parameter?
-The main difference between a call-by-value and a call-by-name parameter is that the former is computed before calling the function, and the later is evaluated when accessed
+call-by-value functions compute the parmeter expression value before calling the function, thus the same value is accessed every time. call-by-name functions recompute the parmeter expression value every time it is accessed.
+call-by-value is default in scala
+def something() = {
+  println("calling something")
+  1 // return value
+}
+call-by-value style (x: Int) 
+  def callByValue(x: Int) = {
+  println("x1=" + x)
+  println("x2=" + x)
+} 
+scala> callByValue(something())
+calling something
+x1=1
+x2=1
+call-by-name style (x: => Int)
+def callByName(x: => Int) = {
+  println("x1=" + x)
+  println("x2=" + x)
+}
+scala> callByName(something())
+calling something
+x1=1
+calling something
+x2=1
+
+What is the => token called?
+lambda operator. Some times referes to as 'goes to' operator
+=> is call by name
 
 What is the difference between a Java method and a Scala function?
 Scala function can be treated as a value. It can be assigned to a val or var, or even returned from another function, which is not possible in Java. 
@@ -272,14 +300,28 @@ and the class also has access to private methods of the object.
 We commonly use Companion Objects for Factories.
 
 What is tail recursion in Scala? What is the benefit?
+method recursion will take too much of stack memory that could result in StackOverFlowError. 
 A function is called tail recursive if the recursive call is the last operation in the function; 
-the method does not rely on the result of the recursive call for any more computation. 
-The most important benefit of the tail recursive function is that compiler can rewrite the method in an iterative fashion,
-similar to a while loop with mutable state. 
-This allows long, deep recursion without taking too much of stack memory that could result in StackOverFlowError. 
-Unfortunately, Java compiler doesn't support tail call optimization but Scala compiler does. 
+Tail recursive function will help prevent overflow in our call stack because the evaluation of our looping construct happens at each step.
 In Scala, you can annotate a function with @tailrec to inform the compiler that this particular method is tail recursive. 
 If the compiler cannot make the function tail recursive, it will throw an error.
+def factorial(n: BigInt): BigInt = {
+    if (n <= 1)
+      1 // Constant, looks fine
+    else
+      n * factorial(n - 1) // This branch actually needs to return back to this point to multiply n with the result of factorial(n - 1), so this branch is not tail-recursive
+  }
+def factorial(n: BigInt): BigInt = {
+    @tailrec 
+    def go(acc: BigInt, n: BigInt): BigInt = {
+      if (n <= 1)
+        acc
+      else
+        go(acc * n, n - 1)
+    }
+    go(1, n)
+  }  
+
 
 What is ‘Unit’ and ‘()’ in Scala?
 The 'Unit' is a type similar to void in Java. it represents 'no value exists'
