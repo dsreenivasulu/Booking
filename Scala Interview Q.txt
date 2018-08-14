@@ -436,6 +436,11 @@ Both isInstanceOf and asInstanceOf methods are defined in Any class
 scala> val str = "Hello".asInstanceOf[String]
  str: String = Hello
  In Java, ‘instanceof’ keyword is similar to Scala’s ‘isInstanceOf’ method. In Java, the following kind of manual type casting is similar to Scala’s ‘asInstanceOf’ method.
+ 
+ What are reserved keywords in scala ? 
+ There are 39 keywords. They are abstract, case, catch, class, def, do, else, extends, false, final, finally, for, forSome, if, implicit, import, lazy, match, new, null, object, override, package, private, protected, return, sealed, super, this, throw, trait, try, true, type, val, var, while, with and, yield. 
+ 
+https://gist.github.com/heathermiller/2ab9ef36910fdfdd20e9 
 
 -------------------------------------------------------------------------------------------------------------------------
 
