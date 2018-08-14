@@ -58,6 +58,8 @@ Dynamic Partition takes more time in loading data compared to static partition
 
 Note :The dynamic partition columns must be specified last among the columns in the SELECT statement and in the same order in which they appear in the PARTITION() clause. 
 
+Note : In case of dynamic parition, Please note that the partitioned column should be the last column in the select clause.
+
 Usually dynamic partition load the data from non partitioned table
 Ex :
 hive>INSERT INTO TABLE <table-name> PARTITION <partition-spec> SELECT * FROM <table-name2>
@@ -65,6 +67,28 @@ hive>INSERT INTO TABLE t2 PARTITION(country) SELECT * from T1;
 create a non-partitioned table t2 and insert data into it.
 now create a table t1 partitioned on intended column(say country).
 load data in t1 from t2 as above
+
+This improvement was especially evident in the case of tables that were holding large historical data — prior to partitioning, a full table scan of these tables was done in order to collect the stats. Partitioning also enabled us to selectively expire portions of data without having to rebuild the table. In addition, we also partitioned our embedded analytics tables that are frequently queried upon by analytics team members. In this case, we selected the candidate columns for partitioning after analyzing the data query patterns.
+
+When choosing a partition column in a table, partitioning column should not have high cardinality (no.of possible values in column).
+
+For example, a table contains employee_id, emp_timestamp and country. if we select emp_timestamp as partitioning column, then we will end up creating billions of folders in HDFS.
+
+This will increase overhead on Name Node and decrease overall performance. In this case, we can choose country as partitioning column, because it will create maximum 196 partitions ( as total number of counties in world are 196).
+
+Bucketing decomposes data in each partition into equal number of parts as we specify in DDL.
+
+In this example, we can declare employee_id as bucketing column, and no.of buckets as 4.
+
+If we have 10000 records in USA partition, then each bucket file will have 2500 records inside USA partition.
+
+Further if we apply "sorted by" clause on employee_id , then joining of two tables with same bucketed and sorted column will be very quick.
+
+
+
+Bucketing works well when the field has high cardinality and data is evenly distributed among buckets.
+Partitioning works best when the cardinality of the partitioning field is not too high.
+
 
 ---------------------------------------------------------------------------------------------------------
 Dynamic partitioning nonstrict mode disabled by default why ?
@@ -141,7 +165,7 @@ Partitioning table gives effective results when,
 There are limited number of partitions
 Comparatively equal sized partitions
 But this may not possible in all scenarios. Like (country)One partition may have 80% of data and another partition may have 20% of data 
-So, In these cases Partitioning will not be ideal..
+So, In these cases Partitioning will not be ideal.. And also With too many small partitions, the task of recursively scanning the directories becomes more expensive than a full table scan of the table
 
 To overcome the problem of partitioning, Hive provides Bucketing concept, another technique for decomposing table data sets into more manageable parts.
 
@@ -272,10 +296,19 @@ ALTER TABLE name [PARTITION (partition_spec)]
   | TBLPROPERTIES (table_properties)
   | SERDEPROPERTIES (serde_properties) }
 
+How to change the parition column data type ?
+-- Change the column type to string
+ALTER TABLE tablename PARTITION COLUMN (partn STRING);
+
 How to drop the partition
 ALTER TABLE table_name DROP [IF EXISTS] PARTITION partition_spec PURGE;
 ALTER TABLE logs DROP PARTITION (dt='2008-08-08', country='us');
 If PURGE is specified, the partition data does not go to the .Trash/Current directory    
+
+How to drop all the partition ?
+ex : I have year partition with multiple values. How to drop 
+alter table schedule_events drop if exists partition (year<>'');
+This task is to implement ALTER TABLE DROP PARTITION for all of the comparators, < > <= >= <> = != instead of just for ="
 
 How to rename partition
 ALTER TABLE table_name PARTITION partition_spec RENAME TO PARTITION partition_spec;
