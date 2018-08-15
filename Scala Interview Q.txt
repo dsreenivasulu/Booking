@@ -393,6 +393,15 @@ Option/Some/None
 
 6. Visitor Design Pattern : used for Pattern matching
 
+What is Option in Scala? What are Some and None? What is Option/Some/None Design Pattern in Scala?
+Option is used to represent optional values that is either exist or not exist.
+Option is an abstract class and it two subclasses: Some and None. Some is used to represent existing value. None is used to represent non-existent value.
+Option used in collections and pattern matching. All three (Option, Some and None) are defined in “scala” package like “scala.Option”.
+
+What is Either in Scala? What are Left and Right in Scala? Explain Either/Left/Right Design Pattern in Scala?
+In Scala, Either is an abstract class. It is used to represent one value of two possible types. It takes two type parameters: Either[A,B].
+It exactly have two subtypes: Left and Right. If Either[A,B] represents an instance A that means it is Left. If it represents an instance B that means it is Right.
+
 -------------------------------------------------------------------------------------------------------------------------
 
 How Scala solves Inheritance Diamond Problem automatically and easily than Java 8?
@@ -503,15 +512,6 @@ abstract class Base(db: Database) {
 }
 There is no need for an abstract keyword; simply leaving the body of the method undefined makes it abstract.
 Usage : We want to create a base class that requires constructor arguments
-
-What is Option in Scala? What are Some and None? What is Option/Some/None Design Pattern in Scala?
-Option is used to represent optional values that is either exist or not exist.
-Option is an abstract class and it two subclasses: Some and None. Some is used to represent existing value. None is used to represent non-existent value.
-Option used in collections and pattern matching. All three (Option, Some and None) are defined in “scala” package like “scala.Option”.
-
-What is Either in Scala? What are Left and Right in Scala? Explain Either/Left/Right Design Pattern in Scala?
-In Scala, Either is an abstract class. It is used to represent one value of two possible types. It takes two type parameters: Either[A,B].
-It exactly have two subtypes: Left and Right. If Either[A,B] represents an instance A that means it is Left. If it represents an instance B that means it is Right.
 
 What is the equivalent construct of Scala’s Option in Java SE 8?  
 Optional
