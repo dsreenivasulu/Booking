@@ -193,6 +193,8 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions.pernode=1000;
 set hive.enforce.bucketing = true;
 
+CREATE TABLE table_name PARTITIONED BY (partition1 data_type, partition2 data_type,….) CLUSTERED BY (column_name1, column_name2, …) SORTED BY (column_name [ASC|DESC], …)] INTO num_buckets BUCKETS;
+
 CREATE TABLE user_info_bucketed(user_id BIGINT, firstname STRING, lastname STRING)
 COMMENT 'A bucketed copy of user_info'
 PARTITIONED BY(ds STRING)
