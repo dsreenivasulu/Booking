@@ -1,0 +1,266 @@
+Hadoop File formats : 
+Text File Format:
+------------------
+Text file format is a default storage format
+Data is stored into lines. Lines are terminated by a newline character (\n in the typical UNIX fashion). Each line is a record. 
+Basically it helps in generating key-value pairs from the text. key is record the position in the file(byte-offset) and Value is complete record
+Used for Simple text-based files.
+We can use the text format to interchange the data with other client application. 
+We can use the compression (BZIP2) on the text file to reduce the storage spaces.
+Text:Load the data from CSV and JSON. Not good for querying the data Also do not support the block compression, in most case they are also not splittable
+
+Supported compression codecs are LZO, gzip, bzip2, Snappy	
+
+Sequence file:Sequence files are Hadoop flat files which stores values in binary key-value pairs.
+The sequence files are in binary format and these files are able to split. 
+The main advantages of using sequence file is to merge two or more files into one file.
+Used to transfer data between map/reduce phases.they are splittable which means they are good for map/reduce
+
+Supported compression codecs are Snappy, gzip, deflate, bzip2
+
+
+RCFILE stands of Record Columnar File which is another type of binary file format which offers high compression rate on the top of the rows. 
+RCFILE is used when we want to perform operations on multiple rows at a time.
+RCFILEs are flat files consisting of binary key/value pairs, which shares much similarity with SEQUENCEFILE. 
+RCFILE stores columns of a table in form of record in a columnar manner.
+
+Supported compression codecs are Snappy, gzip, deflate, bzip2	
+
+ORC:
+ORC stands for Optimized Row Columnar which means it can store data in an optimized way than the other file formats. 
+ORC reduces the size of the original data up to 75%(eg: 100GB file will become 25GB). 
+As a result the speed of data processing also increases. ORC shows better performance than Text, Sequence and RC file formats.
+ORC file format breaks the file into set of rows called stripes(default strip size is 250MB)
+Stripes are further divided into three more sections the index section the actual data section and a stripe footer section
+the index section  that contains a set of indexes for the stored data. 
+both index and data section are stored as columns so that only the columns where the required data is present, is read. 
+Index data consists of min and max values for each column as well as the row positions within each column. 
+ORC indexes help to locate the stripes based on the data required as well as row groups.
+The Stripe footer contains the encoding of each column and the directory of the streams as well as their location.
+
+Supported compression codecs are NONE, ZLIB, SNAPPY. (default is ZLIB)
+
+RC VS ORC
+Better encoding of data
+Internal indexes and statistics on the data.
+Tight integration with Hive's vectorized execution, which produces much faster processing of rows
+Support for new ACID features in Hive (transactional insert, update,and delete).
+
+
+Avro File format
+Apache Avro is a row-oriented storage format for Hadoop (as well as a remote procedure call and data serialization framework)
+Avro’s format stores data structure definitions with the data. Avro implementations can use these definitions at runtime to present data to applications in a generic way rather than code generation
+Avro relies on json based schema for serialization/deserialization. When Avro data is stored in a file, its schema is stored with it, so that files may be processed later by any program. 
+If the program reading the data expects a different schema, this can be easily resolved, since both schemas are present.
+Avro data files have the .avro extension
+
+Mainly used for serialization,fast binary format,support block compression and splittable.Most important they support schema evolution
+
+Avro data files have the .avro extension. Make sure the files you create have this extension, since some tools look for it to determine which files to process as Avro (e.g. AvroInputFormat and AvroAsTextInputFormat for MapReduce and Streaming).
+You can exchange data between Hadoop ecosystem and program written in any programming languages.
+
+Supported compression codecs are Null, deflate, snappy. (By default Avro data files are not compressed)
+
+Parquet File format : columnar format
+Parquet is a column-oriented storage format for hadoop
+Parquet stores binary data in a column-oriented way, where the values of each column are organized so that they are all adjacent and enable better compression.
+Parquet is especially good for queries scanning particular columns within a table
+Advantages :
+Consumes less space :Organizing by column allows for better compression, as data is more homogeneous. The space savings are very noticeable at the scale of a Hadoop cluster.
+Limit the I/O operations : I/O operations will be reduced as we can efficiently scan only a subset of the columns while reading the data.
+Fetches only required columns : Column oriented is excellent when specific columns needs to be retrieved 
+http://bigdata.devcodenote.com/2015/04/parquet-file-format.html
+
+Supported compression codecs are Snappy,gzip  (default is snappy)
+
+---------------------------------------------------------------------------------------------------
+RC VS ORC VS Parquet
+ORC+Zlib has better performance than Paqruet + Snappy
+
+Parquet default compression is SNAPPY.
+ORC default compression is Zlib
+
+Parquet might be better if you have highly nested data, because it stores its elements as a tree
+Apache ORC might be better if your file-structure is flattened.
+
+
+And as far as I know parquet does not support Indexes yet. ORC comes with a light weight Index ORC format including block level index for each column
+
+Hive has a vectorized ORC reader but no vectorized parquet reader.
+Spark has a vectorized parquet reader and no vectorized ORC reader.
+Spark performs best with parquet, hive performs best with ORC.
+
+I've seen similar differences when running ORC and Parquet with Spark.
+Vectorization means that rows are decoded in batches, dramatically improving memory locality and cache utilization.
+
+ACID transactions are only possible when using ORC as the file format
+
+Couple of considerations for Parquet over ORC in Spark are: 1) Easily creation of Dataframes in spark. No need to specify schemas. 
+2) Worked on highly nested data.
+Spark and Parquet is good combination
+
+
+Parquet vs Avro Format
+Avro is a row-based storage format for Hadoop.
+Parquet is a column-based storage format for Hadoop.
+If our use case typically scans or retrieves all of the fields in a row in each query, Avro is usually the best choice.
+If our dataset has many columns, and our use case typically involves working with a subset of those columns rather than entire records, Parquet is optimized for that kind of work.
+
+
+----------------------------------------------------
+
+
+how-to-unzip-large-xml-files-into-one-hdfs-directory
+I have a requirement to load Zip files from HDFS directory, unzip it and write back to HDFS in a single directory with all unzipped files. The files are XML and the size varies in GB.
+Firstly, I approached by implementing the Map-Reduce program by writing a custom InputFormat and Custom RecordReader to unzip the files and provide these contents to mapper, thereafter each mapper process and writes to HDFS using MultiOutput Format. The map reduce job running on YARN.
+Must read : https://stackoverflow.com/questions/28915507/hadoophow-xml-files-can-be-stored-in-hdfs-and-processed-by-mappers
+
+
+------------------------------------------------------------------------------------------------------------
+How to load xm in hive
+STEP 1 : CREATING INPUT XML FILE WHICH WE WILL LOAD IN HIVE TABLE
+nano student.xml
+
+<student> <id>1</id> <name>Milind</name> <age>25</age> </student>
+<student> <id>2</id> <name>Ramesh</name> <age>Testing</age> </student>
+
+STEP 2 : LOG IN TO HIVE
+hive
+
+STEP 3 : CREATING HIVE TABLE
+create table student_xml( studinfo string) ;
+
+STEP 4 : LOADING DATA INTO HIVE TABLE
+load data local inpath '/home/hduser/student.xml' into table student_xml;
+
+STEP 5 : QUERYING THE LOADED DATA
+select * from student_xml;
+
+STEP 6 : CREATING A VIEW ON TOP OF NEWLY CREATED HIVE TABLE FOR GETTING NEWLY ADDED RECORDS
+create view student_xml_view as SELECT xpath_int(studinfo ,'student/id'),xpath_string(studinfo ,'student/name'),xpath_string(studinfo ,'student/age') FROM student_xml;
+
+STEP 7 : QUERYING THE CREATED VIEW
+select * from student_xml_view;
+
+STEP 8 : ADDING ONE MORE FILE TO CHECK VIEW FUNCTIONALITY
+load data local inpath '/home/hduser/student.xml' into table student_xml;
+
+STEP 9 : QUERYING VIEW FOR INCREMENTAL RECORDS
+select * from student_xml_view;
+
+
+OR by using IBM xmlserde
+-----------------------
+CREATE TABLE treasury.xml_auctions(
+auctionDate string,
+maturityDate string,
+maturityAmt double 
+ )
+ROW FORMAT SERDE 'com.ibm.spss.hive.serde2.xml.XmlSerDe'
+WITH SERDEPROPERTIES (
+"column.xpath.auctionDate"="/AuctionAnnouncement/AuctionDate/text()",
+"column.xpath.maturityDate"="/AuctionAnnouncement/MaturityDate/text()"
+"column.xpath.maturityAmt"="/AuctionAnnouncement/MatureSecurityAmount/text()"
+)
+STORED AS
+INPUTFORMAT 'com.ibm.spss.hive.serde2.xml.XmlInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+TBLPROPERTIES (
+"xmlinput.start"="
+<AuctionAnnouncement”,
+"xmlinput.end”=“</AuctionAnnouncement>"
+);
+
+XML processing and schema Evolution
+Option 1:
+
+Sqoop import into HDFS -> Convert the xml to multiple text files (using map reduce) -> Create hive tables (A) for each of these text files -> Create avro schema for each of these text files -> Create hive tables (B) with these avro schemas -> Load from A to B -> Merge the new (if exist) and the old avro schema
+
+In this option quite a bit of manual intervention is required to create hive tables, avro schemas.
+
+The merged schemas becomes the schema for the hive tables
+
+------------------------------------------------------------------------------------------------------------
+what is compression codecs ?
+
+File compression brings two major benefits: it reduces the space needed to store files, and it speeds up data transfer across the network or to or from disk.
+If the input file is compressed, then the bytes read in from HDFS is reduced, which means less time to read data. This time conservation is beneficial to the performance of job execution.
+If the input files are compressed, they will be decompressed automatically as they are read by MapReduce, using the filename extension to determine which codec to use. For example, a file ending in .gz can be identified as gzip-compressed file and thus read with GzipCodec.
+
+Common input format
+Compression format  File extention  Splittable
+
+gzip                  .gz             No
+
+bzip2                 .bz2            Yes
+
+LZO                   .lzo          Yes if indexed
+
+Snappy               .snappy         No
+
+ZLIB                
+
+**Note : Only bzip2 formatted files are splitable and other formats like zlib, gzip, LZO, LZ4 and Snappy formats are not splitable
+LZO is licined.
+
+**Note : Snappy, ZLIB, LZO etc. compression codecs are not splittable i.e. mappers cannot divide their work processing a single large file in parallel you become confused because you definitely know that all these codecs are widely used in Hadoop.
+The key is that these codecs are used with SequenceFile, ORCFile and other file formats that support block structure i.e compression is applied at the block level, not for the entire file. As the result mappers can concurrently read a single large file decompressing individual blocks.
+
+On the other hand, text file format does not support block concept, so you can only compress the whole file, and as a result you cannot use multiple mappers to concurrently read the compressed file
+
+ 
+Reasons to compress:
+a) Data is mostly stored and not frequently processed. It is usual DWH scenario. In this case space saving can be much more significant then processing overhead 
+b) Compression factor is very high and thereof we save a lot of IO. 
+c) Decompression is very fast (like Snappy) and thereof we have a some gain with little price 
+d) Data already arrived compressed
+
+Reasons not to compress
+a) Compressed data is not splittable. Have to be noted that many modern format are built with block level compression to enable splitting and other partial processing of the files. b) Data is created in the cluster and compression takes significant time. Have to be noted that compression usually much more CPU intensive then decompression. 
+c) Data has little redundancy and compression gives little gain.
+
+Lets assume we have a file of 1 GB size in HDFS whose block size is 64 MB. Which implies the file is stored in 16 blocks. The MapReduce job using this file as input will create 16 input splits, each processed independently as input to a separate map task.
+
+Imagine now the file is a gzip-compressed file whose compressed size is 1 GB. As before, HDFS will store the file as 16 blocks. However, creating a split for each block won’t work since it is impossible to start reading at an arbitrary point in the gzip stream and therefore impossible for a map task to read its split independently of the others. The gzip format uses DEFLATE to store the compressed data, and DEFLATE stores data as a series of compressed blocks. The problem is that the start of each block is not distinguished in any way that would allow a reader positioned at an arbitrary point in the stream to advance to the beginning of the next block, thereby synchronizing itself with the stream. For this reason, gzip does not support splitting.
+
+In this case, MapReduce will do the right thing and not try to split the gzipped file, since it knows that the input is gzip-compressed (by looking at the filename extension) and that gzip does not support splitting. This will work, but at the expense of locality: a single map will process the 16 HDFS blocks, most of which will not be local to the map. Also, with fewer maps, the job is less granular, and so may take longer to run.
+
+If the file in our hypothetical example were an LZO file, we would have the same problem since the underlying compression format does not provide a way for a reader to synchronize itself with the stream. However, it is possible to preprocess LZO files using an indexer tool that comes with the Hadoop LZO libraries. The tool builds an index of split points, effectively making them splittable when the appropriate MapReduce input format is used.
+
+http://comphadoop.weebly.com/
+
+Note : we can compress out put file, we can compress intermediate data 
+
+
+
+
+-----------------------------------------------
+How to convert existing table file format to another file format ?
+CREATE TABLE mytable (
+...
+) STORED AS orc;
+
+To convert existing data to ORCFile create a table with the same schema as the source table plus stored as orc, then you can use issue a query like:
+
+INSERT INTO TABLE orctable SELECT * FROM oldtable;
+
+Impala vs ORC ?
+if you are planning on running the majority of your queries in Impala then ORC would not be a good candidate. 
+You can, instead, use the similar RCFile format, or Parquet.
+-------------------------------------------
+
+Note : We cannot load data into RCFILE and ORCFILE directly. First we need to load data into another table and then we need to overwrite it into our newly created ORCFILE.
+
+------------------------
+zip vs gzip
+=========
+zip : single file compression ex : filename.zip
+gzip : Multiple file compression ex : filename.tar.gz
+
+
+SET hive.exec.compress.output=true;
+hive> SET mapred.max.split.size=256000000;
+hive> SET mapred.output.compression.type=BLOCK;
+hive> SET mapred.output.compression.codec=org.apache.hadoop.io.compress.SnappyCodec;
+
+
