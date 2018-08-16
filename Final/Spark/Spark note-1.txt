@@ -57,7 +57,6 @@ Typical spark application workflow:
 To hold the results, we need data structure like data frames, data sets, RDD
 Note : 2.x recommends to use data frames and data sets. Finally they will use RDD
 
-
 Immutable other ex : String in java, collections in scala. Big data by default immutable in nature(HDFS)
 What is the use/benefit of Immutable : we can achieve parallelism and caching
 
@@ -158,7 +157,6 @@ Amazon S3
 Do you need to install Spark on all nodes of Yarn cluster while running Spark on Yarn?
 No because Spark runs on top of Yarn. So, you just have to install Spark on one node.
 
-
 Parquet  
 Parquet is an open source file format for Hadoop. Parquet stores nested data structures in a flat columnar format compared to a traditional approach where data is stored in row-oriented approach, parquet is more efficient in terms of storage and performance.
 There are several advantages to columnar formats:
@@ -194,10 +192,7 @@ Does Apache Spark provide check pointing?
 Lineage graphs are always useful to recover RDDs from a failure but this is generally time consuming if the RDDs have long lineage chains. 
 Spark has an API for check pointing i.e. a REPLICATE flag to persist. However, the decision on which data to checkpoint - is decided by the user. 
 Checkpoints are useful when the lineage graphs are long and have wide dependencies.
-
 ------------------------------------------------------------
-
-   
 Why a New Programming Model?
 MapReduce greatly simplified big data analysis
 But as soon as it got popular, users wanted more:
@@ -211,13 +206,9 @@ Slow due to replication, serialization, and disk IO
 
 Where you use spark 
 Exploring log analysis
-   
 -----------------------------------------------------------------------------
 
 Iterative algorithms in Hadoop
 The general idea for iterative algorithms in MapReduce is to chain multiple jobs together, using the output of the last one as the input of the next one. An important consideration is that, given the usual size of the data, the termination condition must be computed within the MapReduce program.
 The standard MapReduce model does not offer simple elegant ways to do this, but Hadoop has some added features that simplify this task: Counters.
 To check for a termination condition with Hadoop counters, you run the job and collect statistics while its running. Then you access the counters and get their values, you might also compute derivate measures from counters and finally decide whether to continue iterating or to stop.   
-   
-	
-  
