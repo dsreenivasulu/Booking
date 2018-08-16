@@ -172,21 +172,6 @@ RDD and shared variables
 What are Paired RDD?
 Paired RDDs are the RDD-containing key-value pair. A key-value pair (KYP) contains two linked data item. Here Key is the identifier and Value are the data corresponding to the key value.
 
-What is Directed Acyclic Graph(DAG)?
-RDDs are formed after every transformation. At high level when we apply action on these RDD, Spark creates a DAG. 
-DAG is a finite directed graph with no directed cycles.
-There are so many vertices and edges, where each edge is directed from one vertex to another. 
-It contains a sequence of vertices such that every edge is directed from earlier to later in the sequence. 
-It is a strict generalization of MapReduce model. DAG lets you get into the stage and expand in detail on any stage.
-In the stage view, the details of all RDDs that belong to that stage are expanded.
-
-What are the benefits of lazy evaluation?
-Using lazy evaluation we can:
-Increase the manageability of the program.
-Saves computation overhead and increases the speed of the system.
-Reduces the time and space complexity.
-provides the optimization by reducing the number of queries
-
 How can data transfer be minimized when working with Apache Spark?
 By using a broadcast variable 
 Using Accumulator 
@@ -249,6 +234,13 @@ scala> r2.foreach(println)
 (a,0)
 (b,1)
 Above example confirm it. The red has 3 partitions, and a with index 0, b with index 1, etc.
+
+why reduce() function as action and reduceByKey as transformation ?
+reduce() is a function that operates on an RDD of objects while reduceByKey() is a function that operates on an RDD of key-value pairs.
+reduce is aggregating/combining all the elements on an RDD and result output is a single value but not an rdd.
+while reduceByKey is aggregating/combining all the elements for a specific key on RDD pairs and result utput is a Map<Key, Value> and it may still be processed with other transformations
+
+reduce() outputs a collection which does not add to the directed acyclic graph (DAG) so is implemented as an action. Because once the collection is returned, we know no longer refer to it as an RDD which is the basic dataset unit in spark. However, reduceByKey() returns an RDD which is just another level/state in the DAG, therefore is a transformation.
 -----------------------------------------------------------------------------------------------------
 Why does the picture of Spark come into existence?
 To overcome the drawbacks of Apache Hadoop like Hadoop provides batch processing only and Hadoop used disk-based processing, Spark came into the picture.
