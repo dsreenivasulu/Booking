@@ -75,7 +75,11 @@ result.map(x=>x*2) //semantic error at the compile time. Map cannot apply on int
 Caching : Immutable data allows to cache the data longer time
 Caching data improves execution engine performance
 Map/Reduce is immutable but not lazy
-	
+
+What are the benefits of lazy evaluation?
+Saves computation overhead and increases the speed of the system.
+Reduces the time and space complexity.
+provides the optimization by reducing the number of queries
 ---------------------------------------------------------------------------------------------------------------------	
 SparkContext :  
 A SparkContext represents the connection to a Spark cluster, and can be used to create RDDs, accumulators and broadcast variables on that cluster.
@@ -172,7 +176,7 @@ Lineage Graph is the graph that has all the parent RDDs for an RDD.
 By applying a different transformation on an RDD results in lineage graph.
 So It is a graph of all transformation operation that needs to execute when an action operation is called. 
 In Lineage Graph, All the transformations are materialized and creates a logical execution plan.
-When we derives the new RDD from existing (previous) RDD using transformation, Spark keeps the track of all the dependencies between RDD is called lineage graph.
+When we derives the new RDD from existing (previous) RDD using transformation, Spark keeps the track of all the dependencies between RDD in lineage graph.
 
 Lineage Graph is useful
 (1) When there is a demand for computing the new RDD.
@@ -192,6 +196,22 @@ Does Apache Spark provide check pointing?
 Lineage graphs are always useful to recover RDDs from a failure but this is generally time consuming if the RDDs have long lineage chains. 
 Spark has an API for check pointing i.e. a REPLICATE flag to persist. However, the decision on which data to checkpoint - is decided by the user. 
 Checkpoints are useful when the lineage graphs are long and have wide dependencies.
+
+What is Directed Acyclic Graph(DAG)?
+RDDs are formed after every transformation. At high level when we apply action on these RDD, Spark creates a DAG. 
+DAG is a finite directed graph with no directed cycles.
+There are so many vertices and edges, where each edge is directed from one vertex to another. 
+It contains a sequence of vertices such that every edge is directed from earlier to later in the sequence. 
+It is a strict generalization of MapReduce model. DAG lets you get into the stage and expand in detail on any stage.
+In the stage view, the details of all RDDs that belong to that stage are expanded.
+
+what is difference between lineage graph and dag ?
+Lineage graph deals with RDDs so it is applicable up to till transformations 
+Whereas, DAG shows the complete task, ie; trasnformation + Action. It shows the different stages of a spark job.
+   
+
+
+
 ------------------------------------------------------------
 Why a New Programming Model?
 MapReduce greatly simplified big data analysis
