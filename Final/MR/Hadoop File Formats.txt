@@ -9,14 +9,14 @@ We can use the text format to interchange the data with other client application
 We can use the compression (BZIP2) on the text file to reduce the storage spaces.
 Text:Load the data from CSV and JSON. Not good for querying the data Also do not support the block compression, in most case they are also not splittable
 
-Supported compression codecs are LZO, gzip, bzip2, Snappy	
+Supported compression codecs are gzip, bzip2, Snappy,	LZO
 
 Sequence file:Sequence files are Hadoop flat files which stores values in binary key-value pairs.
 The sequence files are in binary format and these files are able to split. 
 The main advantages of using sequence file is to merge two or more files into one file.
 Used to transfer data between map/reduce phases.they are splittable which means they are good for map/reduce
 
-Supported compression codecs are Snappy, gzip, deflate, bzip2
+Supported compression codecs are gzip, bzip2, Snappy, deflate
 
 
 RCFILE stands of Record Columnar File which is another type of binary file format which offers high compression rate on the top of the rows. 
@@ -24,7 +24,7 @@ RCFILE is used when we want to perform operations on multiple rows at a time.
 RCFILEs are flat files consisting of binary key/value pairs, which shares much similarity with SEQUENCEFILE. 
 RCFILE stores columns of a table in form of record in a columnar manner.
 
-Supported compression codecs are Snappy, gzip, deflate, bzip2	
+Supported compression codecs are gzip, bzip2, Snappy, deflate
 
 ORC:
 ORC stands for Optimized Row Columnar which means it can store data in an optimized way than the other file formats. 
@@ -32,7 +32,7 @@ ORC reduces the size of the original data up to 75%(eg: 100GB file will become 2
 As a result the speed of data processing also increases. ORC shows better performance than Text, Sequence and RC file formats.
 ORC file format breaks the file into set of rows called stripes(default strip size is 250MB)
 Stripes are further divided into three more sections the index section the actual data section and a stripe footer section
-the index section  that contains a set of indexes for the stored data. 
+the index section that contains a set of indexes for the stored data. 
 both index and data section are stored as columns so that only the columns where the required data is present, is read. 
 Index data consists of min and max values for each column as well as the row positions within each column. 
 ORC indexes help to locate the stripes based on the data required as well as row groups.
@@ -45,7 +45,6 @@ Better encoding of data
 Internal indexes and statistics on the data.
 Tight integration with Hive's vectorized execution, which produces much faster processing of rows
 Support for new ACID features in Hive (transactional insert, update,and delete).
-
 
 Avro File format
 Apache Avro is a row-oriented storage format for Hadoop (as well as a remote procedure call and data serialization framework)
@@ -72,7 +71,6 @@ Fetches only required columns : Column oriented is excellent when specific colum
 http://bigdata.devcodenote.com/2015/04/parquet-file-format.html
 
 Supported compression codecs are Snappy,gzip  (default is snappy)
-
 ---------------------------------------------------------------------------------------------------
 RC VS ORC VS Parquet
 ORC+Zlib has better performance than Paqruet + Snappy
@@ -82,7 +80,6 @@ ORC default compression is Zlib
 
 Parquet might be better if you have highly nested data, because it stores its elements as a tree
 Apache ORC might be better if your file-structure is flattened.
-
 
 And as far as I know parquet does not support Indexes yet. ORC comes with a light weight Index ORC format including block level index for each column
 
@@ -99,22 +96,17 @@ Couple of considerations for Parquet over ORC in Spark are: 1) Easily creation o
 2) Worked on highly nested data.
 Spark and Parquet is good combination
 
-
 Parquet vs Avro Format
 Avro is a row-based storage format for Hadoop.
 Parquet is a column-based storage format for Hadoop.
 If our use case typically scans or retrieves all of the fields in a row in each query, Avro is usually the best choice.
 If our dataset has many columns, and our use case typically involves working with a subset of those columns rather than entire records, Parquet is optimized for that kind of work.
 
-
 ----------------------------------------------------
-
-
 how-to-unzip-large-xml-files-into-one-hdfs-directory
 I have a requirement to load Zip files from HDFS directory, unzip it and write back to HDFS in a single directory with all unzipped files. The files are XML and the size varies in GB.
 Firstly, I approached by implementing the Map-Reduce program by writing a custom InputFormat and Custom RecordReader to unzip the files and provide these contents to mapper, thereafter each mapper process and writes to HDFS using MultiOutput Format. The map reduce job running on YARN.
 Must read : https://stackoverflow.com/questions/28915507/hadoophow-xml-files-can-be-stored-in-hdfs-and-processed-by-mappers
-
 
 ------------------------------------------------------------------------------------------------------------
 How to load xm in hive
@@ -147,7 +139,6 @@ load data local inpath '/home/hduser/student.xml' into table student_xml;
 
 STEP 9 : QUERYING VIEW FOR INCREMENTAL RECORDS
 select * from student_xml_view;
-
 
 OR by using IBM xmlserde
 -----------------------
@@ -231,9 +222,6 @@ http://comphadoop.weebly.com/
 
 Note : we can compress out put file, we can compress intermediate data 
 
-
-
-
 -----------------------------------------------
 How to convert existing table file format to another file format ?
 CREATE TABLE mytable (
@@ -262,5 +250,4 @@ SET hive.exec.compress.output=true;
 hive> SET mapred.max.split.size=256000000;
 hive> SET mapred.output.compression.type=BLOCK;
 hive> SET mapred.output.compression.codec=org.apache.hadoop.io.compress.SnappyCodec;
-
 
