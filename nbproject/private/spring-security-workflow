@@ -106,6 +106,7 @@ public class DaoAuthenticationProvider extends AbstractUserDetailsAuthentication
     </http>
 
 https://blog.imaginea.com/spring-security-architecture-part-1/	
+https://spring.io/guides/topicals/spring-security-architecture/
 	
 Spring security version 3.2.9.  Latest is version 5.x	
 
