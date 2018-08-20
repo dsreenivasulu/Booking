@@ -1,0 +1,119 @@
+UsernamePasswordAuthenticationFilter will Processes an authentication form submission
+From the form request it will take the username and password parameters (j_useranme, j_passowrd) 
+It will create UsernamePasswordAuthenticationToken with username and password parameters
+And then it will call the AuthenticationManager to authenticate 
+
+public class UsernamePasswordAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+    
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        if (postOnly && !request.getMethod().equals("POST")) {
+            throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
+        }
+        String username = obtainUsername(request);
+        String password = obtainPassword(request);
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(username, password);
+
+        return this.getAuthenticationManager().authenticate(authRequest);
+    }
+AuthenticationManager will have AuthenticationProviders . One among is DaoAuthenticationProvider
+DaoAuthenticationProvider is implemented to retrieves user details from a {@link UserDetailsService}.   
+First it will call loadUserByUsername to load the user from the DB by using UserDetailsService interface. 
+(Here LILAUserDetailsService will implement the UserDetailsService)
+
+public class DaoAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider 
+{
+ Protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication)
+            throws AuthenticationException {
+        UserDetails loadedUser;
+
+        try {
+            loadedUser = this.getUserDetailsService().loadUserByUsername(username);
+			}
+			
+			//call to additionalAuthenticationChecks
+		}
+ @SuppressWarnings("deprecation")
+    protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
+        Object salt = null;
+        if (this.saltSource != null) {
+            salt = this.saltSource.getSalt(userDetails);
+        }
+        if (authentication.getCredentials() == null) {
+            logger.debug("Authentication failed: no credentials provided");
+
+            throw new BadCredentialsException(messages.getMessage(
+                    "AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"), userDetails);
+        }
+        String presentedPassword = authentication.getCredentials().toString();
+
+        if (!passwordEncoder.isPasswordValid(userDetails.getPassword(), presentedPassword, salt)) {
+            logger.debug("Authentication failed: password does not match stored value");
+
+            throw new BadCredentialsException(messages.getMessage(
+                    "AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"), userDetails);
+        }		
+		
+		protected Authentication createSuccessAuthentication(Object principal, Authentication authentication,
+            UserDetails user) {
+        // Ensure we return the original credentials the user supplied,
+        // so subsequent attempts are successful even with encoded passwords.
+        // Also ensure we return the original getDetails(), so that future
+        // authentication events after cache expiry contain the details
+		//Get the getAuthorities roles 
+        UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(principal,
+                authentication.getCredentials(), authoritiesMapper.mapAuthorities(user.getAuthorities()));
+        result.setDetails(authentication.getDetails());
+
+        return result;
+    }
+}
+
+
+
+<authentication-manager alias="_authenticationManager">
+        <authentication-provider ref="roePreAuthenticatedAuthenticationProvider" />
+        <authentication-provider ref="ldapAuthProvider" />
+        <authentication-provider user-service-ref="lilaUserService">
+            <password-encoder hash="md5">
+                <salt-source user-property="salt"/>
+            </password-encoder>
+        </authentication-provider>
+    </authentication-manager>
+	
+	
+	 <http auto-config="true" disable-url-rewriting="true"> <!-- use-expressions="true"> -->
+        <custom-filter position="PRE_AUTH_FILTER" ref="compositePreAuthFilter" />
+        <custom-filter after="FILTER_SECURITY_INTERCEPTOR" ref="redirectingFilter" />
+        <custom-filter before="FORM_LOGIN_FILTER" ref="loggingFilter" />
+
+		<!-- to require HTTPS, change requires-channel from 'any' to 'https' -->
+		<intercept-url pattern="/login.jsp" access="ROLE_GUEST, ROLE_USER, ROLE_RESET_PASSWORD" 
+        	requires-channel="any" />
+        <intercept-url pattern="/launchinbox.html" access="ROLE_GUEST, ROLE_USER" 
+        	requires-channel="any" />
+           
+	   <remember-me />
+
+<!-- ToDo: Change to html -->
+        <anonymous username="guest" granted-authority="ROLE_GUEST" />
+        <form-login login-page="/login.jsp"
+            default-target-url="/index.html"
+        	authentication-failure-url="/login.jsp?login_error=1"
+        	authentication-success-handler-ref="customAuthenticationSuccessHandler"/>
+
+        <request-cache ref="httpSessionRequestCache" />        	
+
+    </http>
+
+https://blog.imaginea.com/spring-security-architecture-part-1/	
+	
+Spring security version 3.2.9.  Latest is version 5.x	
+
+<beans:bean id="securityContext" class="org.springframework.security.core.context.SecurityContextHolder" factory-method="getContext" scope="session">
+      	<aop:scoped-proxy />
+    </beans:bean>
+	
+	web.xml
+	 <session-config>
+    <session-timeout>20</session-timeout>
+</session-config>
