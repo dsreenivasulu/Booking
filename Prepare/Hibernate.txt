@@ -1,0 +1,33 @@
+Cascade 
+========
+Used in Hibernate relationship mapping (Parent - Child relationship) (Owning entity - mapping/associate entity relationship) 
+
+Person.java 
+
+@OneToMany(cascade = CascadeType.ALL)
+private Set<Address> address = new HashSet<address>();
+
+
+JPA Cascade Types using in Hibernate:
+
+CascadeType.ALL : is shorthand for all of the below cascade operations. (PERSIST+MERGE+REMOVE+REFRESH+DETACH)
+
+CascadeType.PERSIST : means that save() or persist() operations cascade to related entities.
+
+CascadeType.MERGE : means that related entities are merged when the owning entity is merged.
+
+CascadeType.REMOVE : removes all related entities association with this setting when the owning entity is deleted.
+
+CascadeType.REFRESH :  does the same thing for the refresh() operation.
+
+CascadeType.DETACH : etaches all related entities if a “manual detach” occurs.
+
+
+Hibernate Specific Cascade Types :
+
+orphanRemoval = true :  When the child object is removed from the parent (Person )relationship 
+and this object is not referenced to any other (Person)relationship then it will deleted from the DB
+
+
+http://docs.jboss.org/hibernate/core/3.6/reference/en-US/html_single/#events
+

@@ -1,0 +1,12 @@
+what is the difference between spring 2.5 and 3.x
+Spring Expression Language
+Java based bean metadata (1.5)
+Support for embedded databases example HSQL, H2, and Derby
+
+what is the difference between spring 3.x and 4.0
+Spring Framework 4.0 provides support for several Java 8 features
+You can use the new @RestController annotation with Spring MVC applications
+Testing Improvements : @WebAppConfiguration,
+the set of mocks in the org.springframework.mock.web package ex MockHttpServletRequest, MockServletContext
+
+https://spring.io/blog/2015/02/11/better-application-events-in-spring-framework-4-2

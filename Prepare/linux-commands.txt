@@ -1,0 +1,92 @@
+->Opended file using sudo vi but what is command to go end of a file
+  command : G
+
+->Command to find a file
+
+  find -name "filename"
+  This will be case sensitive, meaning a search for "filename" is different than a search for "Filename"
+  Search happens in the current directory
+
+  find -iname "filename"
+  This will be case insensitive, i.e igonre the file cases
+  
+  find -name "*.java" (To search all the java files in the current directoy)
+  find -name "abc*"   (To search all the files start with abc in the current directory) 
+  
+  search filename from the root directory
+   find / -name "filename"  (Here / indicates root directory)
+     
+   search filename in specific directory
+     find /home/liadmin/webapps -name   "filename"
+	
+-> command to fine the File Containing a Particular Text String
+    grep "search text" *.java  (Search all the java files contaning search test in the current directory)
+    grep -r "search text" /home/liadmin (Search the all files recurisively in the specified directory)
+    	
+    
+->Navigation Command
+   cd .
+     Current Directory
+   cd ..
+     Parent Directory
+   cd
+     Home Directory
+   cd –
+     To go back to previous directory
+   pwd
+     Present working directory
+
+-> Create/Edit/Remove command
+   vi <File_Name_To Create>
+   Note: If the file not exists,It will open VI editor to write the content in File.
+         If the file exists, It will open VI editor to write the content with existing File
+
+   cat <File-name>
+     It will display the content and return to command prompt.
+  
+    rm  <File-name>
+      Remove the file name
+
+-> 	Display the list of Command Fired in Current Session
+    history                  
+	It will display the last 10 commands fired
+    history 100
+	It will display the last 100 command fired
+->  Current logged in user command is whoami
+->  All logged user command is who
+
+->  command to creat a zip 
+      zip filename.zip file1 file2 folder2 (and so on)
+    To zip folder and its all contens and its sub folders 
+      zip -r filename.zip folder/*
+	To zip specified directory and folder is not current directory  
+	zip -r /tmp/abc.zip /home/test/*    
+	  
+->  command to unzip
+     unzip filename.zip
+	 List all the files stored in a zip file
+	 unzip -l abc.zip or less abc.zip
+	 
+->  command to create a tar file
+    tar -cvf filename.tar /foldername
+    command to extract a tar file
+    tar -xvf filename.tar
+
+-> command to create a Jar file
+    jar -cf myfile.jar *.class
+    command to extract Jar file
+    jar -xf myfile.jar
+    command to execute Jar file
+    java -jar myfile.jar   	
+	 
+->  command to find all running process
+    top or ps
+	command to find the process by name
+    psg <processname> example psg tomcat
+    command to kill the process by id 
+    sudo kill -9 <processid> 	(The -9 tells the kill command that you want to send signal #9, which is called SIGKILL)
+    command to kill the process by name
+    sudo pkill -9 <processname>
+    command to kill all running the processes by name    	
+	sudo killall -9 <processname>
+	  

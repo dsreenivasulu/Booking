@@ -1,0 +1,132 @@
+build.gradle
+import groovy.sql.Sql
+
+apply from: "$rootDir/gradle/envConfig.gradle"
+apply from: "$rootDir/gradle/versioning.gradle"
+apply plugin: 'java'
+
+dependencies {
+  compile 'com.lifeimage:lifeimage-framework:3.9.6',
+          "org.springframework:spring-aop:${springVersion}",
+		    'org.slf4j:slf4j-api:1.7.2'
+			- - - -
+			- - - -
+}
+
+task dbLoadCannedData(type: JavaExec, dependsOn: [createConfigProp, compileJava, saveBuildInfo, intTestClasses]) {
+    description = 'Loads our developer/unit test canned data into the DB.'
+    def classPath = sourceSets.main.runtimeClasspath + sourceSets.intTest.runtimeClasspath + sourceSets.intTest.compileClasspath + sourceSets.intTest.output
+    //classPath += files(buildDir, 'src/main/webapp', 'src/main/webapp/WEB-INF', 'src/main/webapp/WEB-INF/classes')
+    environment = ['CLASSPATH': classPath.getAsPath()]
+    workingDir = projectDir
+    maxHeapSize = '1024m'
+    main = 'com.lifeimage.core.db.CannedDataLoader'
+    systemProperties = ['log4j.configuration': "file:///${projectDir}/src/main/resources/antlog4j.properties"]
+    args = ['canned-context.xml', 'applicationContext-security-test.xml']
+}
+
+ask newDB(type: JavaExec) {
+    description = "updates the existing DB schema without dropping all objects; existing data remains intact; works even when no schema is in DB"
+    group = "Liquibase"
+    classpath configurations.liquibase
+    main = "liquibase.integration.commandline.Main"
+
+    args "--changeLogFile=database/changelog-index.xml"
+    args "--username=${config.server.dbuser}"
+    args "--password=${config.server.dbpass}"
+    args "--url=jdbc:postgresql://${config.server.hostname}:${config.server.dbport}/${config.server.dbname}"
+    args "--driver=org.postgresql.Driver"
+    args "--contexts=production,merge"
+    args "update"
+}
+
+task updateDB(type: JavaExec) {
+    description = "Upgrade a prior DB release version. Not used in development for the most part."
+    group = "Liquibase"
+    classpath configurations.liquibase
+    main = "liquibase.integration.commandline.Main"
+
+    args "--changeLogFile=database/changelog-index.xml"
+    args "--username=${config.server.dbuser}"
+    args "--password=${config.server.dbpass}"
+    args "--url=jdbc:postgresql://${config.server.hostname}:${config.server.dbport}/${config.server.dbname}"
+    args "--driver=org.postgresql.Driver"
+    args "--contexts=production"
+    args "update"
+}
+
+task dropAll(type: JavaExec) {
+    description = "drops all objects in the database - works fine even if the DB has no objects in it already"
+    group = "Liquibase"
+    classpath configurations.liquibase
+    main = "liquibase.integration.commandline.Main"
+
+    args "--changeLogFile=database/changelog-index.xml"
+    args "--username=${config.server.dbuser}"
+    args "--password=${config.server.dbpass}"
+    args "--url=jdbc:postgresql://${config.server.hostname}:${config.server.dbport}/${config.server.dbname}"
+    args "--driver=org.postgresql.Driver"
+    args "dropAll"
+}
+-------------------------------------------------------------------
+gradle.properties
+theGroup=com.lifeimage
+theName=inbox
+myFolder=lila
+theVersion=next-SNAPSHOT
+theSourceCompatibility=1.8
+theTargetCompatibility=1.8
+theDcm4cheVersion=2.0.29
+org.gradle.jvmargs=-Xmx2048m -XX:+CMSClassUnloadingEnabled -XX:+CMSPermGenSweepingEnabled -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
+
+---------------------------------------------------------------------------------
+<changeSet author="name" id="id">
+        <preConditions onFail="MARK_RAN">
+               <sqlCheck expectedResult="1">
+                            select count (*) from t_application_configuration where key = 'local.search.allowed.on.outbound';
+               </sqlCheck>
+        </preConditions>
+        <comment>
+                  RAM-204 reverting changes
+         </comment>
+         <sql>
+                  delete from t_application_configuration where  version = 1 and  section= 'dicom' and  key='local.search.allowed.on.outbound';
+         </sql>
+             <rollback>
+                   We don't support rolling back in LILA
+             </rollback>
+    </changeSet>
+
+    <changeSet id="id" author="name">
+        <preConditions onFail="MARK_RAN" >
+            <not><columnExists tableName="t_nomination" columnName="authorize_reason" /></not>
+        </preConditions>
+        <comment>Add the authorize reason to the nominations table</comment>
+        <addColumn tableName="t_nomination">
+            <column name="authorize_reason" type="varchar(500)"/>
+        </addColumn>
+    </changeSet>
+	
+	CREATE TABLE databasechangelog
+(
+  id character varying(255) NOT NULL,
+  author character varying(255) NOT NULL,
+  filename character varying(255) NOT NULL,
+  dateexecuted timestamp with time zone NOT NULL,
+  orderexecuted integer NOT NULL,
+  exectype character varying(10) NOT NULL,
+  md5sum character varying(35),
+  description character varying(255),
+  comments character varying(255),
+  tag character varying(255),
+  liquibase character varying(20)
+)
+
+CREATE TABLE databasechangeloglock
+(
+  id integer NOT NULL,
+  locked boolean NOT NULL,
+  lockgranted timestamp with time zone,
+  lockedby character varying(255),
+  CONSTRAINT pk_databasechangeloglock PRIMARY KEY (id)
+)

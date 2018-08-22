@@ -1,0 +1,34 @@
+
+1)The interface Job defines the basic properties for a job in the queue. The specific jobs should be implement this
+interface and add any additional properties if needed. Those jobs should be implemented as a Hibernate entity class
+that maps to a database table. Each job queue will have its own database table.
+public interface Job
+{
+   job will have common properties id, submission time, schedueled time, completion time, job status, priority  
+}
+
+2)Job processer is responsible to process actual jobs based on our requirment, All the JobProcessor should implement this interface
+public interface JobProcessor<T extends Job>
+{
+   //processJobs 
+}
+
+3)Job selector responsible for selecting new, incomplete, and completed jobs, All the JobSelector should implement this interface
+public interface JobSelector<T extends Job>
+{
+  getNewJob, getCompletedJobs....
+  
+}
+
+4)The QueueManager defines the operations needed to add, remove, search, and manage the states of jobs in the queue.
+All the QueueManager should implement this interface
+public interface QueueManager<T extends Job>
+{
+   all the methods will talk to DB to get the job status by priority, This interface impl will inject in the JobSelector.
+   
+}
+
+5)QueueProcessor<T extends Job> is responsible to process the jobs in the thread manner. 
+From the thread poll the thread will run and will check any new job is created for the specified processers. If found it will process
+
+https://github.com/evangelist64/java-concurrency/blob/master/Java%20concurrency%20in%20practice.pdf

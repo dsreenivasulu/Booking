@@ -1,0 +1,16 @@
+What is your project versions?
+Advantage of JDK 1.7
+Why we need static imports
+ConcurrentHashmap vs hadhtable
+What is JMS?
+JMS topic and queue
+Angular JS
+DAO Pattern
+Factory Pattern
+Why you use generics in Java
+Singleton pattern
+What pattern used in your project
+Memory issue worked 
+dB performance issue
+DTO object
+DTO object serialised?

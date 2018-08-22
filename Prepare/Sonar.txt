@@ -1,0 +1,4 @@
+--> Boolean expression complexity is 4 (max allowed is 3)
+
+--> Avoid string concation and + instead use StringBuilder
+

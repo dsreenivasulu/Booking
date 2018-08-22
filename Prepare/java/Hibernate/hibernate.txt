@@ -1,0 +1,48 @@
+http://docs.jboss.org/ejb3/app-server/HibernateAnnotations/reference/en/html_single/#d0e2041
+http://docs.jboss.org/hibernate/orm/4.3/manual/en-US/html_single/
+
+
+1)About @Embeddable and @Embedded annotation 
+The @Embedded annotation is used to specify the Address entity should be stored in the STUDENT table as a component.
+
+@Embeddable annotation is used to specify the Address class will be used as a component. 
+The Address class cannot have a primary key of its own, it uses the enclosing class primary key.
+
+Since the Student and Address entities are strongly related (composition relation), it is better to store them in a single table
+
+There are two types of objects in Hibernate 1. Value Object 2. Entities
+
+Value Objects are the objects which can not stand alone for example Address if you say address people will ask whose address is this. so it can not stand alone
+
+Entity Objects are those who can stand alone like College and Student.
+
+So In case of value objects preferred way is to Embed them into an entity object.
+
+To answer why we are creating two different classes, its a OOPs concept that you should have loose coupling and high cohesion among classes, that means you should create classes for specialized purpose only for example your Student class should be all the info related to Student only.
+
+Second point is by creating different classes you promote re-usability 
+
+One entity can be embedded in another entity. The attributes of an entity can be common attributes of more than one entity. In this case there can be one embeddable entity. 
+And this embeddable entity can be embedded in more than one entity. 
+
+2)Entity: In general entity is an object that has some distinct value. In a persistent storage mechanism, an entity is a business object. Each entity has an associated table in relational database. Each instance of the entity represents a row of the table.
+
+Entity class is an annotated POJO (Plain Old java Object). Here are some points to be noted during writing entity class:
+
+· Class must have constructor
+
+· Create getter setter for each field
+
+· Don?t define any field static or final.
+
+Optional Elements are dynamicInsert ,dynamicUpdate, dynamicUpdate, optimisticLock, 	persister, polymorphism, selectBeforeUpdate 
+http://docs.jboss.org/hibernate/core/3.3/reference/en/html/mapping.html#mapping-declaration-class
+
+3)@Inheritance(strategy = InheritanceType.JOINED)
+Defines the inheritance strategy to be used for an entity class hierarchy. It is specified on the entity class that is the root of the entity class hierarchy. If the Inheritance annotation is not specified or if no inheritance type is specified for an entity class hierarchy, the SINGLE_TABLE mapping strategy is used. 
+InheritanceType.JOINED = A strategy in which fields that are specific to a subclass are mapped to a separate table than the fields that are common to the parent class, and a join is performed to instantiate the subclass.
+InheritanceType.SINGLE_TABLE = A single table per class hierarchy. 
+InheritanceType.TABLE_PER_CLASS = A table per concrete entity class.
+
+4)
+

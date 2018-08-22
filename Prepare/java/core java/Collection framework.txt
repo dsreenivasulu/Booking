@@ -1,0 +1,13 @@
+In the set interface if we try to add duplicate elements If the element exists then the add method returns false
+
+How HashSet add method works and how it will check uniquness of the element ?
+public boolean add(E e) {
+            return hashmap.put(e, PRESENT)==null;
+       }
+HashSet uses HashMap internally to store it’s objects. At the time of Hashset creation internally HashMap object willbe created in the HashSet constructor.
+The elements you add into HashSet are stored as keys of this HashMap object. 
+The value associated with those keys will be a constant object reference( Object PRESENT = new Object())
+
+In the map interface if we try to add keys If the key exists then the put method returns old value of the key, If the key doest not exists then it returns null
+
+

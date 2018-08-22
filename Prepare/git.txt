@@ -1,0 +1,89 @@
+1) TO SHOW BOTH REMOTE AND LOCAL BRANCHES.
+     git branch -a   
+	 
+   TO SHOW ONLY REMOTE BRANCHES  
+    git branch -r
+   
+   To show all your tracked remote origin branches  
+	git remote show origin
+ 
+   TO SHOW ONLY LOCAL BRANCHES  
+    git branch 
+
+   To know all your local  branches and to know each local branch of target stream
+    git branch --vv
+	
+2) TO SHOW ALL CONFIGURED REMOTES OF NAMES INTO YOUR ACCOUNT
+    git remote
+	
+	TO SHOW ALL CONFIGURED REMOTES OF NAMES AND THEIR URLS MAPPING INTO YOUR ACCOUNT
+	 git remote --v
+	
+3) TO SWITCH TO EXISITNG BRANCH
+    git checkout old-branch-name
+
+ 
+
+4) To revert the your local single file changes
+   git chekout <full path of file name> this context path we will get from git status of files  	
+
+5) To Delete a git local branch 
+     git branch --delete <branch>
+     git branch -d <branch> # Shorter version
+     git branch -D <branch> # Force delete un-merged branches
+
+   To Delete multiple local branches 
+      git branch -D local-branch-name1 local-branch-name2 local-branch-name3
+	  
+   To delete a remote branch from the server:
+     git push origin :the_remote_branch	  
+	 
+   To delete a multiple remote branches from the server
+     git push origin :the_remote_branch1 :the_remote_branch2
+
+6) To push it to the remote repository, do:
+     git push -u origin <branch-name>     
+	 
+7) How to Merge your remote branch to your local branch
+      git fetch origin (to get the all origin branches updates)
+	  git merge origin/branch-name 
+     	
+	
+8)Setting up new repo and checkout a new repo branch
+git init
+git clone git@github.com:[your user]/lifecycle.git
+git remote add upstream git@github.com:lifeimage/lifecycle.git
+
+--Add a user as remote upstream
+git remote add trosenbaum git@github.com:trosenbaum/lila.git
+ 
+	
+9) git committed to wrong branch but you have to commit to another new branch 
+  
+   //Get the revision by using  
+   git log 
+   git reset <revision number>
+   git checkout -b newbranch  target upstream
+   git commit "your message"
+   
+10) How to create a patch file 
+     command is : git diff > mypatchname.patch
+	 For inclduing new untrack files command is : git diff --cached > mypatch.patch
+	 For including binary files command is : git diff --cached --binary > mypatch.patch
+  
+     You can later apply the patch command is : git apply mypatchname.patch
+
+11) For resolving the git conflicts are you used any tool ? 
+     git mergetool  	 
+    
+	
+	6) I am working on wrong branch, how to copy changes to existing branch Yet to complete
+   git stats   	
+
+12) How to revert the merged PR 
+
+   Get the commit version by running the command as git log then
+   
+   git revert -m 1 b76a5f1f5d3b323679e466a1a1d5f93c8828b269
+
+   

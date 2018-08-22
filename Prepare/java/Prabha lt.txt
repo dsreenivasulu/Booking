@@ -1,0 +1,50 @@
+First question is tell about your application architecture
+What are the technologies used in your application.
+What are the classes and interfaces in collection.
+Explain collection classes and its functionality
+What will happen if remove or add object from collection
+Explain iterator and what will happen if we remove object
+What is difference between Vector and ArrayList
+When will use Array, ArrayList and Set.
+Implement the class with immutability 
+Life cycle of jquery
+Have idea about angular js
+Write spring bean syntax for setter injection and construction injection
+How to enable second level catch in hibernate
+What is interface and abstract
+What is externalization
+Where static variables are stored
+What are the types of memory available
+Hibernate one to many relations(Write code)
+Hibernate (@Entity ,@Table , @ Column)
+Hibernate fetching strategy and explain lazy and eager 
+Difference between hibernate update and merge.
+What is PropertyPlaceHolder and Why we need to use PropertyPlaceHolder
+What are the modules are used in Spring
+How to configure multiple database in hibernate
+What is view resolver in spring
+How to configure another view in spring.
+Design patterns and explanation (Write singleton )
+What is serialization and deserialization
+How to ensure singleton wont duplicate  while deserialization.
+What are the annotations used in spring
+What is @component
+What is componentScan
+
+
+
+Database
+id section             amount 
+1       004                4000
+2       004                1000
+3       004                6000
+4       002                700
+5       002                1000
+6       002                 500
+
+Pick the hihest amount (3 - >6000 , 5->1000) order by section.
+-->What is the role of your project
+--> What is difference between oracle and posgresql 
+--> Waht is the No sQL
+--> How to optimaze memory leakage in your project. How to over come memory limit in your project
+--> 
