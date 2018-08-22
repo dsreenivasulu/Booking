@@ -224,6 +224,14 @@ Case Object is created using “case object” keywords.By default, It’s also 
 case object MyCaseObject
 By Default, Case Object gets toString and hashCode methods. But normal object cannot.
 By Default, Case Object is Serializable. But normal object is not.
+
+What is Scala Type hirerarchy
+Any is super type. It has two types AnyVal and AnyRef
+AnyVal is super type of value types : Byte,Short,Int,Float,Double,Long,Unit
+AnyRef(simial to java.lang.Object) is super type of reference types : String, Java.lang, List, Option, user-defined class
+Nothing : subtype of all types 
+Null : suptype of all reference types
+
 -------------------------------------------------------------------------------------------------------------------------
 What is the latest version of Scala?
 Scala 2.12. requires java8
