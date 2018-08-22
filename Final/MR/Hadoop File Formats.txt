@@ -40,6 +40,8 @@ The Stripe footer contains the encoding of each column and the directory of the 
 
 Supported compression codecs are NONE, ZLIB, SNAPPY. (default is ZLIB)
 
+Impala doesn't support ORC file format. Instead we shoud use parquet
+
 RC VS ORC
 Better encoding of data
 Internal indexes and statistics on the data.
