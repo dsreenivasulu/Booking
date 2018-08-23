@@ -76,6 +76,11 @@ The goal of Hive indexing is to improve the speed of query lookup on certain col
 Hive doesn’t provide automatic index maintenance, so we need to rebuild the index if we overwrite or append data to the table. 
 Also, Hive indexes support table partitions, so a rebuild can be limited to a partition.
 
+If the table data is overwrite or appended we need rebuild index. How to rebuid ?
+ALTER INDEX index_name ON table_name [PARTITION (...)] REBUILD
+
+
+
 Usage of Suitable File format: 
 --------------
 Using appropriate file format based on our data will drastically increase our query performance
