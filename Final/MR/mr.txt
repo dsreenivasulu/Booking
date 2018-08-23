@@ -193,6 +193,100 @@ In order to enable LZO compression set mapred.compress.map.output to true
 -Proper configuration of our cluster
 
 
+Types of Mappers
+---------------
+Identity Mapper : Default mapper : Identity Mapper class implements the identity function, which directly writes all its input key/value pairs into output
+
+Inverse Mapper :This is a generic mapper class which simply reverses (or swaps) its input (key , value ) pairs into (value, key) pairs in output
+
+Token Counter Mapper :This mapper class, tokenizes its input data (splits data into words) and writes each word with a count of 1 in (word, 1) key-value format
+
+Regex Mapper :This mapper class extracts text matching with the given regular expression.
+
+Chain Mapper
+Chain Mapper class can be used to run multiple mappers in a single map task. All mapper classes are run in chained pattern that, the output of the first mapper becomes the input of the second mapper, and so on until the last Mapper, the output of the last Mapper will be written to the task’s output.
+
+No need to specify the output key/value classes for the ChainMapper, this is done by the addMapper() method for the last mapper in the chain
+
+Typef of Reducers
+-----------------------
+Identity Reducer Default reducer :
+It is the default reducer class provided by Hadoop and this class will be picked up by mapreduce job automatically when no other reducer class is specified in the driver class. Similar to Identity Mapper, this class also doesn’t perform any processing on the data and it simply writes all its input data into output.
+
+IntSum Reducer
+This reducer class outputs the sum of integer values associated with each reducer input key. 
+
+LongSum Reducer
+This reducer class outputs the sum of long values per reducer input key. 
+
+Chain Reducer
+Chain Reducer class permits to run a chain of mapper classes after a reducer class within reduce task. The output of the reducer becomes the input of the first mapper and output of the first mapper becomes the input of the second mapper, and so on until the last Mapper, the output of the last Mapper will be written to the task’s output
+
+
+public class WordCount {
+public static void main(String [] args) throws Exception
+{
+Configuration c=new Configuration();
+String[] files=new GenericOptionsParser(c,args).getRemainingArgs();
+Path input=new Path(files[0]);
+Path output=new Path(files[1]);
+Job j=new Job(c,"wordcount");
+j.setJarByClass(WordCount.class);
+j.setMapperClass(MapForWordCount.class);
+j.setReducerClass(ReduceForWordCount.class);
+j.setOutputKeyClass(Text.class);
+j.setOutputValueClass(IntWritable.class);
+FileInputFormat.addInputPath(j, input);
+FileOutputFormat.setOutputPath(j, output);
+System.exit(j.waitForCompletion(true)?0:1);
+}
+public static class MapForWordCount extends Mapper<LongWritable, Text, Text, IntWritable>{
+public void map(LongWritable key, Text value, Context con) throws IOException, InterruptedException
+{
+String line = value.toString();
+String[] words=line.split(",");
+for(String word: words )
+{
+      Text outputKey = new Text(word.toUpperCase().trim());
+  IntWritable outputValue = new IntWritable(1);
+  con.write(outputKey, outputValue);
+}
+}
+}
+public static class ReduceForWordCount extends Reducer<Text, IntWritable, Text, IntWritable>
+{
+public void reduce(Text word, Iterable<IntWritable> values, Context con) throws IOException, InterruptedException
+{
+int sum = 0;
+   for(IntWritable value : values)
+   {
+   sum += value.get();
+   }
+   con.write(word, new IntWritable(sum));
+}
+}
+}
+
+How to execute MapReduce programs
+hadoop jar jarfilename.jar packageName.ClassName  PathToInputTextFile PathToOutputDirectry)
+
+[training@localhost ~]$ hadoop jar MRProgramsDemo.jar PackageDemo.WordCount wordCountFile MRDir1
+
+SplitSize vs BlockSize 
+--------------------
+Split is a logical division of the input data while block is a physical division of data
+So when we store the data, the data will be split and stored based on block size. Default is 128MB
+By default SplitSize is same to BlockSize
+However we can specify SplitSize to control number of mappers in the processing 
+Based on SplitSize number of mappers will be created 
+
+
+
+
+
+
+
+
 
 
 
