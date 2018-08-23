@@ -21,3 +21,13 @@ val parquetFile = sqlContext.parquetFile("people.parquet")
 //Parquet files can also be registered as tables and then used in SQL 	statements.
 parquetFile.registerAsTable("parquetFile”)
 
+registerTempTable is a part of the 1.x API and has been deprecated in Spark 2.0.
+createOrReplaceTempView and createTempView have been introduced in Spark 2.0, as a replacement for registerTempTable.
+createGlobalTempView introduced in Spark 2.0
+
+ Create a Hive managed Parquet table, with HQL syntax instead of the Spark SQL native syntax
+// `USING hive`
+sql("CREATE TABLE hive_records(key int, value string) STORED AS PARQUET")
+// Save DataFrame to the Hive managed table
+val df = spark.table("src")
+df.write.mode(SaveMode.Overwrite).saveAsTable("hive_records")
