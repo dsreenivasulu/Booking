@@ -130,7 +130,7 @@ Are multi-line comments supported in Hive?
 No
 
 How to write single line comments ?
-use - ex : -it is important to understand
+use - ex : -write your comments
 
 What is ObjectInspector functionality?
 To identify the structure of individual columns and the internal structure of the row objects we use ObjectInspector. 
@@ -214,7 +214,11 @@ SELECT explode(map) AS newCol1, NewCol2 From TableName;
 
 I want to see the present working directory in UNIX from hive. Is it possible to run this command from hive?
 Hive allows execution of UNIX commands with the use of exclamatory (!) symbol. 
-Just use the ! Symbol before the command to be executed at the hive prompt. To see the present working directory in UNIX from hive run !pwd at the hive prompt
+Just use the ! Symbol before the command to be executed at the hive prompt. To see the present working directory in UNIX from hive run !pwd at the hive prompt. ex hive> !pwd;
+
+How do we execute hdfs commands in hive ?
+use dfs command 
+hive> dfs -ls;
 
 Is it possible to overwrite Hadoop MapReduce configuration in Hive?
 Yes, hadoop MapReduce configuration can be overwritten by changing the hive conf settings file
@@ -348,14 +352,19 @@ You can also join multiple tables in HBase from Hive and retrieve the result
   
 Can Hive queries executed from the script file ?
 Yes
-Hive> source /path/to/file/file_with_query.hql
+Hive> source /
+
+how to run hive queries from the shell script ?
+hive -e "query goes here" ex: hive -e "select * from emp" 
+hive -f  "path to file" ex: hive -f "/path/to/file/file_with_query.hql"
+ Both of above options can be executed from shellscript
 
 how to tune hive insert (overwrite) partition ? loading 15GB file taking 30 min   
 Verify compress mode and increase the split size
 SET hive.exec.compress.output=true;
 
-SET mapreduce.input.fileinputformat.split.minsize=512000000; ealier it is (2560000000)
-SET mapreduce.input.fileinputformat.split.maxsize=5120000000; ealier it is (2560000000)
+SET mapreduce.input.fileinputformat.split.minsize=512000000; ealier it is (2560000000) bytes
+SET mapreduce.input.fileinputformat.split.maxsize=5120000000; ealier it is (2560000000) bytes
 
 SET mapreduce.output.fileoutputformat.compress.type =BLOCK;
 SET hive.hadoop.supports.splittable.combineinputformat=true;
@@ -559,6 +568,10 @@ SerDe is used if ROW FORMAT is not specified or ROW FORMAT DELIMITED is not spec
 
 CREATE TABLE my_table(a string, b bigint, ...)
 ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+WITH SERDEPROPERTIES (
+  "a"="$.field1",
+  "b"="$.field2"... 
+);
 STORED AS TEXTFILE;
 
 CREATE TABLE my_table(a string, b bigint, ...)
@@ -607,6 +620,7 @@ There is no way you can delete the DBPROPERTY.
 What Is The Need For Custom Serde?
 Depending on the nature of data, the inbuilt SerDe may not satisfy the format of the data. 
 SO we need to write our own java code to satisfy data format requirements.
+ex https://cristogoro.wordpress.com/2017/06/10/how-to-create-your-own-hive-serde/
 
   https://github.com/rcongiu/Hive-JSON-Serde
   
