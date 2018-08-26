@@ -1,0 +1,8 @@
+LazyInitilaztionExecption
+NonUniqueObjectException
+StaleObjectStateException
+ConstraintViolationException
+OptimisticLockException
+QuerySyntaxException
+SQLGrammarException 
+PropertyNotFoundException
