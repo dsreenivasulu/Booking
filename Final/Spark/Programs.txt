@@ -216,6 +216,46 @@ Then the output is:
 |                    |          |         |
 +--------------------+----------+---------+
 
+----------------------------------------------------------------------
+How to add column to dataframe conditionaly ?
+I am trying to take my input data:
+
+A    B       C
+--------------
+4    blah    2
+2            3
+56   foo     3
+And add a column to the end based on whether B is empty or not:
+
+A    B       C     D
+--------------------
+4    blah    2     1
+2            3     0
+56   foo     3     1
+
+answer : df.withcloumn("D", when($"B".isNull or $"B" === "", 0).otherwise(1))
+or another way is using UDF
+import org.apache.spark.sql.functions.udf
+val func = UTF(b => if(b.isEmpty) 0 else 1)
+df.select("$A", "$B", "$C", func($"B").as("D"))
+
+How rename a column in dataframe
+withcolumnRenamed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ----------------------------------------------------------
 spark scala log analyzer 
 https://github.com/sreejithpillai/LogAnalyzerSparkScala
