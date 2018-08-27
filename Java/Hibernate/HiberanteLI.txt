@@ -1,0 +1,544 @@
+<changeSet author="cayla (generated)" id="1394117182918-632">
+        <createIndex indexName="exam_import_manifest_idx" tableName="t_exam" unique="false">
+            <column name="import_manifest_id"/>
+        </createIndex>
+    </changeSet>
+	
+<changeSet author="cayla" id="frozen-app_config.sql">
+        <sqlFile splitStatements="true" stripComments="true" path="database/frozen/app_config.sql"/>
+    </changeSet>
+	
+    <changeSet author="cayla (generated)" id="1394117182918-18">
+        <createTable tableName="j_content">
+            <column name="id" type="INT8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="OID"/>
+        </createTable>
+    </changeSet>	
+	
+	 <changeSet author="cayla (generated)" id="1394117182918-3">
+        <createSequence sequenceName="comment_id_seq"/>
+    </changeSet>
+	
+CREATE TRIGGER event_dashboard_boolean_trigger
+  BEFORE UPDATE
+  ON t_event
+  FOR EACH ROW
+  EXECUTE PROCEDURE dashboard_boolean();	
+
+CREATE OR REPLACE FUNCTION dashboard_boolean() RETURNS trigger AS ' 
+BEGIN 
+    IF (OLD.sent_to_dashboard = TRUE) THEN 
+        NEW.sent_to_dashboard := FALSE; 
+    END IF; 
+    RETURN NEW; 
+END 
+' LANGUAGE plpgsql;
+  
+CREATE TRIGGER virus_scan_result_insert_trigger
+   BEFORE INSERT OR UPDATE
+   on t_virus_scan_result
+   FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
+
+CREATE OR REPLACE FUNCTION update_timestamp() RETURNS trigger AS $$
+BEGIN
+   IF (TG_OP = 'INSERT') THEN
+      new.dt_created=CURRENT_TIMESTAMP;
+   END IF;
+   new.dt_lastUpdated=CURRENT_TIMESTAMP;
+   RETURN new; 
+END
+$$ LANGUAGE plpgsql;    
+
+-- FogBugz 2461: Bump the principal sequence (users and groups) to make it readily apparent when bad freemarker templates get checked in
+select setval('t_principal_id_seq', 1000);
+--------------------------------------------------------------------------------------------------------
+/**
+ * Principal entity.
+ */
+@Entity
+@Table(name="t_principal")
+@Proxy(lazy = false)
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Principal extends BaseModel 
+	implements Serializable, GloballyUniquelyIdentified, Timestamped
+{
+	public Principal()
+	{
+	}
+
+	// Fields
+	@Id
+	@DocumentId
+	@Column(name = "id", unique = true, nullable = false)
+	@SequenceGenerator(name = "principal_seq_generator", sequenceName = "t_principal_id_seq")
+	@GeneratedValue(generator = "principal_seq_generator")
+	@Generated(GenerationTime.INSERT)
+	private Long id;
+	
+	@Version
+	@Column(name = "version")	
+	private Long version;
+	
+	@Embedded
+	private Guid guid;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "dt_lastUpdated")	
+	private Date modificationDate;
+	
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	@JoinColumn(name="sak_principal", insertable=false, updatable=false)
+	@org.hibernate.annotations.Where(clause="dtype='BoxShare'")
+	private Set<BoxShare> shareeShares = new HashSet<BoxShare>(0);
+	
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy="sharer")
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	private List<BoxShare> shares = new ArrayList<BoxShare>(0);
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "principal_org_id")
+	@Index(name = "principal_org_idx")
+	@ForeignKey(name = "principal_org_fkey")
+	private Organization organization;
+	
+	/other side
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="sak_parent_organization")
+	@ForeignKey(name = "fkey_org_parent")
+	@Index(name = "idx_order_parent_organization")
+	private Organization parentOrganization;
+
+	
+	    /**
+     * Provides the dicomCStoreJob. Will be null before Nomination
+     * is processed and a CStore job is enqueued.
+     *
+     * @return the dicomCStoreJob the associated DicomCStoreJob or null if none
+     */
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, optional = true)
+    @JoinColumn(name = "dicom_cstore_job_id", nullable = true)
+    @ForeignKey(name = "dicom_cstore_job_fkey")
+    @org.hibernate.annotations.Index(name = "idx_nomination_cstore_job")
+    public DicomCStoreJob getDicomCStoreJob()
+    {
+        return dicomCStoreJob;
+    }
+	
+	//other side
+	@OneToOne
+    @Index(name = "idx_cstore_job_nomination")
+    @JoinColumn(name = "nomination_id")
+    private Nomination nomination;
+	
+	//index example
+	    <changeSet author="cayla (generated)" id="1394117182918-675">
+        <createIndex indexName="idx_cstore_job_nomination" tableName="t_dicom_cstore_job_queue" unique="false">
+            <column name="nomination_id"/>
+        </createIndex>
+    </changeSet>
+	
+	
+	/**
+	 * Provides the list of associated exams.
+	 * 
+	 * @return the list of associated exams
+	 */
+	@ManyToMany(cascade = CascadeType.ALL, mappedBy = "studies")
+	@ContainedIn
+	public List<Exam> getExams() {
+		return exams;
+	}
+	
+	//other side
+	  /**
+     * Provides a List of associated studies.
+     * 
+     * @return a List of associated studies
+     */
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // join table t_exam_study is indexed explicitly in inbox-schema2.sql
+    @JoinTable(
+            name = "t_exam_study", 
+            joinColumns = { @JoinColumn(name = "sak_exam") },
+            inverseJoinColumns = { @JoinColumn(name = "sak_study") }
+    )
+    @ForeignKey(name = "fkey_examstudy_exam", inverseName = "fkey_examstudy_study")
+    @IndexedEmbedded
+    @Fetch(FetchMode.JOIN)
+    // Note -- the IndexEmbedded makes a search term that is studies.
+    @org.hibernate.annotations.Index(name = "idx_examstudy_study")
+	public Set<Study> getStudies()
+	{
+		return studies;
+	}
+	
+	
+	//where condition
+	    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JoinColumn(name = "sak_exam", insertable = false, updatable = false)
+    @Where(clause = "DTYPE in ( 'Owner','BoxShare') ")
+    @Fetch(FetchMode.SUBSELECT)
+    public Set<BoxExamRelationship> getShareAndOwnerRelation()
+    {
+        return shareAndOwnerRelation;
+    }
+	
+	
+	/**
+     * Returns true if the exam availability has been notified to external app
+     * @return
+     */
+    @Column(name = "notified_external_app", nullable = false,
+            columnDefinition = "boolean default FALSE")
+    public Boolean getNotifiedExternalApp()
+    {
+        return notifiedExternalApp;
+    } 		
+	
+	@Column(name="organization_type", length = 32)
+	@Enumerated(EnumType.STRING)
+	private OrganizationType type = OrganizationType.HOSPITAL;
+
+	 @Lob
+    @Type(type="org.hibernate.type.StringClobType")
+    @Column(name = "nomination_status")
+    public String getNominationStatus()
+    {
+        return nominationStatus;
+    }
+	
+	
+	/**
+ * Possible actions on deletes
+ *
+ * @author Emmanuel Bernard
+ */
+public enum OnDeleteAction {
+	/**
+	 * the default
+	 */
+	NO_ACTION,
+	/**
+	 * use cascade delete capabilities of the DD
+	 */
+	CASCADE
+}
+
+/**
+ * Defines mapping for enumerated types.  The constants of this
+ * enumerated type specify how a persistent property or
+ * field of an enumerated type should be persisted.
+ *
+ * @since Java Persistence 1.0
+ */
+public enum EnumType {
+    /** Persist enumerated type property or field as an integer. */
+    ORDINAL,
+
+    /** Persist enumerated type property or field as a string. */
+    STRING
+}
+
+
+/**
+ * Defines strategies for fetching data from the database.
+ * The <code>EAGER</code> strategy is a requirement on the persistence
+ * provider runtime that data must be eagerly fetched. The
+ * <code>LAZY</code> strategy is a hint to the persistence provider
+ * runtime that data should be fetched lazily when it is
+ * first accessed. The implementation is permitted to eagerly
+ * fetch data for which the <code>LAZY</code> strategy hint has been
+ * specified.
+ *
+ * <pre>
+ *   Example:
+ *   &#064;Basic(fetch=LAZY)
+ *   protected String getName() { return name; }
+ * </pre>
+ *
+ * @see Basic
+ * @see ElementCollection
+ * @see ManyToMany
+ * @see OneToMany
+ * @see ManyToOne
+ * @see OneToOne
+ * @since Java Persistence 1.0
+ */
+public enum FetchType {
+
+    /** Defines that data can be lazily fetched. */
+    LAZY,
+
+    /** Defines that data must be eagerly fetched. */
+    EAGER
+}
+
+/**
+ * Type used to indicate a specific mapping of <code>java.util.Date</code>
+ * or <code>java.util.Calendar</code>.
+ *
+ * @since Java Persistence 1.0
+ */
+public enum TemporalType {
+	/**
+	 * Map as <code>java.sql.Date</code>
+	 */
+	DATE,
+
+	/**
+	 * Map as <code>java.sql.Time</code>
+	 */
+	TIME,
+
+	/**
+	 * Map as <code>java.sql.Timestamp</code>
+	 */
+	TIMESTAMP
+}
+
+/**
+ * Defines inheritance strategy options.
+ *
+ * @since Java Persistence 1.0
+ */
+public enum InheritanceType {
+
+    /** A single table per class hierarchy. */
+    SINGLE_TABLE,
+
+    /** A table per concrete entity class. */
+    TABLE_PER_CLASS,
+
+    /**
+     * A strategy in which fields that are specific to a
+     * subclass are mapped to a separate table than the fields
+     * that are common to the parent class, and a join is
+     * performed to instantiate the subclass.
+     */
+    JOINED
+}
+
+/**
+ * Fetch options on associations
+ *
+ * @author Emmanuel Bernard
+ */
+public enum FetchMode {
+	/**
+	 * use a select for each individual entity, collection, or join load
+	 */
+	SELECT,
+	/**
+	 * use an outer join to load the related entities, collections or joins
+	 */
+	JOIN,
+	/**
+	 * use a subselect query to load the additional collections
+	 */
+	SUBSELECT
+}
+--------------------------------------------------------------------------------------------------------
+public class HibernatePrincipalRepository extends HibernateDao<Principal> 
+    implements PrincipalRepository
+ {
+	protected static Logger logger = LoggerFactory
+			.getLogger(HibernatePrincipalRepository.class);
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Person findPersonByEmailAddress(String emailAddress) {
+		Person result = null;
+		
+		List<Person> persons  = getSession().createQuery
+		        ("select distinct p " +
+		         "from Person p " +
+				 "inner join p.individual indiv " +
+				 "inner join indiv.personInfoList personInfo " +
+				 "inner join personInfo.communicationChannels cc " +
+				 "where cc.value = :emailAddress ")
+				.setParameter("emailAddress", emailAddress.toLowerCase())
+				.list();
+			
+		if ((persons != null) && (!persons.isEmpty())) {
+			result = persons.get(0);
+		}
+		return result;
+	}
+   
+/**
+	  * Returns a list of Persons in a group, with the communication channel.
+	  * @param groupName The name of the group whose members and comm channels you want to return
+      **/
+     @Override
+     public List<Person> findPersonsByGroupNameWithCommChannel(String groupName) {
+         Query query = getSession().getNamedQuery("lila.notifications.findPersonsByGroupNameWithCommChannel");
+         query.setParameter("groupName", groupName);
+         query.setComment("findPersonsByGroupNameWithCommChannel");
+         Group group = (Group)query.uniqueResult();
+         List<Person> persons = new ArrayList<>();
+         for (Person p : group.persons()) {
+             persons.add(p);
+         }
+         return persons;
+     }
+
+  <query name="lila.sop.getSopsByModalityAndSopClassAndExamId">
+        <![CDATA[
+          select sop from ServiceObjectPair sop
+                           inner join sop.series series
+                           inner join series.study study
+                           inner join study.exams exam
+                           where exam.id = :examId and series.modality = :modality and sop.sopClassUID in (:sopClassUIDs)
+        ]]>
+    </query>
+	
+	/**
+ * Persistence store for user persons and related data.
+ * 
+ * @author Peter Bratton
+ * 
+ */
+public interface PrincipalRepository extends BaseDao
+{
+    public Person findPersonByEmailAddress(String emailAddress);
+
+}
+
+//Session interface
+/**
+	 * Create a {@link Query} instance for the named query string defined in the metadata.
+	 *
+	 * @param queryName the name of a query defined externally
+	 *
+	 * @return The query instance for manipulation and execution
+	 */
+	public Query getNamedQuery(String queryName);
+
+	/**
+	 * Create a {@link Query} instance for the given HQL query string.
+	 *
+	 * @param queryString The HQL query
+	 *
+	 * @return The query instance for manipulation and execution
+	 */
+	public Query createQuery(String queryString);
+
+	/**
+	 * Create a {@link SQLQuery} instance for the given SQL query string.
+	 *
+	 * @param queryString The SQL query
+	 * 
+	 * @return The query instance for manipulation and execution
+	 */
+	public SQLQuery createSQLQuery(String queryString);
+	
+QueryInterace 
+/**
+	 * Return the query results as a <tt>List</tt>. If the query contains
+	 * multiple results pre row, the results are returned in an instance
+	 * of <tt>Object[]</tt>.
+	 *
+	 * @return the result list
+	 * @throws HibernateException
+	 */
+	public List list() throws HibernateException;
+	/**
+	 * Convenience method to return a single instance that matches
+	 * the query, or null if the query returns no results.
+	 *
+	 * @return the single result or <tt>null</tt>
+	 * @throws NonUniqueResultException if there is more than one matching result
+	 */
+	public Object uniqueResult() throws HibernateException;
+
+	/**
+	 * Execute the update or delete statement.
+	 * </p>
+	 * The semantics are compliant with the ejb3 Query.executeUpdate()
+	 * method.
+	 *
+	 * @return The number of entities updated or deleted.
+	 * @throws HibernateException
+	 */
+	public int executeUpdate() throws HibernateException;
+
+	/**
+	 * Set the maximum number of rows to retrieve. If not set,
+	 * there is no limit to the number of rows retrieved.
+	 * @param maxResults the maximum number of rows
+	 */
+	public Query setMaxResults(int maxResults);
+	/**
+	 * Set the first row to retrieve. If not set, rows will be
+	 * retrieved beginnning from row <tt>0</tt>.
+	 * @param firstResult a row number, numbered from <tt>0</tt>
+	 */
+	public Query setFirstResult(int firstResult);	
+	
+---------------------------------------------------------------------------------------------------------
+/**
+     * Hash code determined by the primary key of this business object.
+     */
+    @Override
+    public int hashCode() 
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
+        return result;
+    }
+
+    /**
+     * Implementation of equals() for all business objects.  Equals in this context refers to whether
+     * two objects represent the same database row in the database, as opposed to whether their data are equivalent.
+     * 
+     * In other words, a.compareTo(b) could return 0, and yet a.equals(b) may return false, if a and b do not have the 
+     * same primary key.
+     * 
+     * Two business objects must have the same implementing type in order for equals to return true.
+     * 
+     * @param obj Object to compare to.
+     */
+    @Override
+    public boolean equals(Object obj) 
+    {
+        if (this == obj) 
+        {
+            return true;
+        }
+        if (obj == null) 
+        {
+            return false;
+        }
+
+        // compare class/entity names instead of class compare because a 
+        // Hibernate proxied object will not be the same class.
+        if (!entityName(this).equals(entityName(obj))) 
+        {
+            return false;
+        }
+        
+        BaseModel other = (BaseModel) obj;
+        if (getId() == null) 
+        {
+            return false;
+        } 
+        else if (!getId().equals(other.getId())) 
+        {
+            return false;
+        }
+        return true;
+    }
+    
+    private static final String entityName(Object obj)
+    {
+        if (obj instanceof HibernateProxy) 
+        {
+            return ((HibernateProxy) obj).getHibernateLazyInitializer().getEntityName();
+        } 
+        
+        return obj.getClass().getName();
+    }
+-------------------------------------------------------------------------------------------------------------------	
