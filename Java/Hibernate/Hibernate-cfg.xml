@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+	<session-factory>
+
+		<!--
+			odd as this may seem, ordering of the elements is important here
+		 	the correct ordering is:
+
+			property elements
+			mapping elements
+			class-cache or collection-cache elements
+			event elements
+			listener elements
+
+		 -->
+
+		<property name="hibernate.dialect" >org.hibernate.dialect.PostgreSQL82Dialect</property>
+		<property name="hibernate.format_sql">false</property>
+
+        <property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory</property>
+        <property name="hibernate.cache.use_second_level_cache">true</property>
+		<property name="hibernate.cache.use_query_cache">true</property>
+		<property name="net.sf.ehcache.configurationResourceName">ehcache-hibernate.xml</property>
+		<!--
+		<property name="hibernate.cache.region_prefix" value=""/>
+		-->
+
+		<!--
+		<property name="hibernate.generate_statistics">true</property>
+		<property name="hibernate.cache.use_structured_entries">true</property>	
+		-->
+
+		<!-- Envers config -->
+		
+        <property name="org.hibernate.envers.auditTableSuffix" >_version</property>
+        <property name="org.hibernate.envers.revisionFieldName" >revision</property>
+        <property name="org.hibernate.envers.revisionTypeFieldName" >revision_type</property>
+
+		<!-- 
+			Don't specify entity classes here. They will be automatically picked 
+			up by a package scan of com.lifeimage.core.model. 
+		<property name="hibernate.hbm2ddl.auto">create</property>
+		-->
+		
+		<mapping resource="LILANamedQueries.hbm.xml"/>
+		<mapping resource="CustomNamedQueries.hbm.xml"/>
+	    <mapping resource="Oracle/hbms/filemanager-named-queries.hbm.xml" />    
+        <!--
+			classes/collections to cache (could be specified by annotation)
+			we use a cache (defined in ehcache.xml) named hibernateCache for all entity/collection classes
+		-->
+		<class-cache class="com.lifeimage.core.model.ImportManifest" region="hibernateCache" usage="read-write"/>
+		<collection-cache collection="com.lifeimage.core.model.ImportManifest.importManifestStatuses" region="hibernateCache" usage="read-write"/>
+		<collection-cache collection="com.lifeimage.core.model.ImportManifest.fileImports" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.Principal" region="hibernateCache" usage="read-write"/>
+		<collection-cache collection="com.lifeimage.core.model.Principal.boxesOwned" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.Individual" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.PersonInfo" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.Box" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.BoxType" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.LdapServer" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.LegalEntity" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.ImportManifestStatus" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.ExportManifest" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.Attachment" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.Nomination" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.BoxExamRelationship" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.Identifier" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.ExamPurgeFailureReason" region="hibernateCache" usage="read-write"/>
+		<class-cache class="com.lifeimage.core.model.Exam" region="hibernateCache" usage="read-write"/>
+		<collection-cache collection="com.lifeimage.core.model.Exam.orders" region="hibernateCache" usage="read-write"/>
+		<collection-cache collection="com.lifeimage.core.model.Exam.studies" region="hibernateCache" usage="read-write"/>
+		<collection-cache collection="com.lifeimage.core.model.Exam.attachments" region="hibernateCache" usage="read-write"/>
+	
+
+	</session-factory>
+	
+</hibernate-configuration>
