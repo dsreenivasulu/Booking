@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This configuration is picked up by Hibernate for the L2 cache (used
+by FileManager and other configured Hibernate object/query caches).
+It is instantiated by Hibernate. The disk-persistent image cache
+is instantiated in Spring and uses the config
+file at WEB-INF/classes/ehcache.xml.
+
+There are 2 configurations:
+
+The first is for use with ehcache alone without BigMemory Go.
+The second (commented out) is for use with BigMemory Go (comment out the first configuration).
+
+To use BigMemory Go:
+
+replace web/WEB-INF/lib/ehcache-core-2.6.0.jar with:
+ehcache-ee-2.6.1.jar and bigmemory-3.7.1.jar
+and add terracotta-license.key to the web/WEB-INF/classes directory
+adjust tomcat JVM memory settings accordingly e.g.:
+
+JAVA_OPTS="-Xms512m -Xmx2048m -XX:PermSize=128m -XX:MaxPermSize=512m -XX:MaxDirectMemorySize=3072m" in
+/usr/local/tomcat/bin/setenv.sh
+
+we are configuring with a pool for disk overflow and with entry counts explicitly for each cache (no pool for heap)
+
+a free license to use BigMemory Go for up to 32G of off-heap memory is available from Terracotta
+but the license is non-distributable (each organization must obtain their own license).
+
+name attribute of ehcache names the cache manager instance which is necessary if you
+use ehcache >= 2.5 and want multiple cache managers
+-->
+<!-- see: http://ehcache.org/ehcache.xml -->
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="ehcache.xsd"
+    updateCheck="false"
+    maxEntriesLocalHeap="300000"
+    maxBytesLocalDisk="3G"
+    name="HibernateCacheManager"
+    >
+
+    <!--
+    * The following properties are translated:
+    * user.home - User's home directory
+    * user.dir - User's current working directory
+    * java.io.tmpdir - Default temp file path
+    * ehcache.disk.store.dir - A system property you would normally specify on the command line
+      e.g. java -Dehcache.disk.store.dir=/u01/myapp/diskdir ...
+
+    Subdirectories can be specified below the property e.g. java.io.tmpdir/one
+    -->
+    <diskStore path="java.io.tmpdir/hibernateCaches"/>
+    
+    <defaultCache
+        eternal="false"
+        timeToIdleSeconds="1200"
+        timeToLiveSeconds="0"
+        diskSpoolBufferSizeMB="30"
+        diskExpiryThreadIntervalSeconds="120"
+        memoryStoreEvictionPolicy="LRU"
+        maxEntriesLocalHeap="1500"
+    >
+        <persistence strategy="localTempSwap" />
+    </defaultCache>
+
+    <!-- hibernate query cache - must enable caching explicitly on the query for it to actually use caching -->
+    <cache
+        name="org.hibernate.cache.internal.StandardQueryCache"
+        eternal="false"
+        timeToIdleSeconds="120"
+        timeToLiveSeconds="1200"
+        maxEntriesLocalHeap="400"
+    >
+        <persistence strategy="localTempSwap"/>
+    </cache>
+
+    <!-- NOTE: must ensure that Hibernate UpdateTimestampsCache entries
+        always outlive StandardQueryCache entries -->
+    <cache
+        name="org.hibernate.cache.spi.UpdateTimestampsCache"
+        eternal="true"
+        maxEntriesLocalHeap="20000"
+    >
+        <persistence strategy="localTempSwap"/>
+    </cache>
+
+    <!-- hibernate entity/collection cache we use -->
+    <cache
+        name="hibernateCache"
+        eternal="false"
+        timeToIdleSeconds="120"
+        timeToLiveSeconds="1200"
+        maxEntriesLocalHeap="250000"
+        diskSpoolBufferSizeMB="30"
+        memoryStoreEvictionPolicy="LRU"
+    >
+        <persistence strategy="localTempSwap"/>
+    </cache>
+
+</ehcache>
+
+<!-- old BigMemory Go config:
+
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="ehcache.xsd" updateCheck="false"
+    maxBytesLocalHeap="768m"
+    maxBytesLocalOffHeap="2560m"
+    maxBytesLocalDisk="3G"
+    name="HibernateCacheManager"
+    >
+
+    <defaultCache
+        eternal="false"
+        timeToIdleSeconds="1200"
+        timeToLiveSeconds="0"
+        overflowToOffHeap="true"
+        diskSpoolBufferSizeMB="30"
+        diskExpiryThreadIntervalSeconds="120"
+        memoryStoreEvictionPolicy="LRU"
+    >
+        <persistence strategy="localTempSwap" />
+    </defaultCache>
+
+    <cache
+        name="org.hibernate.cache.StandardQueryCache"
+        eternal="false"
+        timeToIdleSeconds="120"
+        timeToLiveSeconds="1200"
+        overflowToOffHeap="true"
+    >
+        <persistence strategy="localTempSwap"/>
+    </cache>
+
+    <cache
+        name="org.hibernate.cache.UpdateTimestampsCache"
+        overflowToOffHeap="true"
+        eternal="true"
+    >
+        <persistence strategy="localTempSwap"/>
+    </cache>
+
+</ehcache>
+
+ -->
