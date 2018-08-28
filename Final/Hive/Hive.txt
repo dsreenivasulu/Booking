@@ -307,6 +307,11 @@ STRUCT : A Struct is a collection of elements of different data types. For examp
 For example, pin code will be in Integer format.
 UNIONTYPE : It represents a column which can have a value that can belong to any of the data types of your choice.  
 
+How to retrive map in hive ?
+selec myMap['myKey'] from table_name
+If dont know keys then use map_keys function
+if we want get all values use map_valuesfunction
+
 What are the different file formats in Hive?
 There are different file formats supported by Hive
 Text File format
