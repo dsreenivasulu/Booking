@@ -41,7 +41,16 @@ Lock only what is required. Like lock particular field of object instead of lock
 If you need to have multiple locks in your code, make sure everyone always acquire them in the same order.
 Encapsulate If you must, keep your locks local. Global locks can be really tricky.
 Do as little as possible when you hold the lock.
-don't hold several locks at once. If you do, always acquire the locks in the same order
+don't hold several locks at once. If you do, always acquire the locks in the same order 
+
+What is ThreadFactory ?
+java.util.concurrent.ThreadFactory creates a new thread and has been introduced in JDK 5. ThreadFactory is an interface has a method that is newThread() 
+public Thread newThread(Runable r)
+ThreadFactory is Factory pattern used in
+Its usage depends on your requirement. Suppose you want a particular functionality to always create Daemon threads
+To have custom thread names for debugging purposes
+To choose Thread Priority
+To handle uncaught exceptions
 
 
 
