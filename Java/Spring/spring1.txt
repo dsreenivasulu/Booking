@@ -1,0 +1,41 @@
+What is Spring bean lifecycle methods or Post-Initilization and Pre-Destruction callbacks
+In the programtic with out annonation, i mean in the older version we need implement InitializingBean interface which contains afterPropertiesSet() 
+and DisposableBean which contians destroy()
+Class MyBean implements InitializingBean, DisposableBean 
+public void afterPropertiesSet() {
+      // do some initialization work
+   }
+public void destroy() {
+      // do some destruction work
+   }
+}
+This approach is not recomendend to use beacuse we are tightly perfoming dependent injection  
+and also we can't use custom methods instead of afterPropertiesSet and destroy methods. 
+Best approach is decalre in xml by in the bean elemeant using init-method and destroy  
+<bean id = "helloWorld" class = "" init-method = "init" destroy-method = "destroy"/>
+
+Spring 2.5 onwards, you can use annotations also for specifying life cycle methods using @PostConstruct and @PreDestroy annotations.
+
+@PostConstruct annotated method will be invoked after the bean has been constructed using default constructor 
+and just before it’s instance is returned to requesting object.
+@PreDestroy annotated method is called just before the bean is about be destroyed inside bean container.
+
+
+Default(GLOBAL) initialization and destroy methods : 
+If you have too many beans having initialization and/or destroy methods with the same name, 
+you don't need to declare init-method and destroy-method on each individual bean. 
+Instead, the framework provides the flexibility to configure such situation using default-init-method and default-destroy-method attributes on the <beans> element as follows
+
+<beans xmlns = "http://www.springframework.org/schema/beans"
+   xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation = "http://www.springframework.org/schema/beans
+   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+   default-init-method = "init" 
+   default-destroy-method = "destroy">
+
+   <bean id = "..." class = "...">
+      <!-- collaborators and configuration for this bean go here -->
+   </bean>
+</beans>
+
+
