@@ -1,0 +1,48 @@
+What is deadlock. Give example with solutions. Tips to avoid dead lock ?
+public class DeadLockDemo { 
+public void method1() {
+              synchronized (String.class) { 
+                System.out.println("Aquired lock on String.class object");
+                    synchronized (Integer.class) { 
+                       System.out.println("Aquired lock on Integer.class object"); 
+                    } } } 
+
+public void method2() {
+              synchronized (Integer.class)  { 
+                  System.out.println("Aquired lock on Integer.class object"); 
+                        synchronized (String.class) {
+                            System.out.println("Aquired lock on String.class object"); 
+                            } } } }
+
+If method1() and method2() both will be called by two or many threads , 
+there is a good chance of deadlock because if thread 1 acquires lock on Sting object while executing method1() 
+and thread 2 acquires lock on Integer object while executing method2() both will be waiting for each other to release lock on Integer 
+and String to proceed further which will never happen.
+Solution : By avoiding circular wait with no preemption.
+public void method1() {
+              synchronized (Integer.class) { 
+                       System.out.println("Aquired lock on Integer.class object"); 
+                  synchronized (String.class) { 
+                        System.out.println("Aquired lock on String.class object");
+                    } } } 
+
+public void method2() {
+              synchronized (Integer.class)  { 
+                  System.out.println("Aquired lock on Integer.class object"); 
+                        synchronized (String.class) {
+                            System.out.println("Aquired lock on String.class object"); 
+                            } } } }
+Tips to prevent deadlocks :
+Avoid Nested Locks : This is the most common reason for deadlock. Avoid locking another resource if you already hold one.
+It is almost impossible to get deadlock if you are working with only one object lock.
+Avoid Unnecessary Locks
+Use thread join()
+Lock only what is required. Like lock particular field of object instead of locking whole object if it serves your purpose.
+If you need to have multiple locks in your code, make sure everyone always acquire them in the same order.
+Encapsulate If you must, keep your locks local. Global locks can be really tricky.
+Do as little as possible when you hold the lock.
+don't hold several locks at once. If you do, always acquire the locks in the same order
+
+
+
+
