@@ -100,4 +100,99 @@ public void run() {
     }
 }
 
+What is semaphore and mutex ?
+Semaphores – Restrict the number of threads that can access a resource. Semaphore maintains a counter which keeps track of the number of resources available. When a process requests access to resource, semaphore checks the variable count and if it is less than total count then grants access and subsequently reduces the available count
+acquire(): When a thread needs to access a resource, it acquires the permit from the Semaphore using acquire() method. If the permit is not available, it holds until one is available. 
+release(): Once the thread is finished using resource, it needs to return the permit. Using release() method of Semaphore, thread releases the permit back to Semaphore. 
+binary semaphore can have a value either 0 or 1. It means binary semaphore protect the access to a SINGLE shared resource, so the internal counter of the semaphore can only take the values 1 or 0.
+When the maximum number of permits of Semaphore is greater than 1, then it is considered as counting Semaphore. Counting Semaphore is used to restrict the use of resources
+Example, limit max 10 connections to access a file simultaneously.
+Let’s say now Shopper has 3 identical Laptops and 3 identical keys. Semaphore is the number of free identical Laptop keys. The semaphore count – the count of keys – is set to 3 at beginning (all three Laptops are free), then the count value is decremented as Customer are coming in. If all Laptops are in use, i.e. there are no free keys left for Laptop, the semaphore count is 0. Now, when any of the customer returns the Laptop, semaphore is increased to 1 (one free key), and given to the next customer in the queue.
+Consider an ATM cubicle with 4 ATMs, Semaphore can make sure only 4 people can access simultaneously.
+public class SemaphoreTest {
+
+	// max 4 people
+	static Semaphore semaphore = new Semaphore(4);
+
+	static class MyATMThread extends Thread {
+
+		String name = "";
+
+		MyATMThread(String name) {
+			this.name = name;
+		}
+
+		public void run() {
+
+			try {
+
+				
+				System.out.println(name + " : acquiring lock...");
+				System.out.println(name + " : available Semaphore permits now: " 
+								+ semaphore.availablePermits());
+				
+				semaphore.acquire();
+				System.out.println(name + " : got the permit!");
+
+				try {
+
+					for (int i = 1; i <= 5; i++) {
+
+						System.out.println(name + " : is performing operation " + i 
+								+ ", available Semaphore permits : "
+								+ semaphore.availablePermits());
+
+						// sleep 1 second
+						Thread.sleep(1000);
+
+					}
+
+				} finally {
+
+					// calling release() after a successful acquire()
+					System.out.println(name + " : releasing lock...");
+					semaphore.release();
+					System.out.println(name + " : available Semaphore permits now: " 
+								+ semaphore.availablePermits());
+
+				}
+
+			} catch (InterruptedException e) {
+
+				e.printStackTrace();
+
+			}
+
+		}
+	}
+
+	public static void main(String[] args) {
+
+		System.out.println("Total available Semaphore permits : " 
+				+ semaphore.availablePermits());
+	
+		MyATMThread t1 = new MyATMThread("A");
+		t1.start();
+
+		MyATMThread t2 = new MyATMThread("B");
+		t2.start();
+
+		MyATMThread t3 = new MyATMThread("C");
+		t3.start();
+
+		MyATMThread t4 = new MyATMThread("D");
+		t4.start();
+
+		MyATMThread t5 = new MyATMThread("E");
+		t5.start();
+
+		MyATMThread t6 = new MyATMThread("F");
+		t6.start();
+
+	}
+}
+
+
+
+
 
