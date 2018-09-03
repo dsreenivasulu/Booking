@@ -94,3 +94,47 @@ EnumType values :
  ORDINAL : Persist enumerated type property or field as an integer.
  STRING : Persist enumerated type property or field as a string. 
     
+How to add index and constraints in hibernate pojo 
+We can add either property level or table level 
+	@Column(name = "username", length=255, unique = true)
+	@Index(name = "person_username_idx")
+	private String username;
+@Entity
+@Indexed
+@Table(name="t_person", uniqueConstraints=@UniqueConstraint(columnNames={"ldapserver_id", "username"})) 
+//@Table is javax.persistance 
+@PrimaryKeyJoinColumn(name="principal_id")
+@ForeignKey(name = "person_prin_fkey")
+@org.hibernate.annotations.Table(appliesTo = "t_person", indexes = { 
+		@Index(columnNames = {"principal_id"}, name="person_principal_idx") 
+})
+public class Person extends Principal implements java.io.Serializable
+{	
+
+org.hibernate.annotations.Table or class level properties 
+FetchMode.JOIN = If set to JOIN, the default, Hibernate will use an inner join to retrieve a
+	 * secondary table defined by a class or its superclasses and an outer join for a
+	 * secondary table defined by a subclass.
+	 * If set to select then Hibernate will use a
+	 * sequential select for a secondary table defined on a subclass, which will be issued only if a row
+	 * turns out to represent an instance of the subclass. Inner joins will still be used to retrieve a
+	 * secondary defined by the class and its superclasses.
+	 *
+	 * <b>Only applies to secondary tables</b>
+inverse : If true, Hibernate will not try to insert or update the properties defined by this join.
+	 *
+	 * <b>Only applies to secondary tables</b>
+optional: If enabled, Hibernate will insert a row only if the properties defined by this join are non-null
+	 * and will always use an outer join to retrieve the properties.
+	 *
+	 * <b>Only applies to secondary tables</b>
+@SQLInsert(sql="") Defines a custom SQL insert statement
+	 *
+	 * <b>Only applies to secondary tables</b>
+@SQLUpdate(sql="") : Defines a custom SQL update statement
+	 *
+	 * <b>Only applies to secondary tables</b>
+@SQLDelete(sql="") : Defines a custom SQL delete statement
+	 *
+	 * <b>Only applies to secondary tables</b>
+------------------------------------------------------------------------------------------------------------------------
