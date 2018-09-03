@@ -72,3 +72,25 @@ orphanRemoval vs CASCADE.REMOVE vs @OnDelete
 - CascadeType.REMOVE: "Child" entity is removed only when its "Parent" is removed.
 - ON DELETE CASCADE is a database-specific thing, it deletes the "child" row in the database when the "parent" row is deleted.
 
+How to map java.util.Date or java.util.Calendar in Hibernate 
+By using @Temporal 
+
+@Temporal(TemporalType.TIMESTAMP)
+@Column(name = "dte_password_auto_generated")
+private Date passwordAutoGenDate;
+
+TemporalType values : 
+DATE :  Map as <code>java.sql.Date</code>
+TIME :  Map as <code>java.sql.Time</code>
+TIMESTAMP : Map as <code>java.sql.Timestamp</code>
+
+How to map Enum types in hibernate
+By using @Temporal 
+
+	@Enumerated(EnumType.STRING)
+	@Column(columnDefinition = "varchar(16) default 'ACTIVE'")
+	private AccountStatus status = AccountStatus.INACTIVE;
+EnumType values : 
+ ORDINAL : Persist enumerated type property or field as an integer.
+ STRING : Persist enumerated type property or field as a string. 
+    
