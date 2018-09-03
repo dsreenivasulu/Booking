@@ -42,7 +42,7 @@ If you need to have multiple locks in your code, make sure everyone always acqui
 Encapsulate If you must, keep your locks local. Global locks can be really tricky.
 Do as little as possible when you hold the lock.
 don't hold several locks at once. If you do, always acquire the locks in the same order 
-
+----------------------------------------------------------------------------------------------------------------------
 What is ThreadFactory ?
 java.util.concurrent.ThreadFactory creates a new thread and has been introduced in JDK 5. ThreadFactory is an interface has a method that is newThread() 
 public Thread newThread(Runable r)
@@ -196,7 +196,7 @@ What is difference between mutex and semaphore ?
 Mutex is basically mutual exclusion. Only one thread can acquire the resource at once. When one thread acquires the resource, no other thread is allowed to acquire the resource until the thread owning the resource releases. All threads waiting for acquiring resource would be blocked.
 
 Semaphore is used to control the number of threads executing. There will be fixed set of resources. The resource count will gets decremented every time when a thread owns the same. When the semaphore count reaches 0 then no other threads are allowed to acquire the resource. The threads get blocked till other threads owning resource releases.
-
+----------------------------------------------------------------------------------------------------------------------
 Queue Interface In Java
 The Queue interface is available in java.util package and extends the Collection interface. The queue collection is used to represent group elements prior to processing. it follows the FIFO or the First-In-First-Out principle. The Queue is used to insert elements at the end of the queue and removes from the beginning of the queue.
 Queue implementation classes are PriorityQueue, BlockingQueue and LinkedList
