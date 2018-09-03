@@ -197,7 +197,26 @@ Mutex is basically mutual exclusion. Only one thread can acquire the resource at
 
 Semaphore is used to control the number of threads executing. There will be fixed set of resources. The resource count will gets decremented every time when a thread owns the same. When the semaphore count reaches 0 then no other threads are allowed to acquire the resource. The threads get blocked till other threads owning resource releases.
 
+Queue Interface In Java
+The Queue interface is available in java.util package and extends the Collection interface. The queue collection is used to represent group elements prior to processing. it follows the FIFO or the First-In-First-Out principle. The Queue is used to insert elements at the end of the queue and removes from the beginning of the queue.
+Queue implementation classes are PriorityQueue, BlockingQueue and LinkedList
+PriorityQueue and LinkedList are not thread safe. BlockingQueue is thread safe 
 
+The Queues which are available in java.util package are Unbounded Queues
+The Queues which are available in java.util.concurrent package are the Bounded Queues.
+All Queues except the Deques supports insertion and removal at the tail and head of the queue respectively. The Deques support element insertion and removal at both ends.
+Since it is a subtype of Collections class, it inherits all the methods of it namely size(), isEmpty(), contains() etc.
+
+Methods in Queue:
+add()- This method is used to add elements at the tail of queue. More specifically, at the last of linkedlist if it is used, or according to the priority in case of priority queue implementation.
+peek()- This method is used to view the head of queue without removing it. It returns Null if the queue is empty.
+element()- This method is similar to peek(). It throws NoSuchElementException when the queue is empty.
+remove()- This method removes and returns the head of the queue. It throws NoSuchElementException when the queue is impty.
+poll()- This method removes and returns the head of the queue. It returns null if the queue is empty.
+
+Insert : add(element) throws exception where as offer(element) returns boolean
+remove : remove() throws NoSuchElementException where as poll() returns null 
+view : element() throws NoSuchElementException where as peek() returns null
 
 
 
