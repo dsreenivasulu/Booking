@@ -1,0 +1,72 @@
+General Overview
+There are three main eras of frontend client code
+
+jQuery (2009 - 2017)
+dojo/cujo/wire (2011 - 2017)
+React (2015 - 2017+)
+-----------------------------------------------------------------
+jQuery
+We used jQuery as a library to build performant Single Page Apps.  
+jQuery provided the ajax and dom manipulation layers.  jQuery UI provided the widgeting toolkit.
+
+Notable projects written in this pattern:
+Lila Inbox
+Lila Admin
+LEMR
+-----------------------------------------------------------------
+dojo/cujo/wire
+This codebase built on top of dojo to provide data-bound views.  
+Changes in the model/collections layer were automatically reflected in the view.    
+Cujo introduced the idea of OOCSS and AMD to the codebase.  
+Wire.js provides an inversion of control container, much like Spring.
+
+Notable projects written in this pattern are:
+Universal Inbox
+EMR integration
+All Queues - hl7, RSNA, Outbox
+Temp-Sender v1
+-----------------------------------------------------------------
+React
+All frontend projects post 2015 utilize React as the core component for the UI.  
+Most follow the Redux architecture.  React and Redux allows us to rapidly build interfaces that are testable, performant, and stable.  
+
+New projects are initiated by create-react-app.  
+With a create-react-app app you get application scaffolding: linting, testing, dev-servers, and module bundling for production (via webpack).
+
+Notable projects written in this pattern are:
+Mammosphere
+New admin app
+Cloud v2
+Analytics
+Temp-sender v2 (forms the upload base for Cloud, Mammosphere, and Cloud v2)
+-----------------------------------------------------------------
+Dependency Management
+Large modern JavaScript projects rely on many dependencies to provide functionality, tooling, and UI components.  
+There are two main lines of dependencies in a JavaScript project:
+
+Development dependency - needed for builds and development
+Application level dependency - needed for shipped code.
+Both of these can be provided by yarn or npm (node package manager).  For a time, it was envisioned that bower would be used for application dependencies and development based dependencies would be provided by npm.  The web-frontend project still uses bower for application level dependencies. While maintained, the bower project now recommends using yarn.  
+
+Yarn vs npm
+When people say npm, they could be talking about npm in 3 different ways:
+
+a package manager: a command line utility to install packages and dependencies
+a script runner: a way to run 
+a repository: the servers hosting all the packages.
+Yarn is billed as a drop in replacement for npm; but it really only provides #1 and #2.  The registry, which holds all the packages, is still provided by npmjs.org.  Yarn builds on the ideas of npm and furthers them in the name of speed, stability, and security.  
+
+In the Spring of 2017 we are in a transition from npm to yarn.  
+
+Code Organization
+As of April 2017, the code base is organized as follows:
+
+ 
+javascript-uploader - HTML5 based directory uploader
+web-frontend - application code for EMR, Universal Inbox, Temp-sender uploader.
+frontend-framework - core functionality that is used by lifeimage applications.  no widgets.
+frontend-widgets - UI components: select lists, forms, layouts, etc.
+mammosphere-app - PHR focused on mammography
+analytics - number crunching app.
+
+Code is shared between projects using a private npm repository hosted on jfrog (see instructions).
