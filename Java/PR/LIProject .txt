@@ -1,0 +1,169 @@
+LILA workflows:
+Upload and instantly view the contents of patient CDs
+Share image data among other users on the network
+Make and share comments, annotations and measurement information
+Nominate and import outside exams into PACS
+Normalize outside exam data before it is imported to the local PACS
+Integrate CD upload and image viewing with your EMR or order entry system
+Receive exams from PACS and share exam to user on the network
+
+LILA Admin section:
+Spring MVC + JUnit test cases
+Most of the pages are implemented using ftl (freemarker templates)
+Following pages are implemented using ReactJS
+Message Queue
+Demographic Rule
+Administration section has 3 subsection 
+User & Groups 
+Message Queue
+Configuration
+Role based security. Only user  with administrator role can access administration section  
+Administration section can be accessed by click the “Administration” link present in the home page (Top right hand corner)
+Users
+Used to create local user or edit local/AD users 
+Allow admin to map users to groups
+Roles Assignment
+Physician
+Upload delegate
+Administrator 
+Access to all libraries
+lifeImage
+FHIR
+Define user based preferences 
+Groups
+Used to create groups 
+LILA Groups
+Gatekeeper groups
+Managing group membership of all type of groups (including transfer groups) 
+Associating rules 
+Associating PACS/HL7 listeners
+Define group level permission/preferences 
+
+Configuration Section :
+Network Registration - Used to sync with cloud
+LDAP Server - Configuring and managing LDAP based authentication servers 
+OU Mapping - Used to map an organization unit to a role / groups. Used only in AD authentication mode 
+Identifier Issuesers - Managing identifier issuers 
+DICOM AES  -  Used to configure external PACS and local dicom AE
+HL7 Listener  - Manages inbound and outbound hl7 listeners
+External Applications - Used for EMR integration. Defines all required encryption/authentication parameters required EMR integration
+Nomination From - User  can design a  custom nomination form and assign it to a group.During the nomination process, the user has to fill associated form.   
+Rules - Define rules that can be used to  validate demographics/study properties during upload and push to pacs workflow.  
+App configuration - 
+
+
+Login Workflow :
+Spring Security Framework
+applicationContext-security-common.xml
+applicationContext-security-lila.xml
+Local User - LILA DB user can login to LILA 
+AD user - If Active directory /LDAP server is configured, then any AD user can login.
+OU to group/role mapping will be used for AD user login
+During the login process LILA has capability to 
+Change the password if it is expired 
+Capture security questions and answers 
+Updating the profile information 
+And finally, LILA can show a welcome page to a user 
+Different type of roles 
+Physician - Can upload /Share/nominate and view Exams 
+Upload Delegate - Can only upload upload exams to person/groups inbox
+Administrator - Can access  admin pages. All admins are physicians 
+All access to library - Access all the exams present in the system
+lifeImage - Used for lifeimage admin. Super admin role
+FHIR - FHIR role is used for accessing endpoints required for FHIR integration 
+
+UploadWorkflow :
+User can upload exam to User or a Group
+There are two type of uploader module is used in LILA
+Javascript uploader (Used in Chrome/Firefox)
+JavaUploader (Used in IE)
+We can configure system to trigger upload rule during the upload (Block Exams send to PACS )
+EMR Upload is used to normalize the demographics based on EMR
+Uploader delegate (Role) is a special role. User with upload delegate role can only upload
+Upload workflow allows user 
+Upload exam to a destination ( Group/User)
+Can upload non dicom files 
+Can provide an MRN during the upload (Can be configured)
+
+OutBoxWorkflow:
+Used to send exam to cloud 
+Send ot connection is a manual process
+Outbox workflow is an automatic process 
+LILA receives an HL7 messages
+Then LILA Query PACS to find matching exams 
+LILA Retrieves it and send it to Cloud
+Outbox Queue is used to monitor the status of outbox
+User cannot upload/share exam to this type of group
+Used only on automated exam sending workflow
+
+DICOMRouterWorkflow:
+Automated exam sending process
+Exam from PACS can be pushed to cloud or local group
+Exam received by local application entity can be shared to local group or connection
+
+LILA Study Centric Workflow:
+Taging exams -Tag a relation 
+Sharing exams to local groups and local users
+Deleting Exam - Delete a relation
+Viewing Reports 
+Adding /Removing attchments 
+Downloading study
+Nomination workflow 
+Auto Nomination
+Manual Nomination 
+Nomination Processing 
+Report dicomization
+Notify Image
+Purging Studies 
+Edit MRN 
+Activity Logs  and Exam history
+
+Viewing Images:
+Life images flash viewer 
+Legacy viewed developed in flash
+Eunity integration 
+View the images in eunity viewer
+LILA stores the images and metadata 
+Eunity gets  the images URL  and metadata via REST call 
+Federated  search eunity Integration 
+Can configure eunity to list the studies present in LILA
+Use FHIR interface to provide  information to eunity
+
+Gatekeeper Worflows :
+Gatekeeper group filters
+Nomination
+Queued
+Rejections
+Failed
+Rejecting nomination 
+Push to pacs with hardstop enabled 
+Pushed PACS with hardstop disabled 
+MWL 
+Notify Image
+Dicomization of Report
+Modifying Dicom header during push to pacs process
+
+EMRWorkflow :
+Uploading External Exams 
+System uses encrypted URL and application password for verification
+Various encryption types are available (RC3 and 3DES)
+EMR fork page to upload new exam vs search existing exam to claim
+Demographics gets normanized 
+Configuring Rules for upload
+Hardstop rules
+Softstop rules 
+Searching and Claiming Exams
+Launching into uploaded exam
+Remove exam  and patient context association 
+Exam availability notification 
+LEMR  - Test application to simulate/test the EMR workflow
+
+ROEWorfklow :
+MGH ROE Integration in LILA
+Can upload an exam to LILA
+Can post accession number for auto nomination/push to pacs
+Get all exams from the LILA database that match the specified import id and MRN
+Get exams from LILA database that match the specified MRN
+Get all exams that match an external id
+Get exam that matches the exam identifier
+
