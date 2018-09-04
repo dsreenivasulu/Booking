@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:sec="http://www.springframework.org/schema/security"
+    xsi:schemaLocation="
+    	http://www.springframework.org/schema/beans 
+   		http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    	http://www.springframework.org/schema/security 
+   		http://www.springframework.org/schema/security/spring-security-2.0.xsd">
+
+    <!-- Cloud web service client configuration -->
+
+	<!-- Map URL patterns to the Web Service Message Dispatcher (SoapMessageDispatcher) -->
+	<!-- The message dispatcher is later configured with several handler adapters -->
+    <bean id="simpleURLHandlerMappingForWS" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+           <props>
+             <prop key="/services/exam.wsdl">exam</prop>
+             <prop key="/schemas/exam.wsdl">exam</prop>
+             <prop key="/schemas/LILACommon_schema.xsd">LILACommon_schema</prop>
+           </props>
+        </property>
+        <property name="defaultHandler" ref="messageDispatcher"/>
+    </bean>
+
+    <bean id="messageDispatcher" class="org.springframework.ws.soap.server.SoapMessageDispatcher"/>
+
+	<!-- Handler adapter used to serve wsdls -->
+    <bean class="org.springframework.ws.transport.http.WsdlDefinitionHandlerAdapter">
+    	<property name="locationExpression" value="true"/>
+    </bean>
+
+	<!-- Handler adapter used to serve xsds -->
+    <bean class="org.springframework.ws.transport.http.XsdSchemaHandlerAdapter"/>
+
+    <!-- Default MessageDispathcer Adapters -->
+    <bean class="org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter"/>
+    <!-- bean class="org.springframework.web.servlet.mvc.throwaway.ThrowawayControllerHandlerAdapter"/ -->
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>
+    <bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>
+
+	<!-- Handler adapter for processing Web Service Post requests -->
+    <bean id="WebServiceMessageReceiverHandlerAdapter" class="org.springframework.ws.transport.http.WebServiceMessageReceiverHandlerAdapter">
+    	<property name="messageFactory" ref="messageFactory"/>
+    </bean>
+
+    <bean id="messageFactory" class="org.springframework.ws.soap.saaj.SaajSoapMessageFactory" />
+	    	
+    <!-- configures the exam wsdl as a WsdlDefinition, so it can be handled by the WsdlDefinitionHandlerAdapter -->
+    <bean id="exam" class="org.springframework.ws.wsdl.wsdl11.SimpleWsdl11Definition">
+        <constructor-arg value="classpath:schemas/exam.wsdl" />
+    </bean>
+    
+    <!-- configures the LILA Common schema as a XsdSchema, so it can be handled by the XsdSchemaHandlerAdapter -->
+	<bean id="LILACommon_schema" class="org.springframework.xml.xsd.SimpleXsdSchema">
+	    <property name="xsd" value="classpath:schemas/LILACommon_schema.xsd" />
+	</bean>    
+	
+    <bean id="marshaller" class="org.springframework.oxm.xmlbeans.XmlBeansMarshaller" />
+          
+    <bean class="org.springframework.ws.server.endpoint.mapping.PayloadRootAnnotationMethodEndpointMapping">
+		<property name="interceptors">
+			<list>
+<!--				<ref bean="wss4jSecurityInterceptor" />            -->
+			</list>
+		</property>
+    </bean>
+ 
+    <bean class="org.springframework.ws.server.endpoint.adapter.GenericMarshallingMethodEndpointAdapter">
+		<property name="marshaller" ref="marshaller" />
+		<property name="unmarshaller" ref="marshaller" />
+    </bean>
+
+    <bean id="mapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>dozer-global-configuration.xml</value>           
+                <value>dozer-bean-mappings.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- WS-Security: x509 Signatures -->
+    <bean id="wss4jSecurityInterceptor" parent="clientWss4jInterceptorHandlerParent" >
+        <property name="securementSignatureKeyIdentifier" value="DirectReference"/>
+    </bean>
+
+    <bean id="examMarshallingEndpoint" class="com.lifeimage.core.webservice.ExamMarshallingEndpoint">
+    	<property name="examManager" ref="examManager" />
+    </bean>
+</beans>
