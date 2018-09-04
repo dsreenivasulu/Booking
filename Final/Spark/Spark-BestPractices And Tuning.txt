@@ -94,6 +94,9 @@ Serialized RDD Storage
 http://spark.apache.org/docs/latest/tuning.html	
 Broadcasting Large Variables
 	
+Most performance issues are in shuffles
+ specify : rdd.reduceByKey(reduceFunc, numPartitions=1000) 
+
 https://umbertogriffo.gitbooks.io/apache-spark-best-practices-and-tuning/content/tuning-java-garbage-collection.html
 
 
@@ -243,37 +246,149 @@ yarn.resourcemanager.am.max-attempts - in yarn-default.xml file YARN's own setti
 
 Why your Spark job is failing 
 --com.esotericsoftware.kryo. KryoException: Unable to find class: 
+
 --org.apache.spark.SparkException: Job aborted due to stage failure: Task 0.0:0 failed 4 times, most recent failure: 
 Exception failure in TID 6 on host bottou02-10g.pa.cloudera.com: java.lang.ArithmeticException: / by zero
+
 --Exception in task ID 286 6 java.io.IOException: Filesystem closed at 
+
 --Exception in thread main java.lang.NoClassDefFoundError : Missing external JARs
+
 --OOM on Spark driver  iava.lang.OutOfMemoryError java heap space 
+
 --OOM on executors
+
 --iava.lang.OutOfMemoryError GC Overlimit exceed
 spark default is --XX:UseParallelGC instead use --XX:UseG1GC
 GC tuning flags for executors can be specified by setting spark.executor.extraJavaOptions in a job’s configuration.
---org.apache.spark.SparkException: Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: ...
+
+--org.apache.spark.SparkException: Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: 
+
 --java.io.IOException: No space left on device
 Complains about ‘/tmp’ is full Controlled by ‘spark.local.dir’ parameter Default is ‘/tmp’ 
 it Stores map output files and RDDs 
 ‘/tmp’ usually is a single disk, a potential IO bottleneck 
 To fix, add the following line to ‘spark-defaults.conf’ file: spark.local.dir /data/disk1/tmp,/data/disk2/tmp,/data/disk3/tmp,/data/disk4/tmp,… 
-org.apache.spark.SparkException: Job aborted due to stage failure: Total size of serialized results of 381610 tasks (5.0 GB) is bigger than spark.driver.maxResultSize (5.0 GB)
+
+-org.apache.spark.SparkException: Job aborted due to stage failure: Total size of serialized results of 381610 tasks (5.0 GB) is bigger than spark.driver.maxResultSize (5.0 GB)
 Likely to occur with complex SQL on large data volumes 
 Limit of total size of serialized results of all partitions for each Spark action (e.g., collect) 
  Controlled by ‘spark.driver.maxResultSize’ parameter -  Default is 1G - Can be ‘0’ or ‘unlimited’ -  ‘unlimited’ will throw OOM on driver 
   To fix, add the following line to ‘spark-defaults.conf’ file: spark.driver.maxResultSize 5g *
+
 -- Catalyst errors org.apache.spark.sql.catalyst.errors.package$TreeNodeException: java.util.concurrent.TimeoutException: Futures timed out after [800 seconds] at scala.concurrent.impl.Promise$DefaultPromise.ready(Promise.scala:219) 
  On surface appears to be Catalyst error (optimizer), actually an internal Spark timeout error most likely to occur under concurrency java.util.concurrent.TimeoutException: Futures timed out after [800 seconds] 
  Controlled by an unpublished Spark setting ‘spark.sql.broadcastTimeout’ parameter 
  Default in source code shows 300 seconds 
  To fix, add the following line to ‘spark-defaults.conf’ file or as CLI --conf spark.sql.broadcastTimeout 1200 
+
 --spark.ContextCleaner: Error cleaning broadcast 28267 org.apache.spark.rpc.RpcTimeoutException: Futures timed out after [800 seconds]
  Depending on system resource usage, any of the above can occur (e.g., no heartbeats) §  You can tune each individual setting OR use an “umbrella” timeout setting §  Controlled by ‘spark.network.timeout’ parameter -  Default is 120 seconds -  Overrides all above timeout values §  To fix, add the following line to ‘spark-defaults.conf’ file: spark.network.timeout 700  
- --java.lang.IllegalArgumentException: Size exceeds Integer.MAX_VALUE
+
+--java.lang.IllegalArgumentException: Size exceeds Integer.MAX_VALUE
   Overflow exception if shuffle block size > 2 GB
   To fix Reduce the shufulee block parition or rdd repartition or coalesec
   
+How to run spark jobs ?
+Using oozie 
+Using shell scripts 
+
+How to run spark job programactily 
+Using SparkLauncher 
+Use this class to start Spark applications programmatically. The class uses a builder pattern to allow clients to configure the Spark application and launch it as a child process
+ 
+ import org.apache.spark.launcher.SparkLauncher
+
+object Launcher extends App {
+  val spark = new SparkLauncher()
+    .setSparkHome("/home/user/spark-1.4.0-bin-hadoop2.6")
+    .setAppResource("/home/user/example-assembly-1.0.jar")
+    .setMainClass("MySparkApp")
+    .setMaster("local[*]")
+    .launch();
+  spark.waitFor();
+}
+
+Submit a Spark job to YARN from Java Code
+// create an instance of yarn Client client 
+Client client = new Client(cArgs, config, sparkConf); 
+// submit Spark job to YARN
+ client.run(); 
+       
+FullExample : import org.apache.spark.deploy.yarn.Client;
+import org.apache.spark.deploy.yarn.ClientArguments;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.spark.SparkConf;
+
+public class SubmitSparkJobToYARNFromJavaCode {
+
+   public static void main(String[] arguments) throws Exception {
+
+       // prepare arguments to be passed to 
+       // org.apache.spark.deploy.yarn.Client object
+       String[] args = new String[] {
+           // the name of your application
+           "--name",
+           "myname",
+           
+           // memory for driver (optional)
+           "--driver-memory",
+           "1000M",
+              
+           // path to your application's JAR file 
+           // required in yarn-cluster mode      
+           "--jar",
+           "/Users/mparsian/zmp/github/data-algorithms-book/dist/data_algorithms_book.jar",
+
+           // name of your application's main class (required)
+           "--class",
+           "org.dataalgorithms.bonus.friendrecommendation.spark.SparkFriendRecommendation",
+
+           // comma separated list of local jars that want 
+           // SparkContext.addJar to work with		
+           "--addJars",
+           "/Users/mparsian/zmp/github/data-algorithms-book/lib/spark-assembly-1.5.2-hadoop2.6.0.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/log4j-1.2.17.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/junit-4.12-beta-2.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/jsch-0.1.42.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/JeraAntTasks.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/jedis-2.5.1.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/jblas-1.2.3.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/hamcrest-all-1.3.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/guava-18.0.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-math3-3.0.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-math-2.2.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-logging-1.1.1.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-lang3-3.4.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-lang-2.6.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-io-2.1.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-httpclient-3.0.1.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-daemon-1.0.5.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-configuration-1.6.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-collections-3.2.1.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/commons-cli-1.2.jar,/Users/mparsian/zmp/github/data-algorithms-book/lib/cloud9-1.3.2.jar",
+
+           // argument 1 to your Spark program (SparkFriendRecommendation)
+           "--arg",
+           "3",
+
+           // argument 2 to your Spark program (SparkFriendRecommendation)
+           "--arg",
+           "/friends/input",
+
+           // argument 3 to your Spark program (SparkFriendRecommendation)
+           "--arg",
+           "/friends/output",
+  
+           // argument 4 to your Spark program (SparkFriendRecommendation)
+           // this is a helper argument to create a proper JavaSparkContext object
+           // make sure that you create the following in SparkFriendRecommendation program
+           // ctx = new JavaSparkContext("yarn-cluster", "SparkFriendRecommendation");
+           "--arg",
+           "yarn-cluster"
+       };
+       
+       // create a Hadoop Configuration object
+       Configuration config = new Configuration();
+
+       // identify that you will be using Spark as YARN mode
+       System.setProperty("SPARK_YARN_MODE", "true");
+
+       // create an instance of SparkConf object
+       SparkConf sparkConf = new SparkConf();
+
+       // create ClientArguments, which will be passed to Client
+       ClientArguments cArgs = new ClientArguments(args, sparkConf); 
+       
+       // create an instance of yarn Client client
+       Client client = new Client(cArgs, config, sparkConf); 
+                
+       // submit Spark job to YARN
+       client.run(); 
+   }
+}
+       
  
 https://spark.apache.org/docs/2.1.0/sql-programming-guide.html
 https://sreejithrpillai.wordpress.com/2017/02/19/log-analyzer-example-using-spark-and-scala/
