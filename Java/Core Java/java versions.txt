@@ -1,0 +1,11 @@
+java 1.9 features
+---------------
+1. JShell: the interactive Java REPL 
+2. Private interface methods : We can declare private methods in the inteface
+3. Collection factory methods : Instead of adding every element by using add() in List or Set 
+   we can do Set<Integer> ints = Set.of(1, 2, 3);
+             List<String> strings = List.of("first", "second");
+4. Modular Source Code: Organizes JDK source code into modules.
+             
+java 1.8 features
+----------------
