@@ -31,3 +31,8 @@ This means that all MapReduce jobs should still run unchanged on top of YARN wit
 In order to scale YARN beyond few thousands nodes, YARN supports the notion of Federation via the YARN Federation feature. 
 Federation allows to transparently wire together multiple yarn (sub-)clusters, and make them appear as a single massive cluster. 
 This can be used to achieve larger scale, and/or to allow multiple independent clusters to be used together for very large jobs, or for tenants who have capacity across all of them.
+
+
+How to get YARN logs ?
+yarn logs -applicationId <application_id> 
+ex : yarn logs -applicationId application_1432041223735_0001
