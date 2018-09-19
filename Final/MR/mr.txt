@@ -280,6 +280,12 @@ By default SplitSize is same to BlockSize
 However we can specify SplitSize to control number of mappers in the processing 
 Based on SplitSize number of mappers will be created 
 
+Before spark
+------------------
+Mahout -> Iterative 
+MapReduce -> Batch 
+Hive -> Adhoc
+Giraph -> Graph
 
 
 
