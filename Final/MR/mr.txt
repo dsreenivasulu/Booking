@@ -286,6 +286,7 @@ Mahout -> Iterative
 MapReduce -> Batch 
 Hive -> Adhoc
 Giraph -> Graph
+Storm -> streaming
 
 
 
