@@ -29,9 +29,11 @@ How does the spark execute our programs on a cluster ?
   
   Spark offers two deployment modes for an application
    Client mode : Driver on client machine and executors on cluster
-                 Driver is embedded in Interactive clients. Interactive clients and driver run on same jvm process
+                 In Client mode driver will be out side of the cluster
+		 Driver is embedded in Interactive clients. Interactive clients and driver run on same jvm proce
                  suitable for exploring and debugging driver process. All Interactive Clients are in client mode 
    Cluster mode : Driver and executors on cluster
+   In Cluster mode driver will be inside of the cluster
    we can submit spark application from client machine to driver on cluster  
    each application will run independently on cluster
    suitable in production 
