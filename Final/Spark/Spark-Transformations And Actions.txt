@@ -4,6 +4,15 @@ There is an underlying problem with data reuse or data sharing in existing distr
 This makes the overall computations of jobs slower since it involves multiple IO operations, replications and serializations in the process.
 RDDs , tries to solve these problems by enabling fault tolerant distributed In-memory computations.
 
+Why RDD is immutable 
+Immutable data is always safe to share across multiple processes as well as multiple threads.
+- Since RDD is immutable we can recreate the RDD any time. (From lineage graph).
+- If the computation is time-consuming, in that we can cache the RDD which result in performance improvement
+- If RDD’s are mutable then it is not possible to maintain the fault tolerance.
+Also Spark is based on Scala data structures, and functional transformations of data. For these reasons spark uses immutable data structure.
+and explain why RDD
+
+
 RDD
 ------
 Resilient Distributed Dataset (RDD) is the fundamental data structure in Spark, which is a distributed collection of data elements across cluster nodes and can perform parallel operations. 
