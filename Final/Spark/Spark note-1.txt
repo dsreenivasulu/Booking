@@ -107,6 +107,10 @@ scala> :help
 :warnings                show the suppressed warnings from the most recent line which had any
 :load interpret lines in a file
 
+Do I need to install spark in all the nodes on cluster ? why ?
+No, it is not necessary to install Spark on all the nodes. 
+Since spark runs on top of Yarn, it utilizes yarn for the execution of its commands over the cluster’s nodes.
+So, you just have to install Spark on one node
 
 ---------------------------------------------------------------------------------------------------------------------	
 SparkContext :  
