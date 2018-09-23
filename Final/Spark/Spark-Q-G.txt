@@ -473,3 +473,71 @@ Storage
 Environment
 Executors
 SQL 
+-------------------------------------------------------------------------------------
+What is difference between foreach and foreachPartition actions 
+foreach(function): Unit
+A generic function to inovke operation/passed function for each element in the RDD
+This is generally used for manipulating accumulators or writing to external stores.
+
+ex:
+scala> val accum = sc.longAccumulator("My Accumulator")
+scala> sc.parallelize(Array(1, 2, 3, 4)).foreach(x => accum.add(x))
+
+Note : Modifying variables other than Accumulators outside of the foreach() may result in undefined behavior.
+var counter = 0
+var rdd = sc.parallelize(Array(1, 2, 3, 4))
+// Wrong: Don't do this!!
+rdd.foreach(x => counter += x)
+println("Counter value: " + counter)
+If it executes single JVM with local mode you may get consitent result 
+If it executes on cluster mode we may get desired results reason is task is copied to each executor and its own each copy of counter var
+
+foreachPartition(function): Unit
+Similar to foreach() , but instead of invoking function for each element, it calls it for each partition. The function should be able to accept an iterator. This is more efficient than foreach() because it reduces the number of function calls (just like mapPartitions() ).
+ex : var accum = sc.longAccumulator
+     sc.parallelize(Seq(1,2,3)).foreachPartition(x => x.foreach(accum.add(_)))
+ 
+foreachPartition should be used when you are accessing costly resources such as database connections etc.. which would initialize one per partition rather than one per element(foreach).  
+The foreachPartition does not mean it is per node activity rather it is executed for each partition and it is possible you may have large number of partition compared to number of nodes in that case your performance may be degraded.
+
+How to concate the columns in dataframe ? Or 
+by input is 
++--------+--------+
+|colname1|colname2|
++--------+--------+
+|   row11|   row12|
+|   row21|   row22|
++--------+--------+
+ouptput should be 
++--------+--------+-------------+
+|colname1|colname2|joined_column|
++--------+--------+-------------+
+|   row11|   row12|  row11_row12|
+|   row21|   row22|  row21_row22|
++--------+--------+-------------+
+
+spark sql:  spark.sql("SELECT CONCAT(colname1, '_',  colname2) FROM df")
+dataframe API : 
+import org.apache.spark.sql.functions.{concat, lit}
+df.select(concat($"k", lit(" "), $"v"))
+
+import org.apache.spark.sql.functions.{concat, lit}
+df = df.withColumn('joined_column', concat(col('colname1'), lit('_'), col('colname2')))
+
+What is lit : Creates a Column of literal value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
