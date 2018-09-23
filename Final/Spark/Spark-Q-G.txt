@@ -526,6 +526,120 @@ df = df.withColumn('joined_column', concat(col('colname1'), lit('_'), col('colna
 
 What is lit : Creates a Column of literal value.
 
+How to get dataset metadata ?
+You can get the schema from dataset as
+
+ds.schema
+This gives you StructType which contains all the information
+
+ds.schema.fieldNames
+This gives all the list of column names
+
+ds.schema.fields
+This gives you a list of StructField which contains column name, datatype and nullable as a boolean value.
+
+ds.schema.size 
+This gives the total count of column names
+
+Also, you can see the details with ds.printSchema()
+
+How to kill spark running job 
+To see the list of applications that are running
+yarn application -list 
+
+to kill
+yarn application -kill appid
+
+connect to the server that have launch the job
+yarn application -kill application_1428487296152_25597
+
+How to stop logger info message being display in spark console ?
+Edit your conf/log4j.properties file and change the following line:
+log4j.rootCategory=INFO, console
+to
+log4j.rootCategory=ERROR, console
+
+in the program 
+spark.sparkContext.setLogLevel("ERROR")
+
+How to read specific columns from the parquet 
+val df = spark.read.parquet("fs://path/file.parquet").select(...)
+If you want data set then 
+case class MyData...
+val ds = df.as[MyData]
+
+How to change column position in data frame ?
+
+val data = Seq(
+  ("a",       "hello", 1),
+  ("b",       "spark", 2)
+)
+.toDF("field1", "field2", "field3")
+
+data
+ .show()
+
+data
+ .select("field3", "field2", "field1")
+ .show()
+ 
+ Another way is 
+ val columns: Array[String] = dataFrame.columns
+val reorderedColumnNames: Array[String] = ??? // do the reordering you want
+val result: DataFrame = dataFrame.select(reorderedColumnNames.head, reorderedColumnNames.tail: _*)
+
+How to rename column name in data frame ?
+https://stackoverflow.com/questions/35592917/renaming-column-names-of-a-dataframe-in-spark-scala
+
+How to rename column name in spark sql ?
+https://stackoverflow.com/questions/39760675/how-to-rename-column-names-in-spark-sql
+
+How to drop column in data frame ?
+val newdf  = df.drop("Customers");
+or dropping multiple columns df.drop("colA", "colB", "colC")
+
+How to add new column in data frame ?
+val newdf = df.withColumn("newcol")
+val newdf = df.withColumn("newcol", "value")
+
+How to save and read rdd from HDFS ?
+You can save the RDD using saveAsObjectFile and saveAsTextFile method. 
+Where as you can read the RDD using textFile and sequenceFile function from SparkContext.
+
+How to find max value in pair RDD ?
+Use reduce or fold 
+pairRDD.reduce((x, y) => if(x._2 > y._2) x else y)
+
+How to find the number of elements present in the array in a Spark DataFame column?
+You can select the column and apply size method to find the number of elements present in array:
+df.select(size($"col1"))
+
+How to replace null values in dataframe ?
+You can use .na.fill function (it is a function in org.apache.spark.sql.DataFrameNaFunctions).
+val df2 = df.na.fill("a", Seq("Name"))
+or
+String[] colNames = {"Name"}
+dataframe = dataframe.na.fill("a", colNames)
+or
+val map = Map("Name" -> "a", "Place" -> "a2")
+df.na.fill(map).show()
+
+What is AKKA in spark ?
+Spark uses Akka basically for scheduling. All the workers request for a task to master after registering. The master just assigns the task. Here Spark uses Akka for messaging between the workers and masters.
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
 
 
 
