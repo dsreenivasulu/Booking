@@ -83,6 +83,9 @@ Saves computation overhead and increases the speed of the system.
 Reduces the time and space complexity.
 provides the optimization by reducing the number of queries
 
+for example -- if you executed every transformation eagerly it means you will have to materialize that many intermediate datasets in memory. This is evidently not efficient -- for one, it will increase your GC costs.
+
+
 How to run spark file in spark or Submitting a Spark job using Shell script file
 By using :load command 
 ex : spark>:load /usr/test.scala
