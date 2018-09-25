@@ -61,7 +61,8 @@ Accumulators are variables that are used to perform an associative and commutati
 They can be used to implement counters (as in MapReduce) or sums.
 Accumulator are write-only variables for executors and An accumulator a kind of central variable to which every node can send data.
 And then Accumulator variable value can be read by the driver
-we can create named or unnamed accumulators. a named accumulator will display in the web UI. 
+we can create named or unnamed accumulators. a named accumulator will display in the web UI.
+(Named accumulator will display in the web UI under stage tab for each task accumulator counter value and final accumulator counter value)
 Tracking accumulators in the UI can be useful for understanding the progress of running stages 
 In Spark, We have build in accumulators of numeric types and we can also add support for new types.
 An accumulator is a good way to continuously gather data from a Spark process such as the progress of an application.
@@ -70,7 +71,7 @@ We can create built-in accumulators for longs, doubles, or collections or
 register custom accumulators using the SparkContext.register methods
 
 An accumulator can have an optional name that you can specify when creating an accumulator.
-val counter = sc.longAccumulator("counter")
+val counter = sc.longAccumulator("counter") or sc.doubleAccumulator("My Accumulator") 
 
 Accumulators are applicable to any operation which are,
 1. Commutative -> f(x, y) = f(y, x), and
@@ -82,6 +83,9 @@ Note : Accumulators used inside functions like map() or filter() wont get execut
     Spark does not guarantee Accumulators inside transformations. So if a task is restarted and the lineage is recomputed, there are chances of undesirable side effects when the accumulators will be updated more than once.
     To be on the safe side, always use accumulators inside actions ONLY.
 Spark accumulators are similar to Hadoop counters
+
+Named accmulator ex :  val namedAcc = sc.accumulator(0l, "my accumulator")
+Unamed accmulator ex :  val namedAcc = sc.accumulator(0l)
 
 Example1:	
 var file = sc.textFile("/data/mr/wordcount/input/")
