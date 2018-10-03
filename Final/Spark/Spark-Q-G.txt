@@ -627,6 +627,11 @@ df.na.fill(map).show()
 What is AKKA in spark ?
 Spark uses Akka basically for scheduling. All the workers request for a task to master after registering. The master just assigns the task. Here Spark uses Akka for messaging between the workers and masters.
 
+spark execptions : 
+
+1. spark.read.csv("path/does/not/exist")
+Will get org.apache.spark.sql.AnalysisException: Path does not exist: file:/D:/sreeni/SPS/src/main/resource/sales.csv
+
 
 
 
