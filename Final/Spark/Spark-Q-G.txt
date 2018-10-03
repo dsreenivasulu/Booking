@@ -424,6 +424,8 @@ The default value for this is 1 GB. It refers to the amount of memory that will 
 
 What do you understand by worker node?
 Worker node refers to any node that can run the application code in a cluster
+Worker node is a slave node. Master node assign the task to the worker node. Worker node will execute the assigned tasks.
+Worker node will have one or more executors. Worker node can cache process results.
 
 What is Spark Executor?
 When SparkContext connects to a cluster manager, it acquires an Executor on nodes in the cluster. 
