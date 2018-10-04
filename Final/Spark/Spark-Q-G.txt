@@ -177,7 +177,7 @@ By using a broadcast variable
 Using Accumulator 
 
 -----------------------------------------------------------------------------------------------------
-What is pipe operator ?
+What is pipe operator ? What is pipe() method ?
 Pipe operator allows to process RDD data using external application 
 After creating RDD, we can pipe that RDD through shell script. Shell scripting allows to access that RDD through external application
 
