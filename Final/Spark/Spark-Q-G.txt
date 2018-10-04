@@ -635,6 +635,20 @@ spark execptions :
 Will get org.apache.spark.sql.AnalysisException: Path does not exist: file:/D:/sreeni/SPS/src/main/resource/sales.csv
 
 
+https://github.com/RatneshKumarSrivastava/Ratnesh/wiki/Interview-Experience
+https://github.com/RatneshKumarSrivastava/Ratnesh/wiki/AFTER-INTERVIEW
+1)Exact Business of Humana? What Humana is expecting from the final output? 
+2)How to delete duplicate records from the DataFrame?
+3)How to join two dataframes with leftoutjoin in Spark? 
+4)If Kafka Consumer missed to consume the data, how to handle this? What will happens to missed data and solution? 
+5) How to replace string in Unix? 
+6)In Oozie workflow what is the parameters and where should we define them?
+7)In Oozie workflow where would we define any Hive or Ping actions exactly?
+http://www.thecloudavenue.com/search/label/spark
+https://github.com/vaquarkhan/vaquarkhan/blob/master/spark-notes.pdf
+https://github.com/vaquarkhan/vaquarkhan/blob/master/cloudera-spark.pdf
+https://github.com/vaquarkhan/vaquarkhan/blob/master/Spark-Cookbook-eBook.pdf
+https://github.com/vaquarkhan/vaquarkhan/blob/master/Spark-TheNextTopComputeModel.pdf
 
 
 
