@@ -187,6 +187,26 @@ No. RDD can share access the networks but not applications
 What is the sizeEstimator tool ?
 An utiliy tool to estimate the size of object in java heap is called sizeEstimator
 
+val distFile = sc.textFile(file)
+import org.apache.spark.util.SizeEstimator
+println(SizeEstimator.estimate(distFile)) //estimates size in bytes
+
+How to find RDD size ?
+def calcRDDSize(rdd: RDD[String]): Long = {
+  rdd.map(_.getBytes("UTF-8").length.toLong)
+     .reduce(_+_) //add the sizes together
+}
+
+How to find number rows in the RDD ? Number of lines in the RDD ?
+val distFile = sc.textFile(file)
+distFile.count()
+
+How to find number of cached RDDs and Number of Partitions of each RDD on memory and on disk ?
+Solution 1:  scala> sc.getRDDStorageInfo
+              o/p : TotalPartitions: 1; MemorySize: 256.0 B; ExternalBlockStoreSize: 0.0 B; DiskSize: 0.0 B
+Solution 2: We can check in the UI              
+
+
 What is difference between reduce and fold ?
 Reduce: (commutative/associative property is assumed to be true)
 reduce(func): Combine the elements of the RDD together in parallel (e.g., sum)
