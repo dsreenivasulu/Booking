@@ -295,10 +295,11 @@ Since Spark knows how to prepare a certain data set because it is aware of vario
 
 How to save RDD?
 saveAsTextFile: Write the elements of the RDD as a text file (or set of text files) to the provided directory. The directory could be in the local filesystem, HDFS or any other file system. Each element of the dataset will be converted to text using toString() method on every element. And each element will be appended with newline character “\n”
-later read it using textFile
+later read it using textFile (ex : sc.textFile("path"))
 saveAsSequenceFile: Write the elements of the dataset as a Hadoop SequenceFile. This works only on the key-value pair RDD which implement Hadoop’s Writeable interface. You can load sequence file using sc.sequenceFile().
-later read it using SequenceFile
+later read it using SequenceFile  (ex : sc.sequenceFile[String, String]("path"))
 saveAsObjectFile: This simply saves data by serializing using standard java object serialization.
+later read it using ObjectFile (ex : sc.objectFile("path"))
 
 How to save dataFrame ?
 csv:
@@ -315,12 +316,14 @@ df.write.
     save("myfile.csv")
 text:
 val op= df.write.mode("overwrite").format("text").save("C:/Users/phadpa01/Desktop/op")
+df.write.text("/path/to/output")
+
 types of modes
-overwrite: overwrite the existing data.
 append: append the data.
 ignore: ignore the operation (i.e. no-op).
 error: default option, throw an exception at runtime.
-df.write.text("/path/to/output")
+overwrite: overwrite the existing data.
+
 json:
 df.write.json("/yourPath")
 orc;
@@ -332,7 +335,7 @@ Seq((1, 2)).toDF("i", "j").write.mode("overwrite").saveAsTable("t1")
 df.jdbc(url,tablename,connectionproperties)
 
 option used to specify key value 
-df.write.option("orc.compress", "lzo")orc("/yourPath")
+df.write.option("orc.compress", "lzo").orc("/yourPath")
 none, snappy, gzip, and lzo
 df.write.option("spark.sql.parquet.compression.codec", "lzo").parquet("/yourPath")
 none, snappy, gzip, and lzo
@@ -377,8 +380,8 @@ ex : 1,2,3,4, applying sum func on reduce
 val x = sc.parallelize(1 to 4)
 scala> val y = x.reduce((accum,n) => (accum + n))  or val y = x.reduce((x,y) => (x + y))
 o/p is 10
-reduce func will work on parallel on different partition
-partition1   partition1
+reduce func wil
+partition1   partition1l work on parallel on different partition
 1,2             3,4
 3                7
         10
