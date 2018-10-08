@@ -482,6 +482,11 @@ FULL OUTER JOIN – Combines the records of both the left and right outer tables
 LEFT OUTER JOIN- All the rows from the left table are returned even if there are no matches in the right table.
 RIGHT OUTER JOIN-All the rows from the right table are returned even if there are no matches in the left table
 
+What is left semi join ? inner join vs left semi join
+Left semi join displays matching records of the left table only 
+inner join displays matching records of both tables
+See chennai example : https://stackoverflow.com/questions/21738784/difference-between-inner-join-and-left-semi-join
+
 How to Write a UDF function in Hive? Custom functions in Hive
 -Create a Java class for the User Defined Function which extends ora.apache.hadoop.hive.sq.exec.UDF(it is a class) and implements more than one evaluate() methods. Put in your desired logic and you are almost there.
 The following are UDF methods:
