@@ -212,11 +212,6 @@ set hive.exec.dynamic.partition.mode=nonstrict
 
 insert into table tem_table partition(city) select name, city from temp_table; 
 
-
-What is left semi join ? inner join vs left semi join
-Left semi join displays matching records of the left table only 
-inner join displays matching records of both tables
-See chennai example : https://stackoverflow.com/questions/21738784/difference-between-inner-join-and-left-semi-join
 ---------------------------------------------------------------------------------------------------------
 How to load xml into Hive 
 student.xml
