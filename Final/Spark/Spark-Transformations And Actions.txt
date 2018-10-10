@@ -63,10 +63,20 @@ Transformations are lazy in nature.They are not executed immediately they get ex
 
 There are two types of transformations:
 Narrow transformation:– In Narrow transformation, all the elements that are required to compute the records in single partition live in the single partition of parent RDD. 
-A limited subset of partition is used to calculate the result. Narrow transformations are the result of map(), filter().
+Each partition of the parent RDD is used by at most one partition of the child RDD.
+[parent RDD partition] ---> [child RDD partition]
+Narrow transformations are Fast.  No shuffle necessary. Optimizations like pipelining possible. Thus transformations which have narrow dependencies are fast.
+Narrow transformations are the result of map(), filter(), flatMap mapValues mapPartitions mapPartitionsWithIndex etc....
 
 Wide transformation:– In wide transformation, all the elements that are required to compute the records in the single partition may live in many partitions of parent RDD. 
-The partition may live in many partitions of parent RDD. Wide transformations are the result of groupbyKey() and reducebyKey().
+Each partition of the parent RDD may be used by multiple child partitions
+                       ---> [child RDD partition 1]
+[parent RDD partition] ---> [child RDD partition 2]
+                       ---> [child RDD partition 3]
+		       
+Wide transformations are  Slow! Shuffle necessary for all or some data over the network. Thus transformations which have narrow dependencies are slow.
+Wide transformations are the result of groupbyKey() and reducebyKey(). cogroup groupWith join leftOuterJoin rightOuterJoin
+combineByKey distinct intersection repartition coalesce
 
 Actions:
 Actions return final results of RDD computations. 
