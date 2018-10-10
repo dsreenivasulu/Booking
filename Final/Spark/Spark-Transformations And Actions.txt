@@ -115,8 +115,30 @@ We can also remove the cache manually using RDD.unpersist() method.
 
 
 count() : counts and returns the number of elements in RDD.
+
 take(n) : we can take and returns specified n number of elements from RDD. It tries to cut the number of partition it accesses, so it represents a biased collection.
 We cannot presume the order of the elements.
 For example, consider RDD {1, 2, 2, 3, 4, 5, 5, 6} in this RDD “take (4)” will give result { 2, 2, 3, 4}
-top(n) : If ordering is present in our RDD, then we can extract top elements from our RDD using top(n). Action top(n) use default ordering of data.
-	
+
+top(n) : Returns the top k (largest) elements from this RDD as defined by the specified implicit Ordering[T] and maintains the ordering. This does the opposite of takeOrdered. For example:
+
+sc.parallelize(Seq(10, 4, 2, 12, 3)).top(1)
+// returns Array(12)
+
+sc.parallelize(Seq(2, 3, 4, 5, 6)).top(2)
+// returns Array(6, 5)
+Note : This method should only be used if the resulting array is expected to be small, as all the data is loaded into the driver's memory
+
+takeOrdered(n) : Returns the first k (smallest) elements from this RDD as defined by the specified implicit Ordering[T] and maintains the ordering. This does the opposite of top. For example:
+
+sc.parallelize(Seq(10, 4, 2, 12, 3)).takeOrdered(1)
+// returns Array(2)
+
+sc.parallelize(Seq(2, 3, 4, 5, 6)).takeOrdered(2)
+// returns Array(2, 3)
+num
+k, the number of elements to return
+ord
+the implicit ordering for T
+
+Note This method should only be used if the resulting array is expected to be small, as all the data is loaded into the driver's memory.
