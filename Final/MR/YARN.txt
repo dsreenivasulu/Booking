@@ -36,3 +36,17 @@ This can be used to achieve larger scale, and/or to allow multiple independent c
 How to get YARN logs ?
 yarn logs -applicationId <application_id> 
 ex : yarn logs -applicationId application_1432041223735_0001
+
+How to configure YARN in spark ?
+1)Edit the $SPARK_HOME/conf/spark-defaults.conf and set to spark.master to yarn
+spark-defaults.conf
+-------------------
+ spark.master  yarn
+2)To communicate with the YARN Resource Manager, Spark needs to be aware of your Hadoop configuration
+Edit the hadoop user profile /home/hadoop/.profile and add the following lines:
+export HADOOP_CONF_DIR=/home/hadoop/hadoop/etc/hadoop
+export SPARK_HOME=/home/hadoop/spark
+
+
+
+
