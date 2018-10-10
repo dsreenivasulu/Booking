@@ -1,5 +1,130 @@
+RDD Operations : 
+
+def cache(): RDD.this.type
+Persist this RDD with the default storage level (MEMORY_ONLY).
+
+
+Few are Transformations and Few are actions. 
+If operation is returning RDD then it is tranformation. If operation is returning single result value then it is action 
+
+====================================================================================================================
+RDD Operations Transformation : 
+General
+• map
+• filter
+• flatMap
+• mapPartitions
+• mapPartitionsWithIndex
+• groupBy
+• sortBy
+
+Math/Statical 
+• sample
+• randomSplit
+
+Set Theory / Relational
+• union
+• intersection
+• subtract
+• distinct
+• cartesian
+• zip
+
+Data Structure / I/O
+• keyBy
+• zipWithIndex
+• zipWithUniqueID
+• zipPartitions
+• coalesce
+• repartition
+• repartitionAndSortWithinPartitions
+• pipe
+----------
+RDD Operations Actions : 
+General 
+• reduce
+• collect
+• aggregate
+• fold
+• first
+• take
+• forEach
+• top
+• treeAggregate
+• treeReduce
+• forEachPartition
+• collectAsMap
+
+Math/Statical
+• count
+• takeSample
+• max
+• min
+• sum
+• histogram
+• mean
+• variance
+• stdev
+• sampleVariance
+• countApprox
+• countApproxDistinct
+
+set theory/Relational 
+• takeOrdered
+
+Data Structure / I/O
+• saveAsTextFile
+• saveAsSequenceFile
+• saveAsObjectFile
+• saveAsHadoopDataset
+• saveAsHadoopFile
+• saveAsNewAPIHadoopDataset
+• saveAsNewAPIHadoopFile
+====================================================================================================================
+Pair RDD operation transformation 
+General
+• flatMapValues
+• groupByKey
+• reduceByKey
+• reduceByKeyLocally
+• foldByKey
+• aggregateByKey
+• sortByKey
+• combineByKey
+
+Math/Statical 
+• sampleByKey
+
+Set Theory / Relational
+• cogroup (=groupWith)
+• join
+• subtractByKey
+• fullOuterJoin
+• leftOuterJoin
+• rightOuterJoin
+
+Data Structure 
+• partitionBy
+---------
+RDD Operations Actions : 
+General 
+• keys
+• values
+
+Math/Statical
+• countByKey
+• countByValue
+• countByValueApprox
+• countApproxDistinctByKey
+• countApproxDistinctByKey
+• countByKeyApprox
+• sampleByKeyExact
+
+====================================================================================================================
+
 Transformations : 
 -------------------
+
 Map : Returns new RDD by applying function to each element of Existing RDD
 Example 1: To calculate the length of each line.
 scala> lines.map(s => s.length).collect
@@ -70,12 +195,15 @@ Note –  The join() transformation will join two different RDDs on the basis of
 mapPartitions(func) :
 mapPartitionWithIndex():
 	
-union() : Returns a new RDD that contains the union of the two source RDDs
+union() or ++ : Returns a new RDD that contains the union of the two source RDDs
 val inputRdd1 = sc.parallelize(List(1, 2, 3))
 val inputRdd2 = sc.parallelize(List(3, 5, 7))
-val resultInputUnion = inputRdd1.union(inputRdd2)
+val resultInputUnion = inputRdd1.union(inputRdd2) or inputRdd1 ++ inputRdd2
 println("Union:" + resultInputUnion.collect().mkString(","))
-o/p is Union: (1, 2, 3,3,5,7)
+o/p is Union: (1, 2, 3, 3, 5, 7)
+Note : use distinct() to element the duplicate elements from the RDD 
+val finalRDD = resultInputUnion.distinct()
+o/p is (1, 2, 3, 5, 7)
 
 intersection() :Returns a new RDD that contains the intersection of the two source RDDs
 val inputRdd1 = sc.parallelize(List(1, 2, 3))
