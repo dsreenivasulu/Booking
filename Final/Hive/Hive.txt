@@ -75,8 +75,7 @@ Hive stores metadata information in the metastore
 Hive Metastore is a central repository that stores metadata in external database.
 metadata of hive tables, partitions, Hive databases etc
 
-
-Why does Hive not store metadata information in HDFS?
+Why Hive doest not store metadata information in HDFS?
 Basically, to achieve low latency we use RDBMS. Because  HDFS read/write operations are time-consuming processes.
 
 -Metadata Objects
@@ -137,7 +136,6 @@ To identify the structure of individual columns and the internal structure of th
 Basically, it provides access to complex objects which can be stored in multiple formats in Hive.
 Ex : https://cwiki.apache.org/confluence/display/Hive/DeveloperGuide+UDTF
 
-
 How can you configure remote metastore mode in Hive?
 hive.metastore.uris =thrift: //IP Address:9083  IP address and port of the metastore host
 hive.metastore.local = false
@@ -153,16 +151,13 @@ javax.jdo.option.ConnectionUsername	= lila
 javax.jdo.option.ConnectionPassword = 4life!
 Note : default it has derby database details
 
-
 How does data transfer happen from HDFS to Hive?
 use external table and specify location
 If data is already present in HDFS then the user need not LOAD DATA that moves the files to the /user/hive/warehouse/. So the user just has to define the table using the keyword external that creates the table definition in the hive metastore.
 Create external table table_name (
   id int,
   myfields string
-)
-location '/my/location/in/hdfs';
-
+)location '/my/location/in/hdfs';
 
 Is it possible to compress json in Hive external table ?
 Yes, you need to gzip your files and put them as is (*.gz) into the table location.                   
@@ -238,7 +233,6 @@ CREATE TABLE base64_test(col1 STRING, col2 STRING)
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat' ; 
 
-
 What are the components of a Hive query processor? Mention what Hive query processor does?
 Query processor in Apache Hive converts the SQL to a graph of MapReduce jobs with the execution time framework 
 so that the jobs can be executed in the order of dependencies. The various components of a query processor are-
@@ -289,8 +283,7 @@ wen can use view to create a virtual table based on the result-set of a complex 
 Views are temporary entities that are created on-the-fly and cannot be reused later.
 Using Views vs Tables does not yield any significant performance when running a query, even is the view has significant fewer columns.
 
-ex : 
-CREATE VIEW [IF NOT EXISTS] view_name [(column_list)] AS select_statement;
+ex : CREATE VIEW [IF NOT EXISTS] view_name [(column_list)] AS select_statement;
 create view if not exists students_vw as select * from students where city = 'Bangalore';
 
 How to alter view or how to rename the view ?
@@ -531,7 +524,6 @@ CREATE TEMPORARY MACRO macro_name([col_name col_type, ...]) expression;
 ex : CREATE TEMPORARY MACRO simple_add (x int, y int) x + y;
 DROP TEMPORARY MACRO [IF EXISTS] macro_name;
 
-
 Note : Say, We used Junit to write the unit test for Hive UDF
 
 Differentiate between PigLatin and Hive
@@ -640,9 +632,6 @@ ex https://cristogoro.wordpress.com/2017/06/10/how-to-create-your-own-hive-serde
   
 “USE” command in the hive ?
 hive>use dbname
-
-  
-  
 -------------------------------------------------------------
 How you write unit test in Hive ?
 Hive uses JUnit for unit tests.  
