@@ -236,6 +236,7 @@ OUTPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputF
 What are the components of a Hive query processor? Mention what Hive query processor does?
 Query processor in Apache Hive converts the SQL to a graph of MapReduce jobs with the execution time framework 
 so that the jobs can be executed in the order of dependencies. The various components of a query processor are-
+Compiler
 Parser
 Semantic Analyser
 Type Checking
