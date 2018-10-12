@@ -390,6 +390,10 @@ What do you understand by worker node? Worker node refers to any node that can r
 What is Spark Driver? Spark Driver is the program that runs on the master node of the machine and declares transformations and actions on data RDDs. In simple terms, driver in Spark creates SparkContext, connected to a given Spark Master. The driver also delivers the RDD graphs to Master, where the standalone cluster manager runs
  
  
+ When to use GroupByKey and ReduceByKey ?
+ If the operation is associative and commutative reduce (for ex : sum, count. min, max) then prefer using ReduceByKey 
+ If it is not reduce operation then prefer using GroupByKey 
+ 
  
  
  https://stackoverflow.com/questions/31508083/difference-between-dataframe-in-spark-2-0-i-e-datasetrow-and-rdd-in-spark?rq=1
