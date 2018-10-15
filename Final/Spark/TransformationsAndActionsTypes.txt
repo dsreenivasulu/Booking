@@ -116,7 +116,6 @@ Math/Statical
 • countByValue
 • countByValueApprox
 • countApproxDistinctByKey
-• countApproxDistinctByKey
 • countByKeyApprox
 • sampleByKeyExact
 
@@ -224,6 +223,21 @@ val inputSubtract2 = sc.parallelize(List(3, 5, 6))
 val resultSub = inputSubtract1.subtract(inputSubtract2)
 println("subtract:" + resultSub.collect().mkString(","))
 o/p is subtract: (2,1)
+
+zipWithIndex() : It returns new RDD with element and index
+val rdd  = sc.parallelize(List("Hi", "Hello", "Bye"))
+rdd.zipWithIndex() 
+rdd.foreach(println)
+o/p is (Hi, 0)
+       (Hello, 1)
+       (Bye, 2)
+Q : How to provide inital value as index instead of 0. 
+Ans : 
+rdd.zipWithIndex().map { case (v, ind) =>
+  (v, ind + 8)
+}
+
+
 
 Actions : 
 -------------------
