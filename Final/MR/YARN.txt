@@ -25,6 +25,10 @@ CapacityScheduler and the FairScheduler would be some examples of plug-ins.
 The ApplicationsManager is responsible for accepting job-submissions, negotiating the first container for executing the application specific ApplicationMaster 
 and provides the service for restarting the ApplicationMaster container on failure.
 
+Explain YARN application specific workflow. Explain YARN architecuture ?
+https://hortonworks.com/blog/apache-hadoop-yarn-concepts-and-applications/
+
+
 MapReduce in hadoop-2.x maintains API compatibility with previous stable release (hadoop-1.x). 
 This means that all MapReduce jobs should still run unchanged on top of YARN with just a recompile.
 
