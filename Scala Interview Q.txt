@@ -628,3 +628,35 @@ SORM(Scala ORM)
 
 What are the Popular Scala-Based Frameworks to develop RESTful Web Services or REST API?
 Play Framework
+=============================================================================
+How to write try/catch/finally block or How to handle execptions in scala ?
+	try 
+		{
+		}
+	catch 
+		{
+		 case foo : FooExecption => HanldeFooExecption(foo) or foo.printStackTrace
+		 case Bar : BarExecption => HanldeBarExecption(bar)
+		 case _  : Throwable => println("exception occured but we don't where it is occured")
+note 1) here _ menas wild charachter 
+2)For default case we can't get execption instance 
+		 }
+	finally 
+		{
+		}
+
+In java try, multiple catches, finally 
+In scala try, catch with multiple case, finally 
+
+How to throws execption from the method ?    
+by using @throws annonation 
+
+ex : @throws(classOf(FooExecption))
+     def m1() {}
+
+For more than one exception to throw 
+ex : @throws(classOf(FooExecption))
+     @throws(classOf(BarExecption))
+     def m1() {}
+
+     
