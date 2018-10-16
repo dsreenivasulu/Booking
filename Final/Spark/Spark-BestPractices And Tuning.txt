@@ -78,8 +78,38 @@ The combineByKey function takes 3 functions as arguments:
     The second function is a merging function that takes a value and merges/combines it into the previously collecte value(s).
     The third function combines the merged values together. Basically this function takes the new values produced at the partition level and combines them until we end up with one singular value.
 
-Data Serialization : use Kryo serialization conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-Serialization plays an important role in the performance of any distributed application	
+Data Serialization :
+All data that is send over the network or written to disk needs to be serialized
+So Serialization plays an important role in the performance of any distributed application	
+By default spark uses java serialization to serilize the object.
+Java serialization is flexible but often quite slow, as it consumes a large number of bytes to store 
+
+Therefore it is recommends to use the Kryo serializer instead
+
+The only reason Kryo is not the default is because of the custom registration requirement, but we recommend trying it in any 
+network-intensive application.
+ 
+ 
+Note:Since Spark 2.0.0, it internally use Kryo serializer when shuffling RDDs with simple types, arrays of simple types, or string type
+
+
+Tell to spark to use Kryo serialization 
+This setting configures the serializer used for not only shuffling data between worker nodes but also when serializing RDDs to disk i.e
+RDD caching and shuffling
+conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+
+To register custom classes with Kryo, use the registerKryoClasses method. (fully qualified class name)
+conf.registerKryoClasses(Array(classOf[MyClass1], classOf[MyClass2]))
+
+Tell to spark all serializable classes must be registered
+it will help to tell to Kryo to throw an exception if it encounters an unregistered class
+conf.set("spark.kryo.registrationRequired", "true")
+
+If big objects needs to serialize you might get OutOfMemoryErrors or GC Overflows so increase buffer size
+// Now it's 24 Mb of buffer by default instead of 0.064 Mb
+conf.set("spark.kryoserializer.buffer.mb","24")
+
+
 Java serialization By default, Spark serializes objects using Java’s ObjectOutputStream framework by implementating java.io.Serializable. You can also control the performance of your serialization more closely by extending java.io.Externalizable. 
 Java serialization is flexible but often quite slow, and leads to large serialized formats for many classes.
 Kryo serialization: Spark can also use the Kryo library to serialize objects more quickly.
