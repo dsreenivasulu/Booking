@@ -29,6 +29,20 @@ Limitations
 
 ex : select * from post41 order by id desc (With out Vectorization, query will take more time. With Vectorization, query will take less time 
 
+What is Hive fetch task ?
+It is possible in hive to run fetch task for simple queries which can improve the performance to a large extent.
+Fetch task directly fetches the data using ‘hadoop fs –get’ or ‘hadoop fs –cat’ instead of map reduce job
+It directly goes to the file and give the result rather than start a mapReduce job for the simple incoming query
+
+set hive.fetch.task.conversion = minimal(default value), another possible two values are more and none 
+none means disabling the fetch task conversion that means alway use map reduce job even for simple select query 
+more : We need to be very careful while using ‘more’ because fetch cannot use parallelism of map-reduce and a very large table can take lot more time for fetch task. We can use ‘hive.fetch.task.conversion.threshold’ value to set what should be the maximum table size to use fetch task. If table size is more than this threshold, hive will use map-reduce.
+
+examples : select * from table; select * from table with limit --> no map reduce job
+           select * from table with filter condition or partition key -> mapper with no reducer  
+note : no subquery, no aggregation or distinct; not apply to view or JOIN then hive uses fetch task 
+
+
 Cost-Based Optimization(CBO):
 --------------
 Hive optimizes each query’s logical and physical execution plan before submitting for final execution. These optimizations are not based on the cost of the query.
