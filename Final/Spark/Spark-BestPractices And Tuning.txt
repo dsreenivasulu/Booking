@@ -130,6 +130,21 @@ Most performance issues are in shuffles
 https://umbertogriffo.gitbooks.io/apache-spark-best-practices-and-tuning/content/tuning-java-garbage-collection.html
 
 
+Use the right level of parallelism : 
+Spark automatically sets the number of partitions of an input file according to its size. (we can also set number of partitions)
+By default spark create one partition for each block of the file in HDFS it is 128MB by default.
+
+ex : val rdd= sc.textFile(“file.txt”,5)
+
+above statement make a RDD of textFile with 5 partition. 
+Now if we have a cluster with 4 cores then each partition need to process 5 minutes so 4 partition process parallel and 5 partition process after that whenever core will be free so it so final result will be completed in 10 minutes and resources also ideal while only one partition process.
+
+So to overcome this problem we should make RDD with number of partition is equal to number of cores in the cluster by this all partition will process parallel and resources are also used equally.
+
+If your tasks take considerably longer than that keep increasing the level of parallelism, by say 1.5, until performance stops improving.
+
+
+
 Spark SQL’s Performance Tuning Tips and Tricks
 ==============================
 Number of Partitions for groupBy Aggregation
