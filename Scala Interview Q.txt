@@ -679,8 +679,9 @@ and in code
 	    case c: CustomException => c.printStackTrace
 	}
 ===================================================================
-Traits : Traits are kind of similar to java8 interfaces, Traits can have implementations of methods and abstract methods,Traits are mixins. traits can't be instantiated and traits will not have constructors.
-By using trait keyword we can define Traits
+Traits : Traits are kind of similar to java8 interfaces, Traits can have concerte methods and abstract methods,Traits are mixins.
+traits can't be instantiated and traits will not have constructors.
+By using trait keyword we can define Traits. Traits are used to support mulitple inhertinace
 
 trait myTrait {
   val id : Int    //abstract variable declaration 
