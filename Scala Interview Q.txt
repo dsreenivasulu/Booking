@@ -353,6 +353,14 @@ Common examples in Scala are the filter, map,  and flatMap functions, which rece
 
 What is a Closure in Scala?
 A closure is also known as an anonymous function whose return value depends upon the value of the variables declared outside the function.
+ex : object CloserEx extends App { 
+      var n = 10
+	val f = (x: Int) => x + n
+	println(f(1)) // 11
+
+	n = 20
+	println(f(1)) // 21
+ }
 
 What is currying in Scala?
 Currying is a technique to transform a function that takes multiple arguments into a function that takes a single argument.
