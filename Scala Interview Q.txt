@@ -361,6 +361,38 @@ ex : object CloserEx extends App {
 	n = 20
 	println(f(1)) // 21
  }
+ 
+What is implicit parameters ?
+An implicit parameter is a parameter to method (or constructor) that is marked as implicit. 
+That means if a parameter value is not supplied when the method call, then the compiler will search for an "implicit" value defined within scope
+ex : object ImplicitEx extends App {
+	 //define a method that takes an implicit String
+	 def yo(implicit s:String) = println("Yo, " + s)
+	 yo("Hi") //o/p is Yo, Adrian
+
+	 // create an implicit String field, which is now "in scope"
+	 implicit val friend = "Friend"
+
+	 //call yo without an argument; it magically finds friend
+	 yo  //o/p is Yo, Friend
+
+	 // define an implicit field of a different type (Int)
+	 implicit val one = 1
+
+	 // call yo again, see what happens (it finds friend again)
+	 yo  //o/p is Yo, Friend
+
+	 // define a second implicit String
+	 implicit val enemy = "Enemy"
+
+	 // call yo again; now it can't figure out which String you want 
+	// it to implicitly use (friend or enemy)
+	 yo
+	 error: ambiguous implicit values:
+	 both value fred in object $iw of type => java.lang.String
+	 and value barney in object $iw of type => java.lang.String
+	 match expected type String yo
+}
 
 What is currying in Scala?
 Currying is a technique to transform a function that takes multiple arguments into a function that takes a single argument.
