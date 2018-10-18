@@ -302,10 +302,15 @@ Scala function can be treated as a value. It can be assigned to a val or var, or
 Though Java 8 brings lambda expression which also makes function as a first class object, which means you can pass a function to a method just like you pass an object as an argument
 
 What is Companion Object in Scala?
-If an object has the same name that a class, the object is called a companion object. 
+If an object has the same name that a class in the file, the object is called a companion object. 
 A companion object has access to methods of private visibility of the class, 
 and the class also has access to private methods of the object. 
-We commonly use Companion Objects for Factories.
+When you want to define some functionality related to a case class i.e static like methods that means to define factory methods for class. 
+An example is case-classes. When a case-class is declared a companion object is created for the case-class with a factory method that has the same signature as the primary constructor of the case class. That is why one can create a case-class like: MyCaseClass(param1, param2)
+A second common use-case for companion objects is to create extractors for the class apply and unapply methods
+i.e declare the unapply methods to define custom extractors for pattern matching (see here)
+declare the apply method which is typically used as a factory method that creates objects of the particular class
+
 
 What is tail recursion in Scala? What is the benefit?
 method recursion will take too much of stack memory that could result in StackOverFlowError. 
