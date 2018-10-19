@@ -453,20 +453,41 @@ Option used in collections and pattern matching. All three (Option, Some and Non
 What is Either in Scala? What are Left and Right in Scala? Explain Either/Left/Right Design Pattern in Scala?
 In Scala, Either is an abstract class. It is used to represent one value of two possible types. It takes two type parameters: Either[A,B].
 It exactly have two subtypes: Left and Right. If Either[A,B] represents an instance A that means it is Left. If it represents an instance B that means it is Right.
-
 -------------------------------------------------------------------------------------------------------------------------
-
 How Scala solves Inheritance Diamond Problem automatically and easily than Java 8?
 If we use Java 8’s Interface with Default methods, we will get Inheritance Diamond Problem. 
 Developer has to solve it manually in Java 8. It does not provide default or automatic resolution for this problem.
 In Scala, we will get same problem with Traits but Scala is very clever 
 and solves Inheritance Diamond Problem automatically using Class Linearization concept.
 
-What is the use of ‘yield’ keyword in Scala’s for-comprehension construct or for loop construct or what is the use of yield keyword 
-In the for loop, we can iterative collection elements and generate new collection elements of the same type
-scala> val list = List(1,2,3,4,5)
-scala> for(l <- list) yield l*2
+What is Diamond Problem? How Scala solves Diamond Problem?
+A Diamond Problem is a Multiple Inheritance problem.
+It occurs when a Class extends more than one Traits which have same method definition
+trait A{   
+  def display(){ println("From A.display")  }
+}
+trait B extends A{ 
+  override def display() { println("From B.display") }
+}
+trait C extends A{ 
+  override def display() { println("From C.display") }
+}
+class D extends B with C{ }
+
+object ScalaDiamonProblemTest extends App {
+    val d = new D
+    d display
+}
+
+What is the use of ‘yield’ keyword in Scala or what is for-yield
+In the for loop, we can iterative collection elements and process each element and returns new collection elements of the same type
+scala> val mylist = List(1,2,3,4,5)
+scala> for(list <- mylist) yield list*2
 o/p is res0: List[Int] = List(2, 4, 6, 8, 10)
+
+def main(args: Array[String]) {
+    val res = for (a <- args) yield a.toUpperCase
+ }
 
 What are the major differences between Scala’s Auxiliary constructors and Java’s constructors?
 Java’s constructors define using classname 
@@ -503,29 +524,43 @@ Why Scala does NOT have “static” keyword? What is the main reason for this d
 Scala is a Pure Object-Oriented Language. “static” keyword means that we can access that class members without
 creating an object or without using an object. This is completely against with OOP principles.
 
-What is Diamond Problem? How Scala solves Diamond Problem?
-A Diamond Problem is a Multiple Inheritance problem.
-It occurs when a Class extends more than one Traits which have same method definition
-trait A{   
-  def display(){ println("From A.display")  }
-}
-trait B extends A{ 
-  override def display() { println("From B.display") }
-}
-trait C extends A{ 
-  override def display() { println("From C.display") }
-}
-class D extends B with C{ }
-
-object ScalaDiamonProblemTest extends App {
-    val d = new D
-    d display
-}
-
 What are the differences between Array and ArrayBuffer in Scala?
-What are the differences between Array and List in Scala?
 Array is fixed size array. We cannot change its size once its created.
-ArrayBuffer is variable size array. It can increase or decrease it’s size dynamically. (ArrayBuffer similar to ArrayList)
+ArrayBuffer is resizable array. i.e variable size array. It can increase or decrease it’s size dynamically. 
+both Array and ArrayBuffer are mutable.
+If the frequent operation is adding elements then prefer ArrayBuffer
+
+ex : import scala.collection.mutable.ArrayBuffer
+object ArrayBufferEx extends App {
+  val arrayBuffer : ArrayBuffer[String] = ArrayBuffer("Plain Donut","Strawberry Donut","Chocolate Donut")
+  
+  //access element by index
+  arrayBuffer(0) //Plain Donut
+  
+  //add element 
+  arrayBuffer += "Vanilla Donut"
+  
+  //add lements from Lists
+  arrayBuffer ++= List[String]("Glazed Donut", "Krispy creme") //We can also add Seq, Array, Set elements
+  
+  //remove element 
+  arrayBuffer -= "Plain Donut"
+  
+  //remove element from List
+  arrayBuffer --= List[String]("Glazed Donut", "Krispy creme") //We can also remove Seq, Array, Set elements
+  
+  //remove element by index
+  arrayBuffer.remove(0) 
+  
+  //remove elements by mulitple index
+  arrayBuffer.remove(0, 1)
+  
+  
+  //initialize an empty ArrayBuffer
+  val emptyArrayBuffer: ArrayBuffer[String] = ArrayBuffer.empty[String]
+  }
+
+What are the differences between Array and List in Scala?
 Arrays are always Mutable where as List is always Immutable.
 List is variable size array. It can increase or decrease it’s size dynamically
 
