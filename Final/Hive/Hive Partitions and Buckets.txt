@@ -223,6 +223,12 @@ Found 5 items
 -rwxr-xr-x   1 hduser supergroup 88 2017-10-19 11:05 /hivedb/testdb/employee/000003_0
 -rwxr-xr-x   1 hduser supergroup 84 2017-10-19 11:05 /hivedb/testdb/employee/000004_0
 
+Where you will use partition and buckets in your project
+Users types admin, uploader, physician, gatekeeper, accesstoAll librarites are partitions
+each role based preferences as bucktes 
+
+Another use case is user activity type as bucktes
+
 Advantages
 Bucketed tables offer efficient sampling than by non-bucketed tables. With sampling, we can try out queries on a fraction of data for testing and debugging purpose when the original data sets are very huge.
 As the data files are equal sized parts, map-side joins will be faster on bucketed tables than non-bucketed tables. In Map-side join, a mapper processing a bucket of the left table knows that the matching rows in the right table will be in its corresponding bucket, so it only retrieves that bucket (which is a small fraction of all the data stored in the right table).
