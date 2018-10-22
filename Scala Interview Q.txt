@@ -259,7 +259,8 @@ object Main extends App {
 }
 
 What is the difference between an object and a class in Scala?
-An object is a singleton instance of a class. It does not need to be instantiated by the developer. 
+An object is a singleton instance of a class. It does not need to be instantiated by the developer.
+objects cannot take parameters,whereas classes can take parameters (Note : Trait also can't take parameters)
 If an object has the same name that a class, the object is called a companion object.
 
 What is the difference between a trait and an abstract class in Scala?
@@ -527,7 +528,7 @@ creating an object or without using an object. This is completely against with O
 What are the differences between Array and ArrayBuffer in Scala?
 Array is fixed size array. We cannot change its size once its created.
 ArrayBuffer is resizable array. i.e variable size array. It can increase or decrease it’s size dynamically. 
-both Array and ArrayBuffer are mutable.
+both Array and ArrayBuffer are mutable. (can change the elements)
 If the frequent operation is adding elements then prefer ArrayBuffer
 
 ex : import scala.collection.mutable.ArrayBuffer
@@ -799,20 +800,76 @@ new B  // X A R H T S B     (the prints follow the construction order)
 
 need to consider right most
 
+another ex : trait T1; trait T2
+class C extends T1 with T2
+class C extends D with T1 with T2 
 
+=========================================================================
+scala collections : 
 
+**1)Scala List is always immutable
+Scala List does not offer append method, instead, use :+, but don’t use it due to low performance
 
+object ListEx extends App{
+  
+  var list = List(1, 2)
+  
+  list.drop(1) //it will not drop elements from existing list 
+  
+  list.+:(4) //it will not add element to  existing list 
+  
+  list.reverse //it will not reverse existing list 
+  
+  list.foreach(println) //o/p is 1
+                                 2 
+ Note : If wan't reverse then it should be var reverseList = list.reverse
+}
 
+2)tuple is also immutable but can hold multiple different types.
 
+val pair = (1, "one")
 
+pair._1  // o/p is 1  
+note : we cannot access like pair(0)
 
+pair._2 // o/p is one
 
+3)scala Set and Map can be “immutable” or “mutable”, it depends on how you import & specify
 
+MUTABLE COLLECTION CLASSES
+==========================
+Array Buffers :  Use whenever the new items are always added to the end (append) and then convert to Array 
 
+val buf = scala.collection.mutable.ArrayBuffer.empty[Int]
+buf += 1  //ArrayBuffer(1)
+buf += 10 //ArrayBuffer(1, 10)
+buf.toArray //Array(1, 10)
 
+List Buffers : A ListBuffer is like an array buffer except that it uses a linked list
+use whenever the new items are always added to the end (append) and then convert to List
 
+val buf = scala.collection.mutable.ListBuffer.empty[Int]
+buf += 1  //ListBuffer(1)
+buf += 10 //ListBuffer(1, 10)
+buf.toList //List(1, 10)
 
+StringBuilders : Use whenever we want build strings 
 
-
-
+collection hierarchy
+-----------------
+                                        Traversable
+					   |
+					   |
+					 Iterable
+				    |	   |	  |			    
+		       		Map 	   Seq    Set 
+ 
+ 
+Map : HashMap, TreeMap, LinkedHashMap, WeakHashMap, ListMap (SortedMap --> TreeMap)
+     
+    / IndexSeq : ArraySeq, ArrayBuffer, ListBuffer, StringBuilder, Range, Array, Vector
+Seq 
+   \ LinearSea : LinkedList, DoubleLinkedList, List, Queue, Stack
+   
+Set : HashSet, LinkedHashSet, SortedSet, Treeset, BitSet.   
 
