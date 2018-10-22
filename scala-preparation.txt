@@ -1,14 +1,30 @@
 -- static members (methods or fields) do not exist in Scala.
 Rather than defining static members, the Scala programmer declares these members in singleton objects.
-object HelloWorld {
-def main(args: Array[String]) {
-println("Hello, world!")
-}
-}
+    object HelloWorld {
+      def main(args: Array[String]) {
+        println("Hello, world!")
+    }
+   }
 --Instead of javac we can compile using scalac
 Ex : HelloWorld.scala
 Compile : >scalac HelloWorld.scala (Here HelloWorld.class file will be created)
 Execute : >scala HelloWorld
+
+Function declaration
+--------------------------
+def funcName([parameters]) [: return_type] = {
+    //statements
+}
+Note: In Scala, if there is no return then the last expression is taken to be the return value. So, if the last expression is what you want to return, then you can omit the return keyword. Be careful with this.
+
+def maxFunction(x:Int, y:Int):Int={
+    if(x>y) x else y
+}
+def noArgumentFunction()={
+    println("No argument function was called")
+}
+
+
 --Interaction with Java
 All classes from the java.lang package are imported by default, while others need to be imported
 explicitly.
@@ -17,11 +33,12 @@ import java.text.DateFormat
 import java.text.DateFormat._
 object FrenchDate {
 def main(args: Array[String]) {
-val now = new Date
-val df = getDateInstance(LONG, Locale.FRANCE)
-println(df format now)
+  val now = new Date
+  val df = getDateInstance(LONG, Locale.FRANCE)
+  println(df format now)
 }
 }
+
 -Multiple classes can be imported from the same package by enclosing them in curly braces as on
 the first line
 -We can import all the names of a package or class, one uses the underscore character (_)
