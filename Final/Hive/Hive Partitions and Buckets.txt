@@ -212,6 +212,16 @@ Note : set hive.enforce.bucketing = true;  -- (Note: Not needed in Hive 2.x onwa
 
 How does Hive distribute the rows across the buckets?
 The bucket number is determined by the expression hash_function(bucketing_column) mod num_buckets.
+ The hash_function depends on the type of the bucketing column. For an int, it's easy, hash_int(i) == i. 
+ For example, if user_id were an int, and there were 10 buckets, we would expect all user_id's that end in 0 to be in bucket 1, all user_id's that end in a 1 to be in bucket 2, etc. 
+Files will be stored as below format
+./hadoop fs -ls /hivedb/testdb/employee
+Found 5 items
+-rwxr-xr-x   1 hduser supergroup 95 2017-10-19 11:04 /hivedb/testdb/employee/000000_0
+-rwxr-xr-x   1 hduser supergroup 81 2017-10-19 11:04 /hivedb/testdb/employee/000001_0
+-rwxr-xr-x   1 hduser supergroup 90 2017-10-19 11:05 /hivedb/testdb/employee/000002_0
+-rwxr-xr-x   1 hduser supergroup 88 2017-10-19 11:05 /hivedb/testdb/employee/000003_0
+-rwxr-xr-x   1 hduser supergroup 84 2017-10-19 11:05 /hivedb/testdb/employee/000004_0
 
 Advantages
 Bucketed tables offer efficient sampling than by non-bucketed tables. With sampling, we can try out queries on a fraction of data for testing and debugging purpose when the original data sets are very huge.
