@@ -238,6 +238,8 @@ rdd.zipWithIndex().map { case (v, ind) =>
 }
 
 
+https://trongkhoanguyen.com/spark/understand-the-spark-deployment-modes/
+
 
 Actions : 
 -------------------
