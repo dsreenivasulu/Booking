@@ -30,11 +30,9 @@ http://spark.apache.org/docs/latest/configuration.html#spark-properties
 
 Order first priority SparkConf  and then passing parameters throguh sheel or spark-submit and then last spark-defaults.conf
 
-  
-
---Environment variables can be used to set per-machine settings, such as the IP address, through the conf/spark-env.sh script on each node.
+-Environment variables can be used to set per-machine settings, such as the IP address, through the conf/spark-env.sh script on each node.
 --Logging can be configured through log4j.properties.
-
+--------------------------------------------------------------------------------------------------------------------------
 
 apache-spark-best-practices-and-tuning
 =====================================
@@ -195,7 +193,9 @@ Optimization Rule #4:  Keep consistent partitioning strategy across JOINing tabl
 By having common partition keys it makes it easier to write queries with filters that can be applied across many of the joining tables
 Optimization Rule #5:  Minimize the number of tables in JOIN.
 ex Use proper denormalization techniques to reduce the number of tables in your data model. 
-	
+
+--------------------------------------------------------------------------------------------------------------------------	
+
 PairRDDFunctions
 ================
 aggregateByKey
@@ -220,6 +220,7 @@ reduceByKeyLocally(func: (V, V) ⇒ V): Map[K, V] : Merge the values for each ke
 rightOuterJoin : 
 saveAsHadoopFile : 
 values: RDD[V] : Return an RDD with the values of each tuple.
+
 -------------------------------------------------------------------------------------------------------------------------
 
 Exceptions 
@@ -351,7 +352,7 @@ How to run spark jobs ?
 Using oozie 
 Using shell scripts 
 
-
+--------------------------------------------------------------------------------------------------------------------------
 
 How to run spark job programactily 
 Using SparkLauncher 
