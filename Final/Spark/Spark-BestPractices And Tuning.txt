@@ -248,6 +248,9 @@ Tips :  - spark.executor.memory Make sure you're using as much memory as possibl
 --iava.lang.OutOfMemoryError GC Overlimit exceed
 spark default is --XX:UseParallelGC instead use --XX:UseG1GC
 GC tuning flags for executors can be specified by setting spark.executor.extraJavaOptions in a job’s configuration.
+Choosing a type of GC comes with trade-offs. You have to choose between maximum throughput or low pauses. A web server is typically an application where you would prefer low pauses as you do not want a customer to wait multiple seconds to get a page. On the other side a batch job or crawler would be a good candidate for high throughput and can tolerate longer pauses. What choices do we have?
+
+***High throughput via the Parallel GC
 
 How to fix spark job failure with no space left on device ? Or 
 --java.io.IOException: No space left on device Problem ? 
