@@ -121,9 +121,24 @@ LOCATION ‘<hdfs_path>’ we can change the default location of a managed table
 CREATE TABLE employee (name String, dept String) LOCATION '/user/hive/warehouse/database/emp'; 
 
 When should we use SORT BY instead of ORDER BY?
-SORT BY clause sorts the data using multiple reducers. 
-ORDER BY sorts all of the data together using a single reducer. 
+SORT BY clause sorts the data using multiple reducers. it is used to sort the rows per reducer. 
+If there are more than one reducer, then the output per reducer will be sorted, 
+but the order of total output is not guaranteed to be sorted
+
+SORT BY x: orders data at each of N reducers, but each reducer can receive overlapping ranges of data. You end up with N or more sorted files with overlapping ranges.
+
+ORDER BY sorts all of the data together using a single reducer.Order by guarantees the total ordering of the output. Even if there are multiple reducers, the overall order of the output is maintained. 
 Hence, using ORDER BY will take a lot of time to execute a large number of inputs.
+
+ guarantees global ordering, but does this by pushing all data through just one reducer. This is basically unacceptable for large datasets. You end up one sorted file as output
+ 
+
+In the strict mode (i.e., hive.mapred.mode=strict), the order by clause has to be followed by a "limit" clause.so that reducer doesn’t get overburdened
+The limit clause is not necessary if you set hive.mapred.mode to nonstrict
+
+specifying the null sorting order for each of the columns in the "order by" clause is supported. 
+The default null sorting order for ASC order is NULLS FIRST, while the default null sorting order for DESC order is NULLS LAST.
+ 
 
 Are multi-line comments supported in Hive?
 No
