@@ -165,7 +165,7 @@ Partitioning table gives effective results when,
 There are limited number of partitions
 Comparatively equal sized partitions
 But this may not possible in all scenarios. Like (country)One partition may have 80% of data and another partition may have 20% of data 
-So, In these cases Partitioning will not be ideal.. And also With too many small partitions, the task of recursively scanning the directories becomes more expensive than a full table scan of the table
+So, In these cases Partitioning will not be ideal.. And also With too many small partitions, the task of recursively scanning the directories becomes more expensive than a full table scan of the table. Other drawback is having too many partitions is the large number of Hadoop files and directories that are created unnecessarily and overhead to NameNode since it must keep all metadata for the file system in memory
 
 To overcome the problem of partitioning, Hive provides Bucketing concept, another technique for decomposing table data sets into more manageable parts.
 
@@ -285,6 +285,24 @@ Partitioning helps eliminate data when used in WHERE clause. Bucketing helps org
 In partitioning technique, a partition is created for every unique value of the column and there could be a situation where several tiny partitions may have to be created. 
 However, with bucketing, one can limit it to a specific number and the data can then be decomposed in those buckets.
 Basically, a bucket is a file in Hive whereas partition is a directory.
+
+When to choose Partitioning and Bucketing or Partition vs Bucketing ?
+Partitioning is used to divide the table into different partitions. Each partition is stored as a different directory.
+A partition is created for each unique value of the partition column.
+We cannot control the number of partitions if the value of partitioning columns have a very high cardinality.
+Partitioning allows hive to avoid full table scan if partition columns are used in the where clause of hive query. A query containing partition columns in the where clause will scan directories for specific partition only.
+
+
+Bucketing :
+Bucketing is used to distribute/organize the data into fixed number of buckets.
+Each bucket is stored as a file under the Table/Partition directory.
+The number of buckets are fixed at the table creation time. All the data will be distributed into these buckets based on the hash value of the bucketing columns. Which records go to which bucket are decided by the Hash value of columns used for bucketing.
+A Bucket will have all the records for same Hash value of bucketing columns. So records having different value of bucketing columns but having same hash value will go into the same bucket.
+Bucketing is used for efficient map-side joins between bucketed tables and for effectively executing sampling queries.
+
+
+
+
 --------------------------------------------------------------------------------------------------------------------------------
 How to add the partition in existing without the partition table?
 Basically, we cannot add/create the partition in the existing table, especially which was not partitioned while creation of the table
