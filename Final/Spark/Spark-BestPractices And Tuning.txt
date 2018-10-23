@@ -220,22 +220,12 @@ reduceByKeyLocally(func: (V, V) ⇒ V): Map[K, V] : Merge the values for each ke
 rightOuterJoin : 
 saveAsHadoopFile : 
 values: RDD[V] : Return an RDD with the values of each tuple.
+-------------------------------------------------------------------------------------------------------------------------
 
 Exceptions 
 ==============
-Job aborted due to stage failure: Task not serializable:
-If you see this error:
 org.apache.spark.SparkException: Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: ...
 it means that you use a reference to an instance of a non-serializable class inside a transformation
-
-When to use broad cast variables
-=========================
-Joining a large and a small RDD :If the small RDD is small enough to fit into the memory of each worker we can turn it into a broadcast variable and turn the entire operation into a so called map side join for the larger RDD
-
-Which storage level to choose
-=====================
-By dafault Spark will cache() data using MEMORY_ONLY level,
-MEMORY_AND_DISK_SER can help cut down on GC and avoid expensive recomputations.
 
 Spark java.lang.OutOfMemoryError: Java heap space
 ==================================================
@@ -254,60 +244,10 @@ Tips :  - spark.executor.memory Make sure you're using as much memory as possibl
  - Watch out for memory leaks
  - use broadcast variables if you really do need large objects.
  - Finally optimize your code 
-  
-How to find memory leaks in spark
-===============================
-Java plugin using Memory Analyze Tool or Jprofiler 
-
-How may default number of partition to use when doing shuflling in spark SQL
-===========================================
-200 but its configurable 
-
-In spark sql : spark.sql.shuflle.partition
-In regual spark RDD application:   rdd.repartition() or rdd.coalesec()
-
-Note : 2 GB is limit for spark shufflue blocks
- 
-How to limit the number of retries on Spark job failure?
-========================================================
-spark.yarn.maxAppAttempts
-yarn.resourcemanager.am.max-attempts - in yarn-default.xml file YARN's own setting with default being 2.	 
-
-    SPARK DEFINITIONS:
-
-    It may be useful to provide some simple definitions for the Spark nomenclature:
-
-    Node: A server
-
-    Worker Node: A server that is part of the cluster and are available to run Spark jobs
-
-    Master Node: The server that coordinates the Worker nodes.
-
-    Executor: A sort of virtual machine inside a node. One Node can have multiple Executors.
-
-    Driver Node: The Node that initiates the Spark session. Typically, this will be the server where sparklyr is located.
-
-    Driver (Executor): The Driver Node will also show up in the Executor list.
-
-Why your Spark job is failing 
---com.esotericsoftware.kryo. KryoException: Unable to find class: 
-
---org.apache.spark.SparkException: Job aborted due to stage failure: Task 0.0:0 failed 4 times, most recent failure: 
-Exception failure in TID 6 on host bottou02-10g.pa.cloudera.com: java.lang.ArithmeticException: / by zero
-
---Exception in task ID 286 6 java.io.IOException: Filesystem closed at 
-
---Exception in thread main java.lang.NoClassDefFoundError : Missing external JARs
-
---OOM on Spark driver  iava.lang.OutOfMemoryError java heap space 
-
---OOM on executors
 
 --iava.lang.OutOfMemoryError GC Overlimit exceed
 spark default is --XX:UseParallelGC instead use --XX:UseG1GC
 GC tuning flags for executors can be specified by setting spark.executor.extraJavaOptions in a job’s configuration.
-
---org.apache.spark.SparkException: Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: 
 
 How to fix spark job failure with no space left on device ? Or 
 --java.io.IOException: No space left on device Problem ? 
@@ -343,10 +283,72 @@ Limit of total size of serialized results of all partitions for each Spark actio
 --java.lang.IllegalArgumentException: Size exceeds Integer.MAX_VALUE
   Overflow exception if shuffle block size > 2 GB
   To fix Reduce the shufulee block parition or rdd repartition or coalesec
-  
+
+Why your Spark job is failing  ?
+
+--com.esotericsoftware.kryo. KryoException: Unable to find class: 
+
+--org.apache.spark.SparkException: Job aborted due to stage failure: Task 0.0:0 failed 4 times, most recent failure: 
+Exception failure in TID 6 on host bottou02-10g.pa.cloudera.com: java.lang.ArithmeticException: / by zero
+
+--Exception in task ID 286 6 java.io.IOException: Filesystem closed at 
+
+--Exception in thread main java.lang.NoClassDefFoundError : Missing external JARs
+
+--OOM on Spark driver  iava.lang.OutOfMemoryError java heap space 
+
+--OOM on executors
+
+------------------------------------------------------------------------------------------------------------------------
+
+How to find memory leaks in spark
+===============================
+Java plugin using Memory Analyze Tool or Jprofiler 
+
+How may default number of partition to use when doing shuflling in spark SQL
+===========================================
+200 but its configurable 
+
+In spark sql : spark.sql.shuflle.partition
+In regual spark RDD application:   rdd.repartition() or rdd.coalesec()
+
+Note : 2 GB is limit for spark shufflue blocks
+ 
+How to limit the number of retries on Spark job failure?
+========================================================
+spark.yarn.maxAppAttempts
+yarn.resourcemanager.am.max-attempts - in yarn-default.xml file YARN's own setting with default being 2.	 
+
+    SPARK DEFINITIONS:
+
+    It may be useful to provide some simple definitions for the Spark nomenclature:
+
+    Node: A server
+
+    Worker Node: A server that is part of the cluster and are available to run Spark jobs
+
+    Master Node: The server that coordinates the Worker nodes.
+
+    Executor: A sort of virtual machine inside a node. One Node can have multiple Executors.
+
+    Driver Node: The Node that initiates the Spark session. Typically, this will be the server where sparklyr is located.
+
+    Driver (Executor): The Driver Node will also show up in the Executor list.
+    
+When to use broad cast variables
+=========================
+Joining a large and a small RDD :If the small RDD is small enough to fit into the memory of each worker we can turn it into a broadcast variable and turn the entire operation into a so called map side join for the larger RDD
+
+Which storage level to choose
+=====================
+By dafault Spark will cache() data using MEMORY_ONLY level,
+MEMORY_AND_DISK_SER can help cut down on GC and avoid expensive recomputations.
+
 How to run spark jobs ?
 Using oozie 
 Using shell scripts 
+
+
 
 How to run spark job programactily 
 Using SparkLauncher 
