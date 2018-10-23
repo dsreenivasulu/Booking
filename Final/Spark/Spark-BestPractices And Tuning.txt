@@ -309,11 +309,21 @@ GC tuning flags for executors can be specified by setting spark.executor.extraJa
 
 --org.apache.spark.SparkException: Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: 
 
---java.io.IOException: No space left on device
-Complains about ‘/tmp’ is full Controlled by ‘spark.local.dir’ parameter Default is ‘/tmp’ 
-it Stores map output files and RDDs 
-‘/tmp’ usually is a single disk, a potential IO bottleneck 
-To fix, add the following line to ‘spark-defaults.conf’ file: spark.local.dir /data/disk1/tmp,/data/disk2/tmp,/data/disk3/tmp,/data/disk4/tmp,… 
+How to fix spark job failure with no space left on device ? Or 
+--java.io.IOException: No space left on device Problem ? 
+
+It Stores map output files and RDDs (if you don't want to keep the rdd for later computation, you can call .unpersist())
+
+If shuffle operations are performed during Spark running, shuffle data is written onto local disks. Some applications may have massive shuffle data. When the local disk space becomes insufficient, this exception occurs
+
+Spark keeps intermediate files(shuffle data) in /tmp, where it likely ran out of space. You can either adjust spark.local.dir or set this at submission time, to a different directory with more space. Try the same job while adding in this during spark-submit; --conf "spark.local.dir=/directory/with/space"
+If that works well, you can change this permanently by adding this property to the custom spark defaults in spark-defaults.conf; spark.local.dir=/directory/with/space
+
+But setting the below 2 variables in each of master and worker's "spark-env.sh" worked.
+export SPARK_WORKER_DIR=dir_you_have_enough_Space
+export SPARK_LOCAL_DIRS=dir_you_have_enough_Space
+
+https://medium.com/@foundev/you-won-t-believe-how-spark-shuffling-will-probably-bite-you-also-windowing-e39d07bf754e
 
 -org.apache.spark.SparkException: Job aborted due to stage failure: Total size of serialized results of 381610 tasks (5.0 GB) is bigger than spark.driver.maxResultSize (5.0 GB)
 Likely to occur with complex SQL on large data volumes 
