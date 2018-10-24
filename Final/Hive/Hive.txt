@@ -132,6 +132,14 @@ Hence, using ORDER BY will take a lot of time to execute a large number of input
 
  guarantees global ordering, but does this by pushing all data through just one reducer. This is basically unacceptable for large datasets. You end up one sorted file as output
  
+DISTRUBUTE BY – It is used to distribute the rows among the reducers. Rows that have the same distribute by columns will go to the same reducer.
+CLUSTER BY- It is a combination of DISTRIBUTE BY and SORT BY where each of the N reducers gets non overlapping range of data which is then sorted by those ranges at the respective reducers.
+Cluster by does the distribution and sorting on same columns. If we want to distribute by some columns and then sort by some other columns, then we should use ‘ distribute by with sort by’ instead of ‘cluster by’
+ 
+ CLUSTER BY vs CLUSTERED BY
+ "clustered by" only distributes your keys into different buckets
+ CLUSTER BY- It is a combination of DISTRIBUTE BY and SORT BY where each of the N reducers gets non overlapping range of data which is then sorted by those ranges at the respective reducers.
+
 
 In the strict mode (i.e., hive.mapred.mode=strict), the order by clause has to be followed by a "limit" clause.so that reducer doesn’t get overburdened
 The limit clause is not necessary if you set hive.mapred.mode to nonstrict
@@ -212,9 +220,6 @@ Difference between HBase and Hive.
 HBase is a NoSQL database whereas Hive is a data warehouse framework to process Hadoop jobs.
 HBase runs on top of HDFS whereas Hive runs on top of Hadoop MapReduce.
 HBase Supports record level insert, updated and delete operations.	
-
-DISTRUBUTE BY – It is used to distribute the rows among the reducers. Rows that have the same distribute by columns will go to the same reducer.
-CLUSTER BY- It is a combination of DISTRIBUTE BY and SORT BY where each of the N reducers gets non overlapping range of data which is then sorted by those ranges at the respective reducers.
 
 What is the use of explode in Hive? What is a Table generating Function on hive?
 explode takes array as input and convert into a separate table rows.
