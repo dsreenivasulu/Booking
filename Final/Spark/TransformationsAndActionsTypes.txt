@@ -226,17 +226,49 @@ o/p is subtract: (2,1)
 
 zipWithIndex() : It returns new RDD with element and index
 val rdd  = sc.parallelize(List("Hi", "Hello", "Bye"))
-rdd.zipWithIndex() 
-rdd.foreach(println)
-o/p is (Hi, 0)
-       (Hello, 1)
-       (Bye, 2)
+	rdd.zipWithIndex() 
+	rdd.foreach(println)
+	o/p is (Hi, 0)
+	       (Hello, 1)
+	       (Bye, 2)
+
 Q : How to provide inital value as index instead of 0. 
 Ans : 
-rdd.zipWithIndex().map { case (v, ind) =>
-  (v, ind + 8)
-}
+	rdd.zipWithIndex().map { case (v, ind) =>
+	  (v, ind + 8)
+	}
 
+GroupByKey vs ReduceByKey vs AggreateByKey vs CombineByKey  ?
+
+GroupByKey() : It is just to group value based on a key and It doesn't merge the values for the key and directly the shuffle process happens. And the merging of values for each key is done after the shuffle process happens
+GroupByKey can cause out of disk problems as data is sent over the network and collected on the reduce workers.
+
+Disadvantage : Avoid groupByKey when performing an associative reductive operation on large data set
+
+When GroupByKey called on a dataset of (K, V) pairs, returns a dataset of (K, Iterable) pairs.
+By default, the level of parallelism in the output depends on the number of partitions of the parent RDD
+
+ex : Please see ex http://etlcode.com/index.php/blog/info/Bigdata/Apache-Spark-Difference-between-reduceByKey-groupByKey-and-combineByKey
+https://www.edureka.co/community/11996/groupbykey-vs-reducebykey-in-apache-spark    
+
+ReduceBykey(func) : It is something like grouping + aggregation. i.e first group value based on a key and then combine the values for the same key in each partition before shuffling. so that only one output value for one key at each partition is send over network and then reduce function is called again to reduce all the values from each partition to produce one final result. 
+
+reduceByKey required combining all your values into another value with the exact same type
+
+ReduceBykey drawback is that the values for each key has to be of same datatype. If it is different datatypes it has to explicitly converted. This drawback can be addressed using combineByKey.
+
+Disadvantage : Avoid reduceByKey when the input and output value types are different
+
+When ReduceBykey called on a dataset of (K, V) pairs, returns a dataset of (K, V) pairs where the values for each key are aggregated using the given reduce function. The function should be able to take arguments of some type and it returns same result data type
+
+ follow groupByKey examples links
+
+AggregateByKey() : 
+
+combineByKey
+can be used when you are combining elements but your return type differs from your input value type.
+ 
+ 
 
 https://trongkhoanguyen.com/spark/understand-the-spark-deployment-modes/
 
