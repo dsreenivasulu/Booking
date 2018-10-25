@@ -242,6 +242,31 @@ df.select("$A", "$B", "$C", func($"B").as("D"))
 How rename a column in dataframe
 withcolumnRenamed
 
+I have movies wanted know how many users watched each movie ?
+I have departments wanted know how many emp in each department  ?
+I have products wanted know how many sales happen to each product  ?
+
+DataFrame : df.groupBy($"name").agg(count($"name") as "") show
+
+RDD : rdd.map(f => (f._1, 1)).reduceByKey((accum, curr) => accum + curr).foreach(println(_))
+
+SQL : select <col to Group on> , count(col to count on) from temp_table Group by <col to Group on>
+
+
+
+------------------------------------------------------------------
+How to create UDF in spark ?
+
+// Define a regular Scala function
+val upper: String => String = _.toUpperCase
+
+val upperUDF = spark.udf.register("upperFuncationAliasName", upper)
+
+In spark SQL
+spark.sql("SELECT upperFuncationAliasName("String")").show
+
+In DataFrame API 
+df.select(upperUDF($"x")).show
 
 
 
