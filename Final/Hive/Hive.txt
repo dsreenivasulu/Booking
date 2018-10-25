@@ -536,6 +536,47 @@ RELOAD FUNCTION;
 How to drop UDF function
 DROP FUNCTION [IF EXISTS] function_name;
 
+How to write custom UDTF ?
+1)Create a class by extending GenericUDTF 
+2)We need to override 3 methods namely initialize(), process() and close() 
+public StructObjectInspector initialize(ObjectInspector[] args) throws UDFArgumentException
+This method will be called exactly once per instance. it is responsible for verifying the input types and specifying the output types. (below ex takes string as input and returns string, int as output)
+
+public void process(Object[] record) throws HiveException
+This method gets called for each row of the input. The first task is to convert the input into a single String containing the document to process:
+
+public void close() throws HiveException { }
+This method allows us to do any post-processing cleanup
+
+See complete ex : https://gist.github.com/balshor/499319
+add jar TokenizeUDTF.jar ;
+create temporary function tokenize as ’com.bizo.hive.udtf.TokenizeUDTF’ ;
+select tokenize(contents) as (word, cnt) from docs ;
+
+How to write custom UDAF ?
+Create Java class which extends org.apache.hadoop.hive.ql.exec.hive.UDAF;
+Create Inner Class which implements UDAFEvaluator
+Implment five methods ()
+	init() – The init() method initalizes the evaluator and resets its internal state. We are using new Column() in code below to indicate that no values have been aggregated yet.
+	iterate() – this method is called everytime there is anew value to be aggregated. The evaulator should update its internal state with the result of performing the agrregation (we are doing sum – see below). We return true to indicate that input was valid.
+	terminatePartial() – this method is called when Hive wants a result for the partial aggregation. The method must return an object that encapsulates the state of the aggregation.
+	merge() – this method is called when Hive decides to combine one partial aggregation with another.
+	terminate() – this method is called when the final result of the aggregation is needed.
+	
+ex :http://anujaneja.com/wp/2016/10/10/udaf-in-hive/
+https://letsdobigdata.wordpress.com/2016/03/02/writing-hive-udf-and-udaf/
+
+UDF vs UDTF vs UDAF ?
+Regular UDFs: These UDFs take in a single row and produce a single row after application of the custom logic.
+Hive provide us the some of the build in functions but if we want to extend some of the functionality of hive then we can use UDF(User defined Function).
+
+UDTFs: These are generator functions that take in a single row and produce multiple rows as outputs. 
+The EXPLODE function is a UDTF.
+User defined tabular function works on one row as input and returns multiple rows as output
+
+UDAFs: These are aggregators that take in multiple rows but output a single row. SUM and COUNT are examples of in-built UDAFs.
+Aggregate functions perform a calculation on a set of values and return a single value
+
 Temporary Functions : As long hive session exists temporary function availble 
 CREATE TEMPORARY FUNCTION function_name AS class_name;
 DROP TEMPORARY FUNCTION [IF EXISTS] function_name;
