@@ -1,0 +1,74 @@
+Oozie workflow defines a sequence of actions
+It is written in xml and the actions can be sqoop, map reduce, hive, spark, pig etc
+
+ex : 
+<workflow-app xmlns = "uri:oozie:workflow:0.4" name = "simple-Workflow">
+   <start to = "Insert_into_Table" />
+   
+   <action name = "Insert_into_Table">
+      <hive xmlns = "uri:oozie:hive-action:0.4">
+         <job-tracker>${jobTracker}</job-tracker>
+         <name-node>${nameNode}</name-node>
+         <script>${script_name_copy}</script>
+         <param>${database}</param>
+      </hive>
+      <ok to = "end" />
+      <error to = "kill_job" />
+   </action>
+   
+   <kill name = "kill_job">
+      <message>Job failed</message>
+   </kill>
+   <end name = "end" />
+
+</workflow-app>
+
+Read the values from the job properties
+
+job.properties
+nameNode=hdfs://sandbox.hortonworks.com:8020
+start=2016-04-12T06:00Z
+end=2017-02-26T23:25Z
+jobTracker=sandbox.hortonworks.com:8050
+queueName=default
+examplesRoot=examples
+oozie.coord.application.path=${nameNode}/user/root
+workflowAppUri=${oozie.coord.application.path}
+myscript=myscript.sh
+myscriptPath=${oozie.wf.application.path}/myscript.sh
+
+================================================================================
+
+Coordinators : 
+workflow can be scheduled through coordinator based on frequency or data availbilty
+
+<coordinator-app xmlns = "uri:oozie:coordinator:0.2" name =
+   "coord_copydata_from_external_orc" frequency = "5 * * * *" start =
+   "2016-00-18T01:00Z" end = "2025-12-31T00:00Z"" timezone = "America/Los_Angeles">
+   
+   <controls>
+      <timeout>1</timeout>
+      <concurrency>1</concurrency>
+      <execution>FIFO</execution>
+      <throttle>1</throttle>
+   </controls>
+   
+   <action>
+      <workflow>
+         <app-path>pathof_workflow_xml/workflow.xml</app-path>
+      </workflow>
+   </action>
+	
+</coordinator-app>
+
+==============================================================
+Submit coordinator using below command.
+
+oozie job -oozie http://<oozie-server>:11000/oozie -config $local/path/job.properties -run
+
+
+
+
+
+
+
