@@ -804,6 +804,76 @@ another ex : trait T1; trait T2
 class C extends T1 with T2
 class C extends D with T1 with T2 
 
+
+What is Function currying and explain ?
+currying means is that a function that takes multiple arguments can be translated into a series of function calls that each take a single argument.
+
+Currying is the technique of transforming a function with multiple arguments into a function with just one argument. The single argument is the value of the first argument from the original function and the function returns another single argument function. This in turn would take the second original argument and itself return another single argument function. This chaining continues over the number of arguments of the original. The last in the chain will have access to all of the arguments and so can do whatever it needs to do.
+
+
+Currying transforms a function that takes multiple parameters into a chain of functions, each taking a single parameter.
+
+Currying – decomposition of function with multiple arguments into a chain of single-argument functions.
+Notice, that Scala allows to pass a function as an argument to another function.
+
+syntax
+def strcat(s1: String)(s2: String) = s1 + s2 
+
+another syntax
+def strcat(s1: String) = (s2: String) => s1 + s2
+
+Regular function
+def add(x: Int, y: Int): Int = {
+  x + y
+}
+Curring Function
+def add(x: Int)(y: Int): Int = {
+  x + y
+}
+
+scala> add(1) _
+res1: Int => Int = <Function>
+
+scala> (add(1) _).apply(1)
+res2: Int = 2
+
+scala> add(1)(1)
+res3: Int = 2
+
+
+
+
+Paritially Applied functions : Partial application of function – pass to function less arguments than it has in its declaration. Scala def add(x: Int)(y: Int): Int = {
+  x + y
+}
+does not throw an exception when you provide less arguments to function, it simply applies them and return a new function with rest of arguments which need to be passed
+
+def isInRange(left: Int, n: Int, right: Int): Boolean = {
+    if (left < n && n < right) true else false
+}
+ 
+def is5InRange = isInRange(_: Int, 5, _: Int)
+//(Int, Int) => Boolean
+ 
+is5InRange(0, 8)
+//true
+ 
+def between0and10 = isInRange(0, _: Int, 10)
+//Int => Boolean
+ 
+between0and10(5)
+//true
+ 
+between0and10(100)
+//false
+
+ex2 : def add(i: Int, j: Int) = i + j
+val add5 = add(_: Int,5)
+scala> add5(2)
+res3: Int = 7
+
+
+
 =========================================================================
 scala collections : 
 
