@@ -136,12 +136,16 @@ How to enable Hive Support in spark ?
 
 Note : if hive-site.xml is not configured that means Users who do not have an existing Hive deployment can still enable Hive support then the context automatically creates metastore_db in the current directory and creates a warehouse directory configured by spark.sql.warehouse.dir, which defaults to the directory spark-warehouse
 
+By default, Spark SQL uses the embedded deployment mode of a Hive metastore with a Apache Derby database.
+
 2)Step 2: SparkSession encapuslate the HiveContext object. At the time of creation we need to enable Hive support 
 
 // warehouseLocation points to the default location for managed databases and tables
 val warehouseLocation = "file:${system:user.dir}/spark-warehouse" or  
 val warehouseLocation = new File("spark-warehouse").getAbsolutePath
-    
+
+//hive.metastore.warehouse.dir property in hive-site.xml is deprecated since Spark 2.0.0. Use spark.sql.warehouse.dir to specify the default location of the databases in a Hive warehouse.
+
 val spark = SparkSession
    .builder()
    .appName("SparkSessionZipsExample")
@@ -182,6 +186,31 @@ spark.table("zips_table").write.saveAsTable("zips_hive_table")
 val resultsHiveDF = spark.sql("SELECT city, pop, state, zip FROM zips_hive_table WHERE pop > 40000")
 resultsHiveDF.show(10)
 
+How to store data frame as Hive table ?
+
+    // Create a Hive managed Parquet table, with HQL syntax instead of the Spark SQL native syntax
+    // `USING hive`
+    sql("CREATE TABLE hive_records(key int, value string) STORED AS PARQUET")
+    // Save DataFrame to the Hive managed table
+    val df = spark.table("src")
+    df.write.mode(SaveMode.Overwrite).saveAsTable("hive_records")
+
+How to create Hive Partition in spark
+  // Turn on flag for Hive Dynamic Partitioning
+    spark.sqlContext.setConf("hive.exec.dynamic.partition", "true")
+    spark.sqlContext.setConf("hive.exec.dynamic.partition.mode", "nonstrict")
+    // Create a Hive partitioned table using DataFrame API
+    df.write.partitionBy("key").format("hive").saveAsTable("hive_part_tbl")
+    
+
+How to convert data frame from Hive query ? 
+
+Since it has schema it will come automatically.
+ex1 : val dataframe = spark.sql("SELECT * FROM table")
+
+ex 2 :val df = spark.sqlContext.table(tablename)
+
+You can verify the schema
 ----------------------------------------------------------
 
 //create a Dataset using spark.range starting from 5 to 100, with increments of 5
