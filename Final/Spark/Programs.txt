@@ -130,12 +130,23 @@ val df = spark.sql("SELECT * FROM csv.`hdfs://csv/file/dir/file.csv`")
 
 ----------------------------------------------------------------------
 How to enable Hive Support in spark ?
-// You automatically get it as part of the SparkSession
-val warehouseLocation = "file:${system:user.dir}/spark-warehouse"
+
+1)Step 1: Move hive-site.xml from $HIVE_HOME/conf/hive-site.xml to $SPARK_HOME/conf/hive-site.xml
+  Place hive-site.xml, core-site.xml, and hdfs-site.xml files in the SPARK_HOME/conf folder.
+
+Note : if hive-site.xml is not configured that means Users who do not have an existing Hive deployment can still enable Hive support then the context automatically creates metastore_db in the current directory and creates a warehouse directory configured by spark.sql.warehouse.dir, which defaults to the directory spark-warehouse
+
+2)Step 2: SparkSession encapuslate the HiveContext object. At the time of creation we need to enable Hive support 
+
+// warehouseLocation points to the default location for managed databases and tables
+val warehouseLocation = "file:${system:user.dir}/spark-warehouse" or  
+val warehouseLocation = new File("spark-warehouse").getAbsolutePath
+    
 val spark = SparkSession
    .builder()
    .appName("SparkSessionZipsExample")
-   .config("spark.sql.warehouse.dir", warehouseLocation)
+   .config("spark.sql.warehouse.dir", warehouseLocation) //Is it optional ?
+   .config("hive.metastore.uri", "thrift://localhost:8080") //optional , Theory is that we provide/override run time parameters
    .enableHiveSupport()
    .getOrCreate()
    
@@ -147,6 +158,10 @@ spark.conf.set("spark.executor.memory", "2g")
 //get all settings
 val configMap:Map[String, String] = spark.conf.getAll()
 
+Why do we access Hive tables on Spark SQL and convert them into DataFrames ?
+The answer is simple. For large scale projects working with petabytes of data, It is possible to reduce the time taken to process the aggregate function, if we can execute complex queries in an efficient way. Hence, we use Spark SQL, which has an in-built catalyst optimizer that processes all types of queries at a faster pace
+
+
 How to fetch Hive Hcatalog metadata in spark ?
 //fetch metadata data from the catalog
 spark.catalog.listDatabases.show(false)
@@ -155,6 +170,10 @@ spark.catalog.listTables.show(false)
 Saving and Reading from Hive table with SparkSession
 //drop the table if exists to get around existing table error
 spark.sql("DROP TABLE IF EXISTS zips_hive_table")
+
+//Get the sqlContext from the SparkSession for support of backword compatiblity
+spark.sqlContext.sql(“INSERT INTO TABLE students VALUES (‘Rahul’,’Kumar’), (‘abc’,’xyz’)”)
+
 //save as a hive table
 spark.table("zips_table").write.saveAsTable("zips_hive_table")
 //make a similar query against the hive table 
