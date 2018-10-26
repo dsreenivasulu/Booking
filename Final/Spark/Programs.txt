@@ -161,6 +161,8 @@ val configMap:Map[String, String] = spark.conf.getAll()
 Why do we access Hive tables on Spark SQL and convert them into DataFrames ?
 The answer is simple. For large scale projects working with petabytes of data, It is possible to reduce the time taken to process the aggregate function, if we can execute complex queries in an efficient way. Hence, we use Spark SQL, which has an in-built catalyst optimizer that processes all types of queries at a faster pace
 
+When Spark integrates with Hive, it utilizes all the data that is stored in the warehouse which could be mysql or derby database and gives the flexibility of using spark processing engine in order to process the files 100 times faster than the Hive engine. When the client has been using Hive all over these years and has stored Terra bytes of data in the warehouse and looking for a new and effective tool to acquire fast processing of data, this is where he needs to use Apache spark in order to fetch all the data from the warehouse within seconds or minutes of time.
+
 
 How to fetch Hive Hcatalog metadata in spark ?
 //fetch metadata data from the catalog
