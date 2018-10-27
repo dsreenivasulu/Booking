@@ -761,3 +761,90 @@ Consistency (once an application performs an operation the results of that opera
 Isolation (an incomplete operation by one user does not cause unexpected side effects for other users), 
 and Durability (once an operation is complete it will be preserved even in the face of machine or system failure).
 https://cwiki.apache.org/confluence/display/Hive/Hive+Transactions
+
+ACID transactions in Hive ?
+Points to remember 
+-suppored Record-level operations are Insert, Update, Delete
+-Before creating a Hive table that supports transactions, the transaction features present in Hive needs to be turned on, as by default they are turned off.
+-Table created with file format must be in ORC file format with TBLPROPERTIES(“transactional”=”true”) Note, once a table has been defined as an ACID table via TBLPROPERTIES ("transactional"="true"), it cannot be converted back to a non-ACID table, i.e., changing TBLPROPERTIES ("transactional"="false") is not allowed
+-Table must be CLUSTERED BY with Bucketing
+-External tables cannot be made ACID tables since the changes on external tables are beyond the control of the compactor (HIVE-13175)
+-BEGIN, COMMIT, and ROLLBACK are not yet supported, all language operations are auto-commit
+-Reading/writing to an ACID table from a non-ACID session is not allowed. In other words, the Hive transaction manager must be set to org.apache.hadoop.hive.ql.lockmgr.DbTxnManager in order to work with ACID tables
+-LOAD DATA… statement is not supported with transactional tables. (This was not properly enforced until HIVE-16732)
+-Large ACID tables should be partitioned for optimal performance.
+-Primary Key: Databases use primary keys to make records easy to locate, which facilitates updates or deletes. Hive does not enforce the notion of primary keys, but if you plan to do large-scale updates and deletes you should establish a primary key convention within your application
+-Optimistic Concurrency: ACID updates and deletes to Hive tables are resolved by letting the first committer win. This happens at the partition level, or at the table level for unpartitioned tables.
+-Compactions: Data must be periodically compacted to save space and optimize data access. It is best to let the system handle these automatically, but these can also be scheduled in an external scheduler
+-Bulk updates can be done using Merge
+Standard Syntax:
+MERGE INTO <target table> AS T USING <source expression/table> AS S
+ON <boolean expression1>
+WHEN MATCHED [AND <boolean expression2>] THEN UPDATE SET <set clause list>
+WHEN MATCHED [AND <boolean expression3>] THEN DELETE
+WHEN NOT MATCHED [AND <boolean expression4>] THEN INSERT VALUES<value list>
+
+
+ACID transactions create a number of locks during the course of their operation. Transactions and their locks can be viewed 
+ -show transactions;
+  This command shows active and aborted transactions
+ -ABORT TRANSACTIONS transactionID;
+It may be necessary to abort a transaction, for example because a transaction is running too long. You can abort a set of transactions using “abort transactions” followed by a list of numeric transaction IDs
+  - show locks;
+This command shows locks, along with their associated transaction IDs
+
+Configuration parameters for supporting transactions(added in Hive 0.14):
+    ◉ set hive.support.concurrency=true;
+    ◉ set hive.enforce.bucketing=true;
+    ◉ set hive.exec.dynamic.partition.mode=nonstrict;
+    ◉ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+    ◉ set hive.compactor.initiator.on=true;
+    ◉ set hive.compactor.worker.threads=1;
+    Number of threads used by Compactor – This controls the maximum number of background MapReduce jobs that may run at any given time to compact tables. It is best to have this be a ratio of the number of transactional tables that are actively updated. In any event the value should always be greater than 0. Typically 5 to 10 would be appropriate in production settings
+    
+-- Create temporary table 'emp_temp'
+
+CREATE TEMPORARY TABLE emp_temp(id INT, name STRING, location STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n';
+
+-- Load 'sample.data' into table 'emp_temp'
+LOAD DATA LOCAL INPATH '/path/to/input/file/sample.data' INTO TABLE emp_temp;
+
+-- Now create main table 'emp_tbl' with file format 'ORC'
+CREATE TABLE emp_tbl(id INT, name STRING, location STRING)
+CLUSTERED BY (ID) INTO 2 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+STORED AS ORC
+TBLPROPERTIES("orc.compress.size"="1024", "transactional"="true");
+
+-- Load data into table 'emp_tbl' from temporary table 'emp_temp'
+FROM emp_temp
+INSERT INTO emp_tbl
+SELECT id, name, location
+ORDER BY 1;
+
+UPDATE emp_tbl SET location = 'Delhi' WHERE location = 'New York';
+DELETE FROM emp_tbl WHERE name = 'Crane';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
