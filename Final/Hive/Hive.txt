@@ -830,7 +830,16 @@ ORDER BY 1;
 UPDATE emp_tbl SET location = 'Delhi' WHERE location = 'New York';
 DELETE FROM emp_tbl WHERE name = 'Crane';
 
+HDFS does not support in-place changes to files. It also does not offer read consistency in the face of writers appending to files being read by a user. In order to provide these features on top of HDFS we have followed the standard approach used in other data warehousing tools. Data for the table or partition is stored in a set of base files. New records, updates, and deletes are stored in delta files. A new set of delta files is created for each transaction (or in the case of streaming agents such as Flume or Storm, each batch of transactions) that alters a table or partition. At read time the reader merges the base and delta files, applying any updates and deletes as it reads.
 
+What is compaction ?
+Compactor is a set of background processes running inside the Metastore to support ACID system
+
+Hive compacts, or merges, the base and delta files. Hive performs all compactions in the background without affecting concurrent reads and writes of Hive clients. There are two types of compactions:
+By default, Hive automatically compacts delta and base files at regular intervals. However, Hadoop administrators can configure automatic compactions
+
+
+the implementation of Hive Transactions generates base files and delta files in HDFS, but many small delta files can hinder performance, so a garbage collection process (compaction) is necessary to consolidate the small delta files back together
 
 
 
