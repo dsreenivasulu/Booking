@@ -275,6 +275,26 @@ https://trongkhoanguyen.com/spark/understand-the-spark-deployment-modes/
 
 Actions : 
 -------------------
+
+aggregate :   def aggregate[U: ClassTag](zeroValue: U)(seqOp: (U, T) => U, combOp: (U, U) => U): U
+
+zeroValue: The initialization value, for your result, in the desired format.
+seqOp: The operation you want to apply to RDD records. Runs once for every record in a partition.
+combOp: Defines how the resulted objects (one for every partition), gets combined.
+
+The aggregate function allows the user to apply two different reduce functions to the RDD. The first reduce function is applied within each partition to reduce the data within each partition into a single result. The second reduce function is used to combine the different reduced results of all partitions together to arrive at one final result
+
+The initial value is applied at both levels of reduce. So both at the intra partition reduction and across partition reduction.
+Both reduce functions have to be commutative and associative
+
+ex : Compute the sum of a list and the length of that list. Return the result in a pair of (sum, length).
+
+
+
+
+
+http://homepage.cs.latrobe.edu.au/zhe/ZhenHeSparkRDDAPIExamples.html
+
 collect() 	Return all the elements of the dataset as an array at the driver program. This is usually useful after a filter or other operation that returns a sufficiently small subset of the data.
 
 count() 	Return the number of elements in the dataset.
