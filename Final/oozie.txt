@@ -62,11 +62,15 @@ workflow can be scheduled through coordinator based on frequency or data availbi
 </coordinator-app>
 
 ==============================================================
-Submit coordinator using below command.
-
+How to submit the oozie job ?
 oozie job -oozie http://<oozie-server>:11000/oozie -config $local/path/job.properties -run
 
+How to start/stop the oozie from the command line ?
+$sudo service oozie stop
+$sudo service oozie start
 
+How to see the oozie logs ?
+var/logs/oozie/oozie.log
 
 
 
