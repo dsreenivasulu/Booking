@@ -20,3 +20,5 @@ Input:Folder containing Images Output:Image sequence file
 3)Convert Hadoop sequence file into original Images and retrive them in your local file system. 
  Input : Image sequence file with detected faces. Output : original Images with detected faces
  
+How you will merge the small image sequence files ?
+We have SequenceFilesUtils program which merges the files by using SequenceFile.Reader and SeuquenceFile.Writer
