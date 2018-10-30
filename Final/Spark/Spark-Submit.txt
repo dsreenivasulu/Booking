@@ -23,6 +23,25 @@ When driver programs main () method exits or when it call the stop () method of 
 
 In computing, a pipeline, also known as a data pipeline, is a set of data processing elements connected in series, where the output of one element is the input of the next one
 
+What is DAG and explain ?
+From Graph Theory, DAG is a Directed acyclic graph in which there are no cycles or loops, i.e., if you start from a node along the directed branches, you would never visit the already visited node by any chance.
+
+DAG in Apache Spark is a set of Vertices and Edges, where vertices represent the RDDs and the edges represent the Operation to be applied on RDD
+
+At a high level, When an Action is called on RDD spark creates the logical DAG from the operator graph(Spark creates an operator graph when you enter your code) and submit to the DAG Scheduler
+
+The DAG scheduler divides operators into stages of tasks. A stage contains task based on the partition of the input data. The DAG scheduler pipelines operators(transformations) together. i.e At higher level, two type of RDD transformations can be applied: narrow transformation (e.g. map(), filter() etc.) and wide transformation (e.g. reduceByKey()). Narrow transformation does not require the shuffling of data across a partition, the narrow transformations will be grouped into single stage while in wide transformation require the data shuffling. Hence, Wide transformation results in stage boundaries.
+
+The final result of a DAG scheduler is a set of stages with physical execution plan.
+After creating the physical execution plan, it creates small physical execution units referred to as tasks under each stage
+A stage contains task based on the partition of the input data.
+
+The Stages are passed on to the Task Scheduler.The task scheduler launches tasks via cluster manager (Spark Standalone/Yarn/Mesos). The task scheduler doesn't know about dependencies of the stages.
+
+Finally the Worker executes the tasks. (A new JVM is started per job.) The worker knows only about the code that is passed to it.
+
+Each RDD maintains a pointer to one or more parent along with metadata about what type of relationship it has with the parent. For example, if we call val b=a.map() on an RDD, the RDD b keeps a reference to its parent RDD a, that’s an RDD lineage
+
 Catalyst optimizer :
 =====================
 The core of Spark SQL is catalyst optimizer. It is based on functional programming construct in Scala.
