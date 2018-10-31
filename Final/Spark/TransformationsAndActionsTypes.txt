@@ -66,8 +66,6 @@ Math/Statical
 • variance
 • stdev
 • sampleVariance
-• countApprox
-• countApproxDistinct
 
 set theory/Relational 
 • takeOrdered
@@ -114,6 +112,11 @@ General
 Math/Statical
 • countByKey
 • countByValue
+
+
+Experimental Actions Not recomendend to use 
+• countApprox
+• countApproxDistinct
 • countByValueApprox
 • countApproxDistinctByKey
 • countByKeyApprox
@@ -289,9 +292,27 @@ Both reduce functions have to be commutative and associative
 
 ex : Compute the sum of a list and the length of that list. Return the result in a pair of (sum, length).
 
+countByKey():  [will only works on Rdd key value pair (two elements tuple)]
+counts the values of a RDD consisting of two-component tuples for each distinct key separately.
 
+syntax : def countByKey(): Map[K, Long]
 
+Example :  val c = sc.parallelize(List((3, "Gnu"), (3, "Yak"), (5, "Mouse"), (3, "Dog")), 2)
+	           c.countByKey
+		  o/p is res3: scala.collection.Map[Int,Long] = Map(3 -> 3, 5 -> 1)
 
+countByValue():
+
+Returns a map that contains all unique values of the RDD and their respective occurrence counts. 
+(Warning: This operation will finally aggregate the information in a single reducer.)
+
+Listing Variants
+
+syntax : def countByValue(): Map[T, Long]
+
+Example : val b = sc.parallelize(List(1,2,3,4,5,6,7,8,2,4,2,1,1,1,1,1)) 
+          b.countByValue
+res27: scala.collection.Map[Int,Long] = Map(5 -> 1, 8 -> 1, 3 -> 1, 6 -> 1, 1 -> 6, 2 -> 3, 4 -> 2, 7 -> 1)
 
 http://homepage.cs.latrobe.edu.au/zhe/ZhenHeSparkRDDAPIExamples.html
 
