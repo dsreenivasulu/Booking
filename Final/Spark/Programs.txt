@@ -302,6 +302,24 @@ RDD : rdd.map(f => (f._1, 1)).reduceByKey((accum, curr) => accum + curr).foreach
 
 SQL : select <col to Group on> , count(col to count on) from temp_table Group by <col to Group on>
 
+How to get max/min key-value RDD from rdd pair by using value ? 
+
+Solution1
+val maxRDD = rdd.max()( Ordering[Int].on(x => x._2) ) //returns (Int, Int) tuple
+val minRDD = rdd.min()( Ordering[Int].on(x => x._2) ) //returns (Int, Int) tuple
+
+Solution2
+val maxRDD = rdd.takeOrdered(1)( Ordering[Int].on(x => x._2) ) //returns Array[(Int, Int)] and defualt order is ascending
+val minRDD = rdd.takeOrdered(1)( Ordering[Int].reverse.on(x => x._2) ) //returns Array[(Int, Int)]
+
+Note : takeOrdered method should only be used if the resulting array is expected to be small, as all the data is loaded into the driver's memory.
+   
+How to get max/min key-value RDD from rdd pair by using key ? 
+
+val maxRDD = rdd.sortByKey(true).first //returns (Int, Int) tuple
+val minRDD = rdd.sortByKey(false).first //returns (Int, Int) tuple
+    or 
+val minRDD = rdd.sortByKey().first //returns (Int, Int) tuple
 
 
 ------------------------------------------------------------------
