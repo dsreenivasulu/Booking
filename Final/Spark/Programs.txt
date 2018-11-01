@@ -194,14 +194,53 @@ How to store data frame as Hive table ?
     // Save DataFrame to the Hive managed table
     val df = spark.table("src")
     df.write.mode(SaveMode.Overwrite).saveAsTable("hive_records")
+ 
+Note :   If you are using saveAsTable(its more like persisting your dataframe) , you have to make sure that you have enough memory allocated to your spark application. For Large datasets, you can create a temp table and dump them in hive table.
 
-How to create Hive Partition in spark
+myDf.createOrReplaceTempView("mytempTable") 
+
+Then you can use simple hive statement to create table and dump the data from your temp table.
+spark.sql("create table mytable as select * from mytempTable");
+    
+
+How to create Hive Partition in spark ?
   // Turn on flag for Hive Dynamic Partitioning
     spark.sqlContext.setConf("hive.exec.dynamic.partition", "true")
     spark.sqlContext.setConf("hive.exec.dynamic.partition.mode", "nonstrict")
-    // Create a Hive partitioned table using DataFrame API
-    df.write.partitionBy("key").format("hive").saveAsTable("hive_part_tbl")
     
+    // Create a Hive partitioned table using DataFrame API
+    df.write.partitionBy("column name").format("hive").saveAsTable("hive_part_tbl")
+    
+    //Create mutile paritions 
+    df.write.partitionBy('year', 'month').saveAsTable(...)
+    
+//using sprak sql 
+spar.sql("CREATE TABLE users_by_favorite_color(
+  name STRING,
+  favorite_color STRING,
+  favorite_numbers array<integer>
+) USING csv PARTITIONED BY(favorite_color) ")
+    
+How to create Hive bucketing in spark ? 
+
+//using data frame
+peopleDF.write.bucketBy(42, "name").sortBy("age").saveAsTable("people_bucketed")
+
+//using spark sql 
+spark.sql ("CREATE TABLE users_bucketed_by_name(
+  name STRING,
+  favorite_color STRING,
+  favorite_numbers array<integer>
+) USING parquet
+CLUSTERED BY(name) INTO 42 BUCKETS ")
+    
+How to create both partition and bucketing in spark  ?
+//using data frame
+usersDF.write.partitionBy("favorite_color")
+  .bucketBy(42, "name").format("parquet")
+  .saveAsTable("users_partitioned_bucketed")
+
+
 
 How to convert data frame from Hive query ? 
 
