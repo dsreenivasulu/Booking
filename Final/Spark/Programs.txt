@@ -321,6 +321,74 @@ val minRDD = rdd.sortByKey(false).first //returns (Int, Int) tuple
     or 
 val minRDD = rdd.sortByKey().first //returns (Int, Int) tuple
 
+----------------
+    val spark = SparkSession.builder().config("spark.master", "local").getOrCreate()
+    
+    val rdd = spark.sparkContext.parallelize(List( ("dep1", "emp1", "100"),
+    ("dep1", "emp2", "1000"),
+    ("dep3", "emp3", "300"),
+    ("dep3", "emp4", "3000"),
+    ("dep2", "emp5", "200"),
+    ("dep2", "emp6", "2000"),
+    ("dep4", "emp7", "400")
+    ))    
+    
+   import spark.implicits._
+   
+   val df = rdd.toDF("dep", "emp", "sal")
+
+Find no.of employees in each department ? or Find no.of people in each city 
+Find no.of sales in each product or Find no.of transcations in each customer 
+df.groupBy($"dep").agg(count($"sal"))
+println(df.show())
+
+or 
+val rdd = spark.sparkContext.parallelize(List( ("dep1", "emp1", "100"),
+    ("dep1", "emp2", "1000"),
+    ("dep3", "emp3", "300"),
+    ("dep3", "emp4", "3000"),
+    ("dep2", "emp5", "200"),
+    ("dep2", "emp6", "2000"),
+    ("dep4", "emp7", "400")
+    ))
+    
+   import spark.implicits._
+   
+   val df = rdd.toDF("dep", "emp", "sal")
+   
+   val w = Window.partitionBy($"dep").orderBy($"sal".desc) 
+    
+   val fdf = df.withColumn("maxS", row_number.over(w)).where($"maxS" === 1).drop("maxS")
+   
+   println(fdf.show())
+
+
++----+----+----+
+| dep| emp| sal|
++----+----+----+
+|dep3|emp4|3000|
+|dep4|emp7| 400|
+|dep2|emp6|2000|
+|dep1|emp2|1000|
++----+----+----+
+
+Find max employee sal or High salray or maximum paid emp sal or Highest top paid emp sal in each department ?
+Find highest sales or top sales in each product ? Find highest transcations or top transcations in each customer ?
+
+val gdf = df.groupBy($"dep").agg(max($"sal").alias("maxSal"), min($"sal"), sum($"sal"), avg($"sal"), sumDistinct($"sal"),count($"sal"))
+
+Find min employee sal or Lowest salray or minimum paid emp sal or Lowest aid emp sal in each department ?
+Find Lowest sales or low sales in each product ? Find Lowest transcations or low transcations in each customer ?
+
+val gdf = df.groupBy($"dep").agg(max($"sal").alias("maxSal"), min($"sal"), sum($"sal"), avg($"sal"), sumDistinct($"sal"),count($"sal"))
+
+Note : top or higesh or max means aggregrate max operation 
+Note : low, least or Lowest or min means aggregrate min operation 
+Note : no of means aggregrate count operation 
+Note : Total or sum means aggregrate sum operation 
+
+
+
 
 ------------------------------------------------------------------
 How to create UDF in spark ?
