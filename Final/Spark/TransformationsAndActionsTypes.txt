@@ -272,6 +272,29 @@ combineByKey
 can be used when you are combining elements but your return type differs from your input value type.
  
  
+zip() : Joins two RDDs .The resulting RDD will consist of two-component tuples which are interpreted as key-value pairs
+Note : Both two Joining RDDs should have same no.of paritions. And should have same no.of elements
+
+Ex :  val rdd1 = sc.parallelize(List(1,2,3,4,5,6,7,8,9), 3)
+      val rdd2 = sc.parallelize(List("a","b","c","d","e","f","g","h","i"), 3)
+
+val rdd13 = rdd1.zip(rdd2)
+o/p is (1,a),(2,b),(3,c),(4,d),(5,e),(6,f),(7,g),(8,h),(9,i)
+
+ZipWithIndex : Zips the elements of the RDD with its element indexes. The indexes start from 0. If the RDD is spread across multiple partitions then a spark Job is started to perform this operation.
+ 
+def zipWithIndex(): RDD[(T, Long)]
+
+Example
+val z = sc.parallelize(Array("A", "B", "C", "D"))
+val r = z.zipWithIndex 
+res110: Array[(String, Long)] = Array((A,0), (B,1), (C,2), (D,3))
+
+What is the best way to assign a sequence number into RDD ?
+By using ZipWithIndex
+
+zipWithUniqueId: This is different from zipWithIndex since just gives a unique id to each data element but the ids may not match the index number of the data element. This operation does not start a spark job even if the RDD is spread across multiple partitions.
+
 
 https://trongkhoanguyen.com/spark/understand-the-spark-deployment-modes/
 
