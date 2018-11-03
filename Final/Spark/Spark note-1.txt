@@ -244,7 +244,13 @@ what is difference between lineage graph and dag ?
 Lineage graph deals with RDDs so it is applicable up to till transformations 
 Whereas, DAG shows the complete task, ie; trasnformation + Action. It shows the different stages of a spark job.
    
-
+ What are the supported storage systems to process data in spark ?
+	Google Cloud
+	Amazon S3
+	Cassandra
+	HDFS
+	Hbase
+	Hive
 
 
 ------------------------------------------------------------
