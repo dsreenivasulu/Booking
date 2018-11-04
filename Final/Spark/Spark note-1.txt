@@ -252,8 +252,14 @@ Whereas, DAG shows the complete task, ie; trasnformation + Action. It shows the 
 	Hbase
 	Hive
 
+Explain Spark models ?
+-----------  -----------    -----------     -----------   -----------
+| spark sql| | Streaming    | Mlib    |     | GrphaX  |   | R on Spark
+-----------  -----------    -----------     -----------    -----------  
+-------------------------------------------------------------
+|            Spark core                                     |
+-------------------------------------------------------------
 
-------------------------------------------------------------
 Why a New Programming Model?
 MapReduce greatly simplified big data analysis
 But as soon as it got popular, users wanted more:
