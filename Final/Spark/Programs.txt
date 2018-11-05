@@ -411,6 +411,9 @@ val rdd = spark.sparkContext.parallelize(List( ("dep1", "emp1", "100"),
 |dep1|emp2|1000|
 +----+----+----+
 
+Find no.of departments ?
+df.select($"dep").distinct.count
+
 Find max employee sal or High salray or maximum paid emp sal or Highest top paid emp sal in each department ?
 Find highest sales or top sales in each product ? Find highest transcations or top transcations in each customer ?
 
@@ -426,7 +429,17 @@ Note : low, least or Lowest or min means aggregrate min operation
 Note : no of means aggregrate count operation 
 Note : Total or sum means aggregrate sum operation 
 
+How to select using set of sequence column names ? Assume that sequence names are dynamic ?
 
+val columnNames = Seq("col1","col2",....."coln")
+
+option 1:
+// using the string column names:
+val result = dataframe.select(columnNames.head, columnNames.tail: _*)
+
+option 1:
+// or, equivalently, using Column objects:
+val result = dataframe.select(columnNames.map(c => col(c)): _*)
 
 
 ------------------------------------------------------------------
