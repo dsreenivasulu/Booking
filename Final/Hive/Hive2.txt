@@ -14,6 +14,74 @@
     
    If the table is partitioned, then we must specify partition column value
 
+How to perform multiple hive tables inesrtions using single table ?
+FROM from_statement
+INSERT OVERWRITE TABLE tablename1 [PARTITION (partcol1=val1, partcol2=val2 ...) [IF NOT EXISTS]] select_statement1
+[INSERT OVERWRITE TABLE tablename2 [PARTITION ... [IF NOT EXISTS]] select_statement2]
+[INSERT INTO TABLE tablename2 [PARTITION ...] select_statement2] ...;
+
+ex:FROM raw_logs
+INSERT INTO TABLE cpus PARTITION (ds=2012-10-25, ts=10) select_statement1
+INSERT INTO TABLE apache PARTITION (ds=2012-10-25, ts=10) select_statement2
+
+How to store hive table data into multiple directories ?
+FROM from_statement
+INSERT OVERWRITE [LOCAL] DIRECTORY directory1 select_statement1
+[INSERT OVERWRITE [LOCAL] DIRECTORY directory2 select_statement2] ...
+
+What is CTE (common table expression) ? explain ?
+A Common Table Expression (CTE) is a temporary result set derived from a simple query specified in a WITH clause, which immediately precedes a SELECT or INSERT keyword.  The CTE is defined only within the execution scope of a single statement.  One or more CTEs can be used in a Hive SELECT, INSERT, CREATE TABLE AS SELECT, or CREATE VIEW AS SELECT statement.
+
+Common Table Expression Syntax
+withClause: cteClause (, cteClause)*
+cteClause: cte_name AS (select statment)
+
+CTE in Select Statements
+
+with q1 as ( select key from src where key = '5')
+select *
+from q1;
+
+-- from style
+with q1 as (select * from src where key= '5')
+from q1
+select *;
+  
+-- chaining CTEs
+with q1 as ( select key from q2 where key = '5'),
+q2 as ( select key from src where key = '5')
+select * from (select key from q1) a;
+  
+-- union example
+with q1 as (select * from src where key= '5'),
+q2 as (select * from src s2 where key = '4')
+select * from q1 union all select * from q2;
+CTE in Views, CTAS, and Insert Statements
+-- insert example
+create table s1 like src;
+with q1 as ( select key, value from src where key = '5')
+from q1
+insert overwrite table s1
+select *;
+ 
+-- ctas example
+create table s2 as
+with q1 as ( select key from src where key = '4')
+select * from q1;
+ 
+-- view example
+create view v1 as
+with q1 as ( select key from src where key = '5')
+select * from q1;
+select * from v1;
+  
+-- view example, name collision
+create view v1 as
+with q1 as ( select key from src where key = '5')
+select * from q1;
+with q1 as ( select key from src where key = '4')
+select * from v1;
+
   Additional load operations internally rewrites the load into an INSERT AS SELECT.
   -------------------------------------------------------------
   Table has partitions, not specified partition column value in the load statement then the load would be converted into INSERT AS SELECT If last set of columns are partition columns. It will throw an error if the file does not conform to the expected schema.
