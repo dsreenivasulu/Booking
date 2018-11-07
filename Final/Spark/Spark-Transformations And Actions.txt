@@ -48,6 +48,14 @@ Immutability :Once We defined RDD, we can't change them. So Spark RDD is read-on
 Lazy Evaluations : Transformations are lazy in nature.They are not executed immediately they get execute when we call an action. 
 Partitioning:Partitioning is the fundamental unit of parallelism in RDD. Each partition is one logical division of data which is mutable. We can create a partition through some transformations on existing partitions.
 Partitioned : Spark breaks the RDD into smaller chunks of data. These pieces are called Partitions.
+Types of paritions :
+Extended partitioning is only configurable on Pair RDDs.
+
+Range partitioning: Takes into account the natural order of keys to split the dataset in the required number of partitions. Requires keys to be naturally ordered and keys to be equally distributed across the value range.
+
+Hash partitioning: Calculates a hash over the each item key and then produces the modulo of this hash to determine the new partition. This is equivalent to:
+key.hashCode() % numPartitions
+
 Persistence : We can store RDD state by choosing storage strategy (e.g., in-memory storage or on Disk).so that RDD will reuse 
 Coarse-grained Operations : It applies to all elements in datasets through maps or filter or group by operation.
 Location-Stickiness :RDDs are capable of defining placement preference to compute partitions. Placement preference refers to information about the location of RDD. The DAGScheduler places the partitions in such a way that task is close to data as much as possible. Thus, speed up computation. Follow this guide to learn What is DAG?
