@@ -337,6 +337,14 @@ Example : val b = sc.parallelize(List(1,2,3,4,5,6,7,8,2,4,2,1,1,1,1,1))
           b.countByValue
 res27: scala.collection.Map[Int,Long] = Map(5 -> 1, 8 -> 1, 3 -> 1, 6 -> 1, 1 -> 6, 2 -> 3, 4 -> 2, 7 -> 1)
 
+val rdd = sc.emptyRDD[Int]
+rdd.reduce(_ + _)
+// java.lang.UnsupportedOperationException: empty collection at   
+// org.apache.spark.rdd.RDD$$anonfun$reduce$1$$anonfun$apply$ ...
+
+rdd.fold(0)(_ + _)
+// Int = 0
+
 http://homepage.cs.latrobe.edu.au/zhe/ZhenHeSparkRDDAPIExamples.html
 
 saveAsTextFile(path) 	Write the elements of the dataset as a text file (or set of text files) in a given directory in the local filesystem, HDFS or any other Hadoop-supported file system. Spark will call toString on each element to convert it to a line of text in the file.
