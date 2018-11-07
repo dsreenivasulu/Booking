@@ -364,6 +364,44 @@ saveAsObjectFile(path) Write the elements of the dataset in a simple format usin
 foreach(func) 	Run a function func on each element of the dataset. This is usually done for side effects such as updating an Accumulator or interacting with external storage systems.
 Note: modifying variables other than Accumulators outside of the foreach() may result in undefined behavior. See Understanding closures for more details.
 
+take(n) : we can take first n items(elements) from the RDD. 
+[ It tries to cut the number of partition it accesses, so it represents a biased collection.  We cannot presume the order of the elements. ]
+
+syntax : def take(num: Int): Array[T]
+
+val b = sc.parallelize(List("dog", "cat", "ape", "salmon", "gnu"), 2)
+b.take(2)
+res18: Array[String] = Array(dog, cat)
+
+For example, consider RDD {1, 2, 2, 3, 4, 5, 5, 6} in this RDD “take (4)” will give result { 2, 2, 3, 4}
+
+takeOrdered(n) : Returns the first n (smallest) elements from this RDD as defined by the specified implicit Ordering[T] and maintains the ordering. This does the opposite of top. For example:
+Orders the data items of the RDD using their inherent implicit ordering function and returns the first n items as an array
+
+sc.parallelize(Seq(10, 4, 2, 12, 3)).takeOrdered(1)
+// returns Array(2)
+
+sc.parallelize(Seq(2, 3, 4, 5, 6)).takeOrdered(2)
+// returns Array(2, 3)
+
+val b = sc.parallelize(List("dog", "cat", "ape", "salmon", "gnu"), 2)
+b.takeOrdered(2)
+res19: Array[String] = Array(ape, cat)
+
+Note This method should only be used if the resulting array is expected to be small, as all the data is loaded into the driver's memory.
+
+top(n) : Returns the top n (largest) elements from this RDD as defined by the specified implicit Ordering[T] and maintains the ordering. This does the opposite of takeOrdered. For example:
+
+syntax : def top(num: Int)(implicit ord: Ordering[T]): Array[T]
+
+sc.parallelize(Seq(10, 4, 2, 12, 3)).top(1)
+// returns Array(12)
+
+sc.parallelize(Seq(2, 3, 4, 5, 6)).top(2)
+// returns Array(6, 5)
+
+Note : This method should only be used if the resulting array is expected to be small, as all the data is loaded into the driver's memory
+
 --------------------------------------------------------------------
 shuffle : The process of moving the data from partition to partition in order to aggregate or join is known as shuffling. 
 map-side shuffle : The aggregation/reduction that takes place before data is moved across partitions is known as a map-side shuffle.
