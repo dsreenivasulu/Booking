@@ -339,22 +339,6 @@ res27: scala.collection.Map[Int,Long] = Map(5 -> 1, 8 -> 1, 3 -> 1, 6 -> 1, 1 ->
 
 http://homepage.cs.latrobe.edu.au/zhe/ZhenHeSparkRDDAPIExamples.html
 
-collect() 	Return all the elements of the dataset as an array at the driver program. This is usually useful after a filter or other operation that returns a sufficiently small subset of the data.
-
-count() 	Return the number of elements in the dataset.
-
-countByKey() 	Only available on RDDs of type (K, V). Returns a hashmap of (K, Int) pairs with the count of each key.
-
-first() 	Return the first element of the dataset (similar to take(1)).
-
-reduce(func) 	Aggregate the elements of the dataset using a function (func which takes two arguments and returns one). The function should be commutative and associative so that it can be computed correctly in parallel.
-
-take(n) 	Return the first n elements of the dataset as array
-
-takeSample(withReplacement, num, [seed]) 	Return an array wit00h a random sample of num elements of the dataset, with or without replacement, optionally pre-specifying a random number generator seed.
-
-takeOrdered(n, [ordering]) 	Return the first n elements of the RDD using either their natural order or a custom comparator.
-
 saveAsTextFile(path) 	Write the elements of the dataset as a text file (or set of text files) in a given directory in the local filesystem, HDFS or any other Hadoop-supported file system. Spark will call toString on each element to convert it to a line of text in the file.
 
 saveAsSequenceFile(path) Write the elements of the dataset as a Hadoop SequenceFile in a given path in the local filesystem, HDFS or any other Hadoop-supported file system. This is available on RDDs of key-value pairs that implement Hadoop's Writable interface. In Scala, it is also available on types that are implicitly convertible to Writable (Spark includes conversions for basic types like Int, Double, String, etc).
@@ -483,7 +467,6 @@ data.mapPartitions(sumfuncpartition).collect
 o/p returns Array[Int] = Array(10, 26) 
 
 
-
 reduceByKey vs aggregateByKey 
 scala> val nameCounts = sc.parallelize(List(("David", 6), ("Abby", 4), ("David", 5), ("Abby", 5)))
 scala> nameCounts.reduceByKey((v1, v2) => v1 + v2).collect or nameCounts.reduceByKey(_+_).collect
@@ -502,7 +485,6 @@ The sample transformation takes up to three parameters SparkSampling:
 1.1. First is weather the sampling is done with replacement or not.
 1.2. Second is the sample size as a fraction. Finally we can optionally provide a random seed.
 1.3. Finally we can optionally provide a random seed.
-
 
 How to increase the size of an RDD using sample with replacement
 ex : I have 50 elements want to increase 200 elements
@@ -531,19 +513,14 @@ res0: Array[(String, (Iterable[String], Iterable[String]))] = Array(
 (C,(CompactBuffer(3),CompactBuffer(c)))
 )
 
-
-
 http://www.openkb.info/2015/01/scala-on-spark-cheatsheet.html
 
 What is Spark Executor? When SparkContext connect to a cluster manager, it acquires an Executor on nodes in the cluster. Executors are Spark processes that run computations and store the data on the worker node. The final tasks by SparkContext are transferred to executors for their execution.
 What do you understand by worker node? Worker node refers to any node that can run the application code in a cluster.
 What is Spark Driver? Spark Driver is the program that runs on the master node of the machine and declares transformations and actions on data RDDs. In simple terms, driver in Spark creates SparkContext, connected to a given Spark Master. The driver also delivers the RDD graphs to Master, where the standalone cluster manager runs
  
- 
  When to use GroupByKey and ReduceByKey ?
  If the operation is associative and commutative reduce (for ex : sum, count. min, max) then prefer using ReduceByKey 
  If it is not reduce operation then prefer using GroupByKey 
- 
- 
- 
+
  https://stackoverflow.com/questions/31508083/difference-between-dataframe-in-spark-2-0-i-e-datasetrow-and-rdd-in-spark?rq=1
