@@ -291,6 +291,21 @@ If an object has the same name that a class, the object is called a companion ob
 What is the difference between a trait and an abstract class in Scala?
 A class can inherit from multiple traits but only one abstract class.
 Abstract classes can have constructor parameters as well as type parameters. Traits can have only type parameters.
+you can’t say trait t(i: Int) { }; the i parameter is illegal.
+
+A class can extend multiple traits but A class can extend only one abstract class.
+
+Abstract classes are fully interoperable with Java. You can call them from Java code without any wrappers. 
+Traits are fully interoperable with Java only if they do not contain any implementation code
+
+When to use ?
+Whenever you implement a reusable behavior, you will have to decide whether you want to use a trait or an abstract class.
+[If the behavior will not be reused, then make it a concrete class.]
+
+If it might be reused in multiple, unrelated classes, make it a trait. Only traits can be mixed into different parts of the class hierarchy.
+If you want to inherit from it in Java code, use an abstract class
+
+If you still do not know, after considering the above, then start by making it as a trait. You can always change it later, and in general using a trait keeps more options open.
 
 What is the difference between a call-by-value and call-by-name parameter?
 call-by-value functions compute the parmeter expression value before calling the function, thus the same value is accessed every time. call-by-name functions recompute the parmeter expression value every time it is accessed.
