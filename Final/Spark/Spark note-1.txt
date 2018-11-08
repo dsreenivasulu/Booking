@@ -281,6 +281,23 @@ The checkpoint file won't be deleted even after the Spark application terminated
 Checkpoint files can be used in subsequent job run or driver program
 Checkpointing an RDD causes double computation because the operation will first call a cache before doing the actual job of computing and writing to the checkpoint directory
 
+How to read multiple directories files in spark ?
+sc.textFile("/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file")
+sc.textfile("path/*/**") or sc.wholeTextFiles("path/*")
+* means wildcard matcher
+
+spark.read.format("csv").option("header", "true").load("../Downloads/*.csv")
+or
+spark.read.option("header", "true").csv("../Downloads/*.csv")
+
+Reading multiple CSV files from multiple folders:
+val folders = List("C:spark\\sample_data\\tmp", "C:spark\\sample_data\\tmp1")
+val df = spark.read.option("header", "true").csv(folders: _*)
+
+How to write multiple directories files in spark ?
+val src_path = "hsfs:///local/id_*_*/data/version.*/*"
+val df = spark.read.parquet(src_path)
+df.write.parquet("hdfs:///destination/path/")
 
 
 
