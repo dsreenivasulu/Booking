@@ -28,15 +28,23 @@ How does the spark execute our programs on a cluster ?
   Executor is responsible for to complete assigned work/task by the driver and reporting status to driver
   
   Spark offers two deployment modes for an application
+  Deploy modes are all about where the Spark driver runs.
+  There are two deploy modes for YARN — client (default) or cluster.
+  
    Client mode : Driver on client machine and executors on cluster
                  In Client mode driver will be out side of the cluster
 		 Driver is embedded in Interactive clients. Interactive clients and driver run on same jvm proce
                  suitable for exploring and debugging driver process. All Interactive Clients are in client mode 
+		 It's interactive. If you want to get a job result (dynamic analysis) at your machine (client - the Driver program), client deployment mode is quite useful.
+Easier for developing/debugging.
+End user have the control where the Driver Program is running
    Cluster mode : Driver and executors on cluster
    In Cluster mode driver will be inside of the cluster
    we can submit spark application from client machine to driver on cluster  
    each application will run independently on cluster
    suitable in production 
+   
+   Without specifying the deploy mode, it is assumed client.
 
 Who controls the cluster or How spark gets the resources for the driver and executors ?
  -spark supports 4 types of cluster managers
@@ -45,10 +53,6 @@ Who controls the cluster or How spark gets the resources for the driver and exec
    Kubernets : General purpose cluster manager from google. 
    Standalone : cluster manager Build in spark. Easy to step
    
-   YARN workflow
-   Client mode : 
-     -Spark client tool (Interactive Clients) : When you start application, driver starts in local machine
-       Driver creates the spark session (In the spark session driver maintains executors location and status)
 ---------------------------------------------------------------------------------------------------------------	   
 	      
 Typical spark application workflow:
@@ -74,6 +78,7 @@ it will solve semantic issues
 var collection = List(1,2,3)
 var result  = collection.count (internally compiler knows result is Int type)
 result.map(x=>x*2) //semantic error at the compile time. Map cannot apply on integers
+
 Caching : Immutable data allows to cache the data longer time
 Caching data improves execution engine performance
 Map/Reduce is immutable but not lazy
@@ -84,7 +89,6 @@ Reduces the time and space complexity.
 provides the optimization by reducing the number of queries
 
 for example -- if you executed every transformation eagerly it means you will have to materialize that many intermediate datasets in memory. This is evidently not efficient -- for one, it will increase your GC costs.
-
 
 How to run spark file in spark or Submitting a Spark job using Shell script file
 By using :load command 
