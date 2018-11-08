@@ -435,6 +435,9 @@ ex : object ImplicitEx extends App {
 	 match expected type String yo
 }
 
+What is implicit function 
+What is implicit class
+
 What is currying in Scala?
 Currying is a technique to transform a function that takes multiple arguments into a function that takes a single argument.
 
