@@ -441,6 +441,53 @@ option 1:
 // or, equivalently, using Column objects:
 val result = dataframe.select(columnNames.map(c => col(c)): _*)
 
+When we applied groupBy and agg function then what are allowed functions in agg function ?
+count() : count no.of rows for each group
+max(colname*) :maximum value for each numeric columns for each group. 
+min(colname*) :minimum value for each numeric columns for each group. 
+sum(colname*) : Compute the sum for each numeric columns for each group.
+avg(colname*) : Compute the mean value for each numeric columns for each group. 
+mean(colname*) : Compute the average value for each numeric columns for each group. This is an alias for avg
+pivot : Pivots a column of the current DataFrame and perform the specified aggregation
+3 pivot methods 
+1)Compute the sum of earnings for each year by course with each course as a separate column
+df.groupBy("year").pivot("course", Arrays.<Object>asList("dotNET", "Java")).sum("earnings");
+
+// Or without specifying column values (less efficient)
+df.groupBy("year").pivot("course").sum("earnings");
+2)// Compute the sum of earnings for each year by course with each course as a separate column
+df.groupBy("year").pivot("course", Seq("dotNET", "Java")).sum("earnings")
+
+// Or without specifying column values (less efficient)
+df.groupBy("year").pivot("course").sum("earnings")
+
+3)// Compute the sum of earnings for each year by course with each course as a separate column
+df.groupBy("year").pivot("course", Seq("dotNET", "Java")).sum("earnings")
+
+// Or without specifying column values (less efficient)
+df.groupBy("year").pivot("course").sum("earnings")
+
+
+// Selects the age of the oldest employee and the aggregate expense for each department
+import org.apache.spark.sql.functions._
+df.groupBy("department").agg(max("age"), sum("expense"))
+or
+// Selects the age of the oldest employee and the aggregate expense for each department
+df.groupBy("department").agg(Map(
+  "age" -> "max",
+  "expense" -> "sum"
+))
+or 
+// Selects the age of the oldest employee and the aggregate expense for each department
+df.groupBy("department").agg(
+  "age" -> "max",
+  "expense" -> "sum"
+)
+
+
+
+
+
 
 ------------------------------------------------------------------
 How to create UDF in spark ?
