@@ -303,6 +303,33 @@ val src_path = "hsfs:///local/id_*_*/data/version.*/*"
 val df = spark.read.parquet(src_path)
 df.write.parquet("hdfs:///destination/path/")
 
+is it possible create two spark sesssions in the sprak program ?
+Yes but we need to first clear first active spark session 
+SparkSession.clearActiveSession() and SparkSession.clearDefaultSession()
+
+How to add/compare two different tables of two hive servers in spark ?
+val sc = SparkSession.builder()
+             .config("hive.metastore.uris", "thrift://dbsyz1111:10000")
+             .enableHiveSupport()
+             .getOrCreate()
+
+// Createdataframe 1 from by reading the data from hive table of metstore 1
+val dataframe_1 = sc.sql("select * from <SourcetbaleofMetaStore_1>")
+
+// Resetting the existing Spark Contexts
+SparkSession.clearActiveSession()
+SparkSession.clearDefaultSession()
+
+//Initialize Spark session2 with Hive Metastore 2
+val spc2 = SparkSession.builder()
+               .config("hive.metastore.uris", "thrift://dbsyz2222:10004")
+               .enableHiveSupport()
+               .getOrCreate()
+
+// Load dataframe 2 of spark context 1 into a new dataframe of spark context2, By getting schema and data by converting to rdd  API
+val dataframe_2 = spc2.createDataFrame(dataframe_1.rdd, dataframe_1.schema)
+
+dataframe_2.write.mode("Append").saveAsTable(<targettableNameofMetastore_2>)
 
 
 
