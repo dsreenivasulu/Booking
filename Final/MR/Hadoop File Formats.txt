@@ -111,6 +111,73 @@ Firstly, I approached by implementing the Map-Reduce program by writing a custom
 Must read : https://stackoverflow.com/questions/28915507/hadoophow-xml-files-can-be-stored-in-hdfs-and-processed-by-mappers
 
 ------------------------------------------------------------------------------------------------------------
+How to load compressed file into Hive table ?
+We can't load directly by using load statament
+we can follow two options
+option1 : create tmp table and then load the data and then create another table then load the tmp table data
+CREATE TABLE tmp_table (data STRING)
+   ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
+ 
+CREATE TABLE compressed_table (data STRING)
+   ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+   STORED AS SEQUENCEFILE;
+ 
+LOAD DATA LOCAL INPATH '/tmp/file.txt' INTO TABLE tmp_table;
+INSERT OVERWRITE TABLE compressed_table SELECT * FROM tmp_table; 
+
+option 2 : create external tmp table and specify compressed file path using location command then create another table then load the tmp table data
+
+using the external table which will save the time to load data into the tmp_table
+
+CREATE EXTERNAL TABLE IF NOT EXISTS tmp_table (data STRING)
+   ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+   LOCATION 'hdfs://hadoop-namenode:8020/directory_name';
+ 
+CREATE TABLE compressed_table (data STRING)
+   ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+   STORED AS SEQUENCEFILE;
+INSERT OVERWRITE TABLE compressed_table SELECT * FROM tmp_table; 
+
+How read GZIP compressed data in spark 2.x
+By default spark supports Gzip file directly, so simplest way of reading a Gzip file will be with textFile method
+
+val rdd = spark.sparkContext.textFile("path to gzip file")
+
+If you want to read files in a directory and build a pairRDD with key-value pairs wholeTextFiles can be used.
+ key will be name of the file and value will be contents of the file
+
+val rdd =  spark.sparkContext.wholeTextFiles("path to gzip file")
+val lines = rdd.map(filename, contents => contents)
+
+val rowRDD = lines.map(line =>
+    val lineArray = line.split(",")
+	Row.fromSeq(lineArray)
+)
+
+another way : We can use binaryFiles() method to read compressed files
+
+val rdd = spark.sparkContext.binaryFiles("sample_data/") //returns RDD[String, PortableDataStream]:
+
+val rdd = spark.sparkContext.binaryFiles("sample_data/")
+  .flatMap {
+    case (fileName: String, pds: PortableDataStream) =>
+      extractFiles(pds)
+  }
+	
+def extractFiles(pds: PortableDataStream): List[String] = {
+  val gzipStream = new GzipCompressorInputStream(pds.open)
+  val br = new BufferedReader(new InputStreamReader(gzipStream, "UTF-8"))
+  Stream.continually(br.readLine).takeWhile(_ != null).toList
+}
+
+http://www.talentorigin.com/spark/reading-compressed-files-with-spark-2-0-part-3/
+http://www.talentorigin.com/spark/reading-compressed-files-with-spark-2-0-part-2/	
+
+
+How read GZIP compressed csv,tsv file in spark 2.x
+csv  : spark.read.options("sep", ",").csv("file.csv.gz")
+tsv  : spark.read.options("sep", "\t").csv("file.csv.gz")
+
 How to load xm in hive
 STEP 1 : CREATING INPUT XML FILE WHICH WE WILL LOAD IN HIVE TABLE
 nano student.xml
