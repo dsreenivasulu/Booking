@@ -332,6 +332,10 @@ val dataframe_2 = spc2.createDataFrame(dataframe_1.rdd, dataframe_1.schema)
 dataframe_2.write.mode("Append").saveAsTable(<targettableNameofMetastore_2>)
 
 
+How to check no.of partitions of RDD ?
+Programatically : rdd.partitions.size
+UI : When a stage executes, you can see the number of partitions for a given stage in the Spark U
+"Total Tasks" represents the number of partitions:
 
 
 Why a New Programming Model?
