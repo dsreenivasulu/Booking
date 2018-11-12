@@ -1,0 +1,30 @@
+Effective use of Dataframes while loading  data from a file.
+Generally when we create a dataframe by reading a csv, we try to create the schema on the fly.
+
+Ex :-
+
+subjectsDF = spark.read.csv(‘path/subjects.csv’, header=True, inferSchema= True)
+
+Suppose we have 1GB of data. To process 1GB of data it will take approximately 30 secs.
+
+Drawback : It takes longer time because it will do a full file scan.
+
+Effective way : While loading a csv we should not create the schema on the fly. What we can do is that first we should create the schema separately and then create the dataframe.
+
+Ex : –
+
+subjectSchema = StructType([StructField(‘nameofbook’, StringType(), True),
+
+StructField(‘Author’, StringType(), True),
+
+StructField(‘productNumber’, IntegerType(), True),
+
+StructField(‘price’, IntegerType(), True),
+
+StructField(‘publication’, StringType(), True),
+
+StructField(‘subject, StringType(), True)])
+
+subjectsDF = spark.read.csv(‘path/subjects.csv’, header=True, schema = subjectSchema)
+
+So if we execute the above code, it takes fraction of secs.
