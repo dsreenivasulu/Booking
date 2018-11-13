@@ -240,6 +240,11 @@ usersDF.write.partitionBy("favorite_color")
   .bucketBy(42, "name").format("parquet")
   .saveAsTable("users_partitioned_bucketed")
 
+How to add new partition to existing hive table ?
+df.write.partitionBy('year', 'month').insertInto(String tableName)
+
+How to append the data to hive table and How to overwrite the data to hive table ?
+use saveMode
 
 
 How to convert data frame from Hive query ? 
