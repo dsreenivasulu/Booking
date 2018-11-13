@@ -489,7 +489,26 @@ df.groupBy("department").agg(
   "expense" -> "sum"
 )
 
+How to parse log data and put it in a spark (rdd or df or sql table) ? 
+71.19.157.174 - - [24/Sep/2014:22:26:12 +0000] "GET /error HTTP/1.1" 404 505 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36"
 
+val rdd = sc.textFile("/home/user/logs/log.txt")
+val pattern = Pattern.compile("""^(\S+) (\S+) (\S+) \[([\w:/]+\s[+\-]\d{4})\] \"(\S+) (\S+) (\S+)\" (\d{3}) (\d+)""")
+val df = rdd.map(line => pattern.matcher(line)).map(elem => {
+  elem.find
+  LogSchema(elem.group(1), elem.group(2), elem.group(3), elem.group(4), elem.group(5), elem.group(6), elem.group(7), elem.group(8), elem.group(9))
+}).toDF()
+df.show(false)
+
+case class LogSchema(ip: String, client: String, userid: String, date: String, method: String, endpoint: String, protocol: String, response: String, contentsize: String)
+
+o/p is 
+
++-------------+------+------+--------------------------+------+--------+--------+--------+-----------+
+|ip           |client|userid|date                      |method|endpoint|protocol|response|contentsize|
++-------------+------+------+--------------------------+------+--------+--------+--------+-----------+
+|71.19.157.174|-     |-     |24/Sep/2014:22:26:12 +0000|GET   |/error  |HTTP/1.1|404     |505        |
++-------------+------+------+--------------------------+------+--------+--------+--------+-----------+
 
 
 
