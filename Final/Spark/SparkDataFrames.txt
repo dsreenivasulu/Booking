@@ -372,7 +372,115 @@ df.filter(df.col("age").gt(21));
 
 val rdd = sc.textFile("data.txt")
 val ds = spark.createDataset(rdd)
+-------------------------------------------------------------------------------------------------------------------
+Untyped transformations
+============================
+1)agg : Aggregates on the entire Dataset without groups.
+// ds.agg(...) is a shorthand for ds.groupBy().agg(...)
+ds.agg(max($"age"), avg($"salary"))
+ds.groupBy().agg(max($"age"), avg($"salary")
 
+2)crossJoin : Explicit cartesian join with another DataFrame.
+
+3)drop(col: Column): Returns a new Dataset with a column dropped
+
+4)groupBy : Group(s) the Dataset using the specified column(s)
+// Compute the average for all numeric columns grouped by department.
+ds.groupBy($"department").avg()
+
+// Compute the max age and average salary, grouped by department and gender.
+ds.groupBy($"department", $"gender").agg(Map(
+  "salary" -> "avg",
+  "age" -> "max"
+))
+
+5)select : Select(s) a set of column(s).
+ds.select($"colA")
+ds.select($"colA", $"colB" + 1)
+
+6)selectExpr : Selects a set of SQL expressions.
+
+// The following are equivalent:
+ds.selectExpr("colA", "colB as newName", "abs(colC)")
+ds.select(expr("colA"), expr("colB as newName"), expr("abs(colC)"))
+
+7)withColumn : add/repace column 
+
+8)withColumnRenamed : rename cloumn name
+
+9)join(rightDf, joinExpression, jointype)  : 
+join types are : inner, outer, left_outer, right_outer, leftsemi.
+
+import org.apache.spark.sql.functions._
+df1.join(df2, $"df1Key" === $"df2Key", "outer")
+
+// The following two are equivalent:
+df1.join(df2, $"df1Key" === $"df2Key") //inner join 
+df1.join(df2).where($"df1Key" === $"df2Key") //inner join 
+
+DataFrameNaFunctions
+====================
+
+drop(): DataFrame
+Returns a new DataFrame that drops rows containing any null or NaN values.
+
+df.na.drop()
+
+Note : drop method also accept to specify column(s) and drop row which has specifed column name(s) are null or NAN values
+       drop method also accept to drops rows containing less than minNonNulls non-null and non-NaN values. (by cloumn name(s) as well)
+
+
+fill : Returns a new DataFrame that replaces null values and returns dataframe
+//Based on column type we need to provide values
+df.na.fill(Map(
+  "columnname1" -> "unknown",
+  "columnname2" -> 1.0
+))
+
+def fill(value: String): DataFrame
+Returns a new DataFrame that replaces null values in string columns with value. 
+ 
+def fill(value: Double): DataFrame
+Returns a new DataFrame that replaces null or NaN values in numeric columns with value.
+ 
+ 
+replace :  Replaces column values and returns DataFrame
+
+// Replaces all occurrences of "UNKNOWN" with "unnamed" in column "name".
+df.replace("name", ImmutableMap.of("UNKNOWN", "unnamed"));
+
+// Replaces all occurrences of "UNKNOWN" with "unnamed" in all string columns.
+df.replace("*", ImmutableMap.of("UNKNOWN", "unnamed"));
+
+// Replaces all occurrences of "UNKNOWN" with "unnamed" in column "firstname" and "lastname".
+df.replace(new String[] {"firstname", "lastname"}, ImmutableMap.of("UNKNOWN", "unnamed"));
+
+// Replaces all occurrences of "UNKNOWN" with "unnamed" in column "name".
+df.replace("name", Map("UNKNOWN" -> "unnamed")
+
+
+How to replace column value in dataframe. Say for example I have column name called product with value oldTVModel I want replace with newTVModel 
+Use replace method ?
+
+import com.google.common.collect.ImmutableMap;
+// Replaces all occurrences of "oldTVModel" with "newTVModel" in column "product".
+df.replace("product", ImmutableMap.of("oldTVModel", "newTVModel"));
+
+or 
+
+df.replace("product", Map("oldTVModel", "newTVModel"));
+
+How to replace column value which has null in dataframe?
+df.na.fill(Map(
+  "columnname1" -> "newValuebasedonType"
+))
+
+How to aggreate dataframe with out groupby 
+use agg function 
+// ds.agg(...) is a shorthand for ds.groupBy().agg(...)
+ds.agg(max($"age"), avg($"salary"))
+ds.groupBy().agg(max($"age"), avg($"salary") 
+----------------------------------------------------------------------------------------------------------------------
 
 more examples
 https://www.balabit.com/blog/spark-scala-dataset-tutorial
