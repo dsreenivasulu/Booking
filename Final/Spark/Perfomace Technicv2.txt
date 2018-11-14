@@ -1,3 +1,11 @@
+Using broadcost variable
+persistence and caching 
+Data serilization
+using proper parallelism
+Effective use of Dataframes while loading  data from a file 
+
+
+
 Effective use of Dataframes while loading  data from a file : 
 Generally when we create a dataframe by reading a csv, we try to create the schema on the fly.
 
