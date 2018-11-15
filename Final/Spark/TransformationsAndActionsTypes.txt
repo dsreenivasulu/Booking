@@ -34,7 +34,7 @@ Data Structure / I/O
 • repartitionAndSortWithinPartitions
 • pipe
 ----------
-RDD Operations Actions : 
+RDD Operations Actions : a2t2m5c3fksrv
 General 
 • reduce
 • collect
