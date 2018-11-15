@@ -1,9 +1,3 @@
-RDD Operations : 
-
-def cache(): RDD.this.type
-Persist this RDD with the default storage level (MEMORY_ONLY).
-
-
 Few are Transformations and Few are actions. 
 If operation is returning RDD then it is tranformation. If operation is returning single result value then it is action 
 
@@ -539,6 +533,54 @@ http://www.openkb.info/2015/01/scala-on-spark-cheatsheet.html
 What is Spark Executor? When SparkContext connect to a cluster manager, it acquires an Executor on nodes in the cluster. Executors are Spark processes that run computations and store the data on the worker node. The final tasks by SparkContext are transferred to executors for their execution.
 What do you understand by worker node? Worker node refers to any node that can run the application code in a cluster.
 What is Spark Driver? Spark Driver is the program that runs on the master node of the machine and declares transformations and actions on data RDDs. In simple terms, driver in Spark creates SparkContext, connected to a given Spark Master. The driver also delivers the RDD graphs to Master, where the standalone cluster manager runs
+ 
+ 
+What is difference between fold vs reduce  ?
+Reduce is a spark action that aggregates a data set (RDD) element using a function.
+That function takes two arguments and returns one.
+The function must be parallel enabled.
+
+Both are used to aggregate the elements of the dataset using a function func (which takes two arguments and returns one). The function should be commutative and associative so that it can be computed correctly in parallel.
+
+Main difference is fold accepts additionl parameter i.e intial value 
+every reduce can be done with fold but not the other way around
+
+Lets consider a simple example where we want to calculate "largest number greater than 15" or "15" in our RDD,
+val n15GT15 = rdd1.fold(15)({ case (acc, i) => Math.max(acc, i) })
+but in reduce
+list.reduce{ (acc, x) => val m = math.max(acc, x); if (m > 15) m else 15 }
+
+
+1)Mutable buffer
+
+Another use case for fold is aggregation with mutable buffer. Consider following RDD:
+
+import breeze.linalg.DenseVector
+
+val rdd = sc.parallelize(Array.fill(100)(DenseVector(1)), 8)
+Lets say we want a sum of all elements. A naive solution is to simply reduce with +:
+
+rdd.reduce(_ + _)
+Unfortunately it creates a new vector for each element. Since object creation and subsequent garbage collection is expensive it could be better to use a mutable object
+
+2)val rdd = sc.emptyRDD[Int]
+rdd.reduce(_ + _)
+// java.lang.UnsupportedOperationException: empty collection at   
+// org.apache.spark.rdd.RDD$$anonfun$reduce$1$$anonfun$apply$ ...
+
+rdd.fold(0)(_ + _)
+// Int = 0
+ 
+val rdd1 = sc.parallelize(List(1,2,3,4,5), 3)
+rdd1.fold(5)(_ + _)
+This produces the output 35
+ 
+The zeroValue is in your case added four times (one for each partition, plus one when combining the results from the partitions). So the result is:
+
+(5 + 1) + (5 + 2 + 3) + (5 + 4 + 5) + 5 // (extra one for combining results)
+ 
+ foldByKey vs reduceByKey vs groupByKey vs aggregateByKey vs combineByKey
+ 
  
  When to use GroupByKey and ReduceByKey ?
  If the operation is associative and commutative reduce (for ex : sum, count. min, max) then prefer using ReduceByKey 
