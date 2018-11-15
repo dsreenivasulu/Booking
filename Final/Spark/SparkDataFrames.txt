@@ -375,6 +375,7 @@ val ds = spark.createDataset(rdd)
 -------------------------------------------------------------------------------------------------------------------
 Untyped transformations
 ============================
+acdgsswwj
 1)agg : Aggregates on the entire Dataset without groups.
 // ds.agg(...) is a shorthand for ds.groupBy().agg(...)
 ds.agg(max($"age"), avg($"salary"))
@@ -420,7 +421,7 @@ df1.join(df2).where($"df1Key" === $"df2Key") //inner join
 
 DataFrameNaFunctions
 ====================
-
+dfr
 drop(): DataFrame
 Returns a new DataFrame that drops rows containing any null or NaN values.
 
@@ -480,6 +481,59 @@ use agg function
 // ds.agg(...) is a shorthand for ds.groupBy().agg(...)
 ds.agg(max($"age"), avg($"salary"))
 ds.groupBy().agg(max($"age"), avg($"salary") 
+
+Typed transformations 
+=====================
+feddsolricsuw
+
+1)coalesce() 
+
+2)distinct(): Returns a new Dataset that contains only the unique rows from this Dataset. This is an alias for dropDuplicates
+
+3)dropDuplicates() : Returns a new Dataset that contains only the unique rows from this Dataset. This is an alias for distinct
+
+4)dropDuplicates(col1: String*): Returns a new Dataset with duplicate rows removed, considering only the subset of columns.
+
+5)filter():  Filters rows using the given SQL expression or Filters rows using the given condition. .
+peopleDs.filter("age > 15") //sql
+// The following are equivalent:
+peopleDs.filter($"age" > 15) //column condition
+peopleDs.where($"age" > 15)
+
+6)except(other: Dataset[T]):  Returns a new Dataset containing rows in this Dataset but not in another Dataset. This is equivalent to EXCEPT in SQL.
+
+7)intersect(other: Dataset[T]): Returns a new Dataset containing rows only in both this Dataset and another Dataset
+
+8)limit(n: Int):  Returns a new Dataset by taking the first n rows.
+
+9)orderBy(sortExprs: Column*):  Returns a new Dataset sorted by the given expressions. This is an alias of the sort function.
+
+10)repartition(partitionExprs: Column*): Dataset[T]
+Returns a new Dataset partitioned by the given partitioning expressions, using spark.sql.shuffle.partitions as number of partitions. The resulting Dataset is hash partitioned.
+This is the same operation as "DISTRIBUTE BY" in SQL (Hive QL).
+
+11)repartition(numPartitions: Int): Dataset[T]
+Returns a new Dataset that has exactly numPartitions partitions.
+
+12)sample(withReplacement: Boolean, fraction: Double, seed: Long): 
+Returns a new Dataset by sampling a fraction of rows, using a user-supplied seed.
+
+13)sort(sortExprs: Column*): Returns a new Dataset sorted by the given expressions. 
+For example: ds.sort($"col1", $"col2".desc)
+
+14)sortWithinPartitions(sortExprs: Column*): 
+Returns a new Dataset with each partition sorted by the given expressions.
+
+15)union(other: Dataset[T]): Returns a new Dataset containing union of rows in this Dataset and another Dataset. 
+This is equivalent to UNION ALL in SQL.
+
+16)where(conditionExpr: String): Dataset[T]
+Filters rows using the given SQL expression. or Filters rows using the given condition. This is an alias for filter.
+peopleDs.where("age > 15")
+
+// The following are equivalent:
+peopleDs.filter($"age" > 15) //column condition
+peopleDs.where($"age" > 15)
 ----------------------------------------------------------------------------------------------------------------------
 
 more examples
