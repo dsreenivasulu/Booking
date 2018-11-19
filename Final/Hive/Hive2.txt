@@ -265,6 +265,37 @@ It is a file containing list of commands needs to run when the hive CLI starts. 
 How do we specify table creator name when creating table?
 TBLPROPERTIES(‘creator’= ‘Joan’)
 
+What is default delimiter (i.e row format fields terminated by) in Hive ?
+/001 i.e ^A (in ASCI)
+
+Note : If your datafile is comma delimited then we need to create table with row format delimited fields terminated by ','.
+
+Created the table (create table mydb.user (uid int,name string); ) then What is defualt delimiter and format ? 
+Default serde -->  LazySimpleSerDe<br>Default InputFormat --> TextInputFormat
+Default OutputFormat --> HiveIgnoreKeyTextOutputFormat
+Default Delimiter --> ^A(ctrl-a) //although the delimiter is not showing in desc formatted <table-name>;
+
+How to specify multiple delimiters in hive ?
+soultion1)FILELDS TERMINATED BY does not support multi-character delimiters. The easiest way to do this is to use RegexSerDe:
+CREATE EXTERNAL TABlE tableex(id INT, name STRING) 
+ROW FORMAT 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
+WITH SERDEPROPERTIES (
+  "input.regex" = "^(\\d+)~\\*(.*)$"
+)
+STORED AS TEXTFILE 
+LOCATION '/user/myusername';
+
+solution2)
+MultiDelimitSerDe allows user to specify multiple-character string as the field delimiter when creating a table.
+CREATE TABLE test (
+ id string,
+ hivearray array<binary>,
+ hivemap map<string,int>) 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'                  
+WITH SERDEPROPERTIES ("field.delim"="[,]","collection.delim"=":","mapkey.delim"="@");
+
+
+
 I have file like this. How to do static and dynamic parition by city
 name city
 sreni   chennai
