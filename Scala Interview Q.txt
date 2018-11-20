@@ -995,3 +995,49 @@ Seq
    
 Set : HashSet, LinkedHashSet, SortedSet, Treeset, BitSet.   
 
+How to convert immutable map to mutable map and vice-versa 
+
+immutable map to mutable map : 
+val m = collection.immutable.Map(1->"one",2->"Two")
+
+solution1)val n = collection.mutable.Map(m.toSeq: _*) 
+
+solution2)val myMutableMap = collection.mutable.Map() ++ m
+
+mutable map to immutable map : 
+val mutableMap = new HashMap[Int, String]
+mutableMap.toMap
+
+How to convert immutable map to mutable map and vice-versa 
+immutable List to mutable List : 
+val list = List(1,2,3)
+scala.collection.mutable.ArrayBuffer(list:_*)
+
+
+mutable List to immutable List :
+If you want to convert ListBuffer into a List, use .toList
+collection.immutable.Seq(xs: _*) here xs is mutable
+
+
+immutable set to mutable set : 
+scala> var a=collection.mutable.Set[Int](1,2,3)                              
+a: scala.collection.mutable.Set[Int] = Set(1, 2, 3)
+
+scala> var b=collection.immutable.Set[Int](1,2,3)
+b: scala.collection.immutable.Set[Int] = Set(1, 2, 3)
+
+scala> collection.mutable.Set(b.toArray:_*)      
+res0: scala.collection.mutable.Set[Int] = Set(1, 2, 3)
+
+scala> collection.mutable.Set(b.toSeq:_*)  
+res1: scala.collection.mutable.Set[Int] = Set(1, 2, 3)
+
+scala> collection.mutable.Set(b.toList:_*)
+res2: scala.collection.mutable.Set[Int] = Set(1, 2, 3)
+
+
+//converting a immutable set to a mutable set
+val mutableSet = mutable.Set.empty ++= immutableSet
+
+//converting a mutable set back to immutable set
+val anotherImmutableSet = Set.empty ++ mutableSet
