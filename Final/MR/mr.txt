@@ -289,6 +289,51 @@ Giraph -> Graph
 Storm -> streaming
 
 
+Hadoop Ecosystem consists of many components like Pig, Hive and HBase, each one with its own unique advantage related to big data processing.
+In Apache all the projects (Pig, Hive etc) are independent. 
+
+Although developers can download Hadoop directly from the Apache website and build an environment on their own, the open source Hadoop framework is limited. 
+
+The Hadoop ecosystem contains a lot of components (HBase, Pig, Hive, Zookeeper, etc.) which are being developed independently and have their own release schedules. 
+Also, there are version dependencies among the components. For example version 0.92 of HBase needs a particular version of HDFS.
+
+Organizations that need more robust features, maintenance and support are turning to commercial Hadoop software distributions.
+
+Vendors bundle their enterprise Hadoop distributions with different levels of support, as well as enhanced commercial distributions. 
+Because the software is open source, you don't purchase a Hadoop distribution as a product, but rather as an annual support subscription.
+
+Cloudera makes sure all these frameworks work properly with each other and packages them as CDH. 
+With CDH there are regular release, which I haven't seen in Apache. 
+
+Another thing is it's difficult to get support for Apache Hadoop, while Cloudera and others provide commercial support for their own versions of Hadoop
+Lot of distros come with support, which could be very valuable for a production critical cluster.
+CDH from Cloudera is free to use. But, need to pay for any support and management tools on top of CDH.
+
+This is simailar to Linux distributions like RedHat, centOS, Debain and Ubuntu. 
+The software is free to download and use but distributions offer an easier to use bundle
+
+
+Hadoop clusters in the Cloud
+Hadoop clusters can be set up in any cloud service that offers suitable machines.
+However, in line with the cloud mantra 'only pay for what you use', Hadoop can be run 'on demand' in the cloud.
+
+Which API to perform webaccess in cloudera ?
+HttpFS
+
+How many connectors CDH provides ?
+CDH provides 450+ connectors for getting data from a variety of data sources
+
+What is Hadoop ?
+Hadoop is an open source distributed processing framework that manages data processing and storage for big data applications running in clustered systems
+It contains mainly two components
+HDFS
+MapReduce
+
+What is Cloudera Distribution
+It offers consulting services to bridge the gap between – “what does Apache Hadoop provides” and “what organizations need”.
+Makes Hadoop ecosystems easy to manage and provides security
+
+
 
 
 
