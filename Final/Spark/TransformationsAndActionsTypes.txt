@@ -302,13 +302,159 @@ aggregate :   def aggregate[U: ClassTag](zeroValue: U)(seqOp: (U, T) => U, combO
 zeroValue: The initialization value, for your result, in the desired format.
 seqOp: The operation you want to apply to RDD records. Runs once for every record in a partition.
 combOp: Defines how the resulted objects (one for every partition), gets combined.
+Aggregate is a more general form of fold and reduce. that means output result type does not require to be same of the input element type
+i.e to get different type from the input type
 
-The aggregate function allows the user to apply two different reduce functions to the RDD. The first reduce function is applied within each partition to reduce the data within each partition into a single result. The second reduce function is used to combine the different reduced results of all partitions together to arrive at one final result
+aggregate takes 3 parameters: initial value i.e seed value, a seqop(computation) function and a combination function.
 
-The initial value is applied at both levels of reduce. So both at the intra partition reduction and across partition reduction.
-Both reduce functions have to be commutative and associative
+The aggregate function allows the user to apply two different reduce functions to the RDD. 
+The first reduce function is applied within each partition to reduce the data within each partition into a single result. 
+The second reduce function is used to combine the different reduced results of all partitions together to arrive at one final result. The ability to have two separate reduce functions for intra partition versus across partition reducing adds a lot of flexibility. For example the first reduce function can be the max function and the second one can be the sum function. The user also specifies an initial value. Here are some important facts.
+
+    The initial value is applied at both levels of reduce. So both at the intra partition reduction and across partition reduction.
+    Both reduce functions have to be commutative and associative.
+    Do not assume any execution order for either partition computations or combining partitions.
+	
+
+For example, one might want to process some elements and then produce a Set. 
+In this case, seqop would process an element and append it to the list, 
+while combop would concatenate two lists from different partitions together. The initial value would be an empty set.
+pc.aggregate(Set[Int]())(_ += process(_), _ ++ _)
+
+
+val rdd = sc.parallelize(List(1,2,3,4,5,6))
+rdd.aggregate((0, 0))
+         (
+          (x, y) => (x._1 + y, x._2 + 1), 
+          (x,y) =>(x._1 + y._1, x._2 + y._2)
+         )
+
+o/p is (21,6)
+
+explanation : 
+part-1 : Initial tuple (0,0)  
+Aggregate() starts with initial value of accumulators x which is (0,0) here. 
+First tuple x._1 which is initially 0 is used to compute the sum of elements in the list, 
+Second tuple x._2 is used to compute total number of elements in the list.
+
+From what I can tell, your example function will return a pair (a, b) where a is the sum of the values in the list, b is the number of values in the list. Indeed, (21, 6).
+
+How does this work? The seed value is the (0,0) pair. For an empty list, we have a sum of 0 and a number of items 0, so this is correct.
+
+Your computation function takes an (Int, Int) pair x, which is your partial result, and a Int y, which is the next value in the list. This is your:
+
+(x, y) => (x._1 + y, x._2 + 1)
+
+Indeed, the result that we want is to increase the left element of x (the accumulator) by y, and the right element of x (the counter) by 1 for each y.
+
+Your combination function takes an (Int, Int) pair x and an (Int, Int) pair y, which are your two partial results from different parallel computations, and combines them together as:
+
+(x,y) => (x._1 + y._1, x._2 + y._2)
+
+Indeed, we sum independently the left parts of the pairs and right parts of the pairs.
+
+ex 2:
+// Sums all elements in parallel.
+scala> x.par.aggregate(0)((x, y) => x + y, (x, y) => x + y)
+res0: Int = 21
+
+ex 3:
+// Counts all elements in parallel.    
+scala> x.par.aggregate(0)((x, y) => x + 1, (x, y) => x + y)
+res1: Int = 6
+
+ex 4:
+//Count all marks + internal marks of 3 each subject
+val inputrdd = sc.parallelize(List(
+									(“maths”, 21),
+									(“english”, 22),
+									(“science”, 31)
+									),3)
+
+val result = inputrdd.aggregate(3) ((acc, value) => (acc + value._2),(acc1, acc2) => (acc1 + acc2))
+result: Int = 86
+
+The result is calculated as follows,
+
+SeqOP
+Partition 1 : Sum(all Elements) + 3 (Zero value) 21+3 = 24
+Partition 2 : Sum(all Elements) + 3 (Zero value) 22+3  = 25
+Partition 3 : Sum(all Elements) + 3 (Zero value) 31+3 = 34
+
+Combine OP:
+Result = Partition1 + Partition2 + Partition3 + 3(Zero value)
+ 24+25+34+3 = 86
+
+ex 5:
+ val z = sc.parallelize(List(1,2,3,4,5,6), 2)
+
+z.aggregate(0)(math.max(_, _), _ + _)
+res40: Int = 9
+
+// This example returns 16 since the initial value is 5
+// reduce of partition 0 will be max(5, 1, 2, 3) = 5
+// reduce of partition 1 will be max(5, 4, 5, 6) = 6
+// final reduce across partitions will be 5 + 5 + 6 = 16
+// note the final reduce include the initial value
+z.aggregate(5)(math.max(_, _), _ + _)
+res29: Int = 16
+
+val z = sc.parallelize(List("a","b","c","d","e","f"),2)
+z.aggregate("")(_ + _, _+_)
+res115: String = abcdef
+
+// See here how the initial value "x" is applied three times.
+//  - once for each partition
+//  - once when combining all the partitions in the second reduce function.
+z.aggregate("x")(_ + _, _+_)
+res116: String = xxdefxabc
+
+// Below are some more advanced examples. Some are quite tricky to work out.
+
+val z = sc.parallelize(List("12","23","345","4567"),2)
+z.aggregate("")((x,y) => math.max(x.length, y.length).toString, (x,y) => x + y)
+res141: String = 42
+
+z.aggregate("")((x,y) => math.min(x.length, y.length).toString, (x,y) => x + y)
+res142: String = 11
+
+val z = sc.parallelize(List("12","23","345",""),2)
+z.aggregate("")((x,y) => math.min(x.length, y.length).toString, (x,y) => x + y)
+res143: String = 10
 
 ex : Compute the sum of a list and the length of that list. Return the result in a pair of (sum, length).
+
+fold : Aggregate the elements of each partition, and then the results for all the partitions, using a given associative and commutative function and a neutral "zero value"
+
+Aggregates the values of each partition. The aggregation variable within each partition is initialized with zeroValue.
+
+val rdd1 = sc.parallelize(List(1,2,3,4,5), 3)
+rdd1.fold(5)(_ + _)
+
+(5 + 1) + (5 + 2 + 3) + (5 + 4 + 5) + 5
+
+
+fold vs reduce 
+reduce and fold are shortcuts for reduceLeft and foldLeft
+Fold needs "starting element" be provided, reduce will automatically take 1st element of sequence as starting
+foldLeft is more generic, you can use it to produce something completely different than what you originally put in. 
+Whereas reduceLeft can only produce an end result of the same type or super type of the collection type
+
+val rdd = sc.emptyRDD[Int]
+rdd.reduce(_ + _)
+// java.lang.UnsupportedOperationException: empty collection at   
+// org.apache.spark.rdd.RDD$$anonfun$reduce$1$$anonfun$apply$ ...
+
+rdd.fold(0)(_ + _)
+// Int = 0
+
+Note :Moreover there is no difference in the overall processing model:
+
+    Each partition is processed sequentially using a single thread.
+    Partitions are processed in parallel using multiple executors / executor threads.
+    Final merge is performed sequentially using a single thread on the driver.
+
+*****************************************************************************
 
 collectAsMap : converts pair RDD into Map 
 Note : If you have multiple values to the same key, only one value per key is preserved in the map 
@@ -322,7 +468,10 @@ ex2 : val rdd2 = spark.sparkContext.parallelize(List(1,2,3))
       val rdd3 = rdd2.zip(rdd2) //o/p is (1,1) (2,2) (3,3)
       println(rdd3.collectAsMap()) //o/p is Map(2 -> 2, 1 -> 1, 3 -> 3)
 
+foreach(func) 	Run a function func on each element of the dataset. This is usually done for side effects such as updating an Accumulator or interacting with external storage systems.
+Note: modifying variables other than Accumulators outside of the foreach() may result in undefined behavior. See Understanding closures for more details.
 
+*****************************************************************************
 countByKey():  [will only works on Rdd key value pair (two elements tuple)]
 counts the values of a RDD consisting of two-component tuples for each distinct key separately.
 
@@ -345,25 +494,18 @@ Example : val b = sc.parallelize(List(1,2,3,4,5,6,7,8,2,4,2,1,1,1,1,1))
           b.countByValue
 res27: scala.collection.Map[Int,Long] = Map(5 -> 1, 8 -> 1, 3 -> 1, 6 -> 1, 1 -> 6, 2 -> 3, 4 -> 2, 7 -> 1)
 
-val rdd = sc.emptyRDD[Int]
-rdd.reduce(_ + _)
-// java.lang.UnsupportedOperationException: empty collection at   
-// org.apache.spark.rdd.RDD$$anonfun$reduce$1$$anonfun$apply$ ...
 
-rdd.fold(0)(_ + _)
-// Int = 0
 
 http://homepage.cs.latrobe.edu.au/zhe/ZhenHeSparkRDDAPIExamples.html
 
+*****************************************************************************
 saveAsTextFile(path) 	Write the elements of the dataset as a text file (or set of text files) in a given directory in the local filesystem, HDFS or any other Hadoop-supported file system. Spark will call toString on each element to convert it to a line of text in the file.
 
 saveAsSequenceFile(path) Write the elements of the dataset as a Hadoop SequenceFile in a given path in the local filesystem, HDFS or any other Hadoop-supported file system. This is available on RDDs of key-value pairs that implement Hadoop's Writable interface. In Scala, it is also available on types that are implicitly convertible to Writable (Spark includes conversions for basic types like Int, Double, String, etc).
 
 saveAsObjectFile(path) Write the elements of the dataset in a simple format using Java serialization, which can then be loaded using SparkContext.objectFile().
 
-foreach(func) 	Run a function func on each element of the dataset. This is usually done for side effects such as updating an Accumulator or interacting with external storage systems.
-Note: modifying variables other than Accumulators outside of the foreach() may result in undefined behavior. See Understanding closures for more details.
-
+*****************************************************************************
 take(n) : we can take first n items(elements) from the RDD. 
 [ It tries to cut the number of partition it accesses, so it represents a biased collection.  We cannot presume the order of the elements. ]
 
