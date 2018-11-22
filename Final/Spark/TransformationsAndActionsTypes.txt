@@ -454,6 +454,7 @@ Note :Moreover there is no difference in the overall processing model:
     Partitions are processed in parallel using multiple executors / executor threads.
     Final merge is performed sequentially using a single thread on the driver.
 
+https://github.com/rohgar/scala-spark-4/wiki/Reduction-Operations
 *****************************************************************************
 
 collectAsMap : converts pair RDD into Map 
