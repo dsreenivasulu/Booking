@@ -34,7 +34,8 @@ Data Structure / I/O
 • repartitionAndSortWithinPartitions
 • pipe
 ----------
-RDD Operations Actions : a2t2m5c3fksrv
+RDD Operations Actions : 
+(aggregate, reduce, fold, collect, collectAsMap, count, max, min, sum, first, take, top, takeOrdered, foreach, keys, values, countByKey, CountByValue)
 General 
 • reduce
 • collect
@@ -47,7 +48,6 @@ General
 • treeAggregate
 • treeReduce
 • forEachPartition
-• collectAsMap
 
 Math/Statical
 • count
@@ -102,6 +102,7 @@ RDD Operations Actions :
 General 
 • keys
 • values
+• collectAsMap
 
 Math/Statical
 • countByKey
