@@ -1,0 +1,695 @@
+Python is a general-purpose interpreted, interactive, object-oriented, and high-level programming language
+
+Python is Interpreted − Python is processed at runtime by the interpreter. You do not need to compile your program before executing it. This is similar to PERL and PHP.
+Python is Interactive − You can actually sit at a Python prompt and interact with the interpreter directly to write your programs.
+Python is Object-Oriented − Python supports Object-Oriented style or technique of programming that encapsulates code within objects.
+
+It supports functional and structured programming methods as well as OOP.
+It can be used as a scripting language or can be compiled to byte-code for building large applications.
+It provides very high-level dynamic data types and supports dynamic type checking.
+It supports automatic garbage collection.
+It can be easily integrated with C, C++, COM, ActiveX, CORBA, and Java.
+Python files have extension .py
+We assume that you have Python interpreter set in PATH variable. Now, try to run this program as follows −
+$ python test.py
+
+Python Identifiers : 
+--------------------
+An identifier starts with a letter A to Z or a to z or an underscore (_) followed by zero or more letters, underscores and digits (0 to 9).
+Python does not allow punctuation characters such as @, $, and % within identifiers
+
+Naming conventions for Python identifiers −
+Class names start with an uppercase letter. All other identifiers start with a lowercase letter.
+Starting an identifier with a single leading underscore indicates that the identifier is private.
+Starting an identifier with two leading underscores indicates a strongly private identifier.
+If the identifier also ends with two trailing underscores, the identifier is a language-defined special name.
+
+Reserved Words:
+The following list shows the Python keywords. These are reserved words and you cannot use them as constant or variable or any other identifier names. All the Python keywords contain lowercase letters only.
+
+and	exec	not
+assert	finally	or
+break	for	pass
+class	from	print
+continue	global	raise
+def	if	return
+del	import	try
+elif	in	while
+else	is	with
+except	lambda	yield
+
+Multi-Line Statements :
+Statements in Python typically end with a new line. Python does, however, allow the use of the line continuation character (\) to denote that the line should continue. For example −
+
+total = item_one + \
+        item_two + \
+        item_three
+
+Statements contained within the [], {}, or () brackets do not need to use the line continuation character. For example −
+days = ['Monday', 'Tuesday', 'Wednesday',
+        'Thursday', 'Friday']
+		
+Quotation in Python :
+Python accepts single ('), double (") and triple (''' or """) quotes to denote string literals, as long as the same type of quote starts and ends the string.
+
+The triple quotes are used to span the string across multiple lines. For example, all the following are legal −
+word = 'word'
+sentence = "This is a sentence."
+paragraph = """This is a paragraph. It is
+made up of multiple lines and sentences."""
+
+Comments in Python :
+A hash sign (#) that is not inside a string literal begins a comment. All characters after the # and up to the end of the physical line are part of the comment and the Python interpreter ignores them.
+
+Multiple Statements on a Single Line :
+The semicolon ( ; ) allows multiple statements on the single line given that neither statement starts a new code block
+import sys; x = 'foo'; sys.stdout.write(x + '\n')
+=========================================================================================================================
+Command Line Arguments
+----------------------
+$ python -h
+
+Variable Types
+--------------
+Variables are nothing but reserved memory locations to store values. This means that when you create a variable you reserve some space in memory.
+Based on the data type of a variable, the interpreter allocates memory and decides what can be stored in the reserved memory. Therefore, by assigning different data types to variables, you can store integers, decimals or characters in these variables
+
+Assigning Values to Variables :
+counter = 100          # An integer assignment
+miles   = 1000.0       # A floating point
+name    = "John"       # A string
+
+Multiple Assignment :
+a = b = c = 1
+a,b,c = 1,2,"john"
+
+Standard Data Types :
+Python has five standard data types −
+Numbers
+String
+List
+Tuple
+Dictionary
+
+Data Type Conversion :
+nt(x [,base]) Converts x to an integer. base specifies the base if x is a string.
+long(x [,base] ) Converts x to a long integer. base specifies the base if x is a string.
+float(x) Converts x to a floating-point number.
+complex(real [,imag]) Creates a complex number.
+str(x) Converts object x to a string representation.
+repr(x) Converts object x to an expression string.
+eval(str) Evaluates a string and returns an object.
+tuple(s) Converts s to a tuple.
+list(s)Converts s to a list.
+set(s) Converts s to a set.
+dict(d) Creates a dictionary. d must be a sequence of (key,value) tuples.
+frozenset(s) Converts s to a frozen set.
+chr(x) Converts an integer to a character.
+unichr(x) Converts an integer to a Unicode character.
+ord(x) Converts a single character to its integer value.
+hex(x) Converts an integer to a hexadecimal string.
+oct(x) Converts an integer to an octal string.
+
+Basic Operators
+Python language supports the following types of operators.
+Arithmetic Operators
+Comparison (Relational) Operators
+Assignment Operators
+Logical Operators
+Bitwise Operators
+Membership Operators
+Identity Operators
+
+IF Statement
+Syntax
+if expression:
+   statement(s)
+
+Example
+#!/usr/bin/python
+
+var1 = 100
+if var1:
+   print "1 - Got a true expression value"
+   print var1
+
+var2 = 0
+if var2:
+   print "2 - Got a true expression value"
+   print var2
+print "Good bye!"
+When the above code is executed, it produces the following result −
+
+1 - Got a true expression value
+100
+Good bye!
+
+IF...ELIF...ELSE Statements
+Syntax
+The syntax of the if...else statement is −
+
+if expression:
+   statement(s)
+else:
+   statement(s)
+
+elif Statement :
+syntax
+if expression1:
+   statement(s)
+elif expression2:
+   statement(s)
+elif expression3:
+   statement(s)
+else:
+   statement(s)
+
+Nested IF statements
+Syntax :
+The syntax of the nested if...elif...else construct may be −
+if expression1:
+   statement(s)
+   if expression2:
+      statement(s)
+   elif expression3:
+      statement(s)
+   elif expression4:
+      statement(s)
+   else:
+      statement(s)
+else:
+   statement(s)
+
+
+while Loop Statements
+Syntax
+The syntax of a while loop in Python programming language is −
+
+while expression:
+   statement(s)
+
+Example
+#!/usr/bin/python
+
+count = 0
+while (count < 9):
+   print 'The count is:', count
+   count = count + 1
+
+print "Good bye!"
+
+Using else Statement with Loops
+Python supports to have an else statement associated with a loop statement.
+If the else statement is used with a for loop, the else statement is executed when the loop has exhausted iterating the list.
+If the else statement is used with a while loop, the else statement is executed when the condition becomes false.
+
+#!/usr/bin/python
+count = 0
+while count < 5:
+   print count, " is  less than 5"
+   count = count + 1
+else:
+   print count, " is not less than 5"
+
+Loop Statements :
+Syntax
+for iterating_var in sequence:
+   statements(s)
+
+Example
+ Live Demo
+#!/usr/bin/python
+
+for letter in 'Python':     # First Example
+   print 'Current Letter :', letter
+
+fruits = ['banana', 'apple',  'mango']
+for fruit in fruits:        # Second Example
+   print 'Current fruit :', fruit
+
+print "Good bye!"
+
+Iterating by Sequence Index
+#!/usr/bin/python
+
+fruits = ['banana', 'apple',  'mango']
+for index in range(len(fruits)):
+   print 'Current fruit :', fruits[index]
+
+print "Good bye!"
+
+Using else Statement with Loops
+#!/usr/bin/python
+
+for num in range(10,20):     #to iterate between 10 to 20
+   for i in range(2,num):    #to iterate on the factors of the number
+      if num%i == 0:         #to determine the first factor
+         j=num/i             #to calculate the second factor
+         print '%d equals %d * %d' % (num,i,j)
+         break #to move to the next number, the #first FOR
+   else:                  # else part of the loop
+      print num, 'is a prime number'
+
+Nested loops : 
+Syntax
+for iterating_var in sequence:
+   for iterating_var in sequence:
+      statements(s)
+   statements(s)
+   
+while expression:
+   while expression:
+      statement(s)
+   statement(s)   
+   
+break statement
+for letter in 'Python':     # First Example
+   if letter == 'h':
+      break
+   print 'Current Letter :', letter
+  
+var = 10                    # Second Example
+while var > 0:              
+   print 'Current variable value :', var
+   var = var -1
+   if var == 5:
+      break
+
+print "Good bye!"
+
+continue statement
+
+#!/usr/bin/python
+
+for letter in 'Python':     # First Example
+   if letter == 'h':
+      continue
+   print 'Current Letter :', letter
+
+var = 10                    # Second Example
+while var > 0:              
+   var = var -1
+   if var == 5:
+      continue
+   print 'Current variable value :', var	
+   
+Pass Statement
+Example
+ Live Demo
+#!/usr/bin/python
+
+for letter in 'Python': 
+   if letter == 'h':
+      pass
+      print 'This is pass block'
+   print 'Current Letter :', letter
+
+print "Good bye!"
+When the above code is executed, it produces following result −
+Current Letter : P
+Current Letter : y
+Current Letter : t
+This is pass block
+Current Letter : h
+Current Letter : o
+Current Letter : n
+Good bye!
+=======================================================================================
+Numbers
+Python supports four different numerical types −
+int (signed integers) − They are often called just integers or ints, are positive or negative whole numbers with no decimal point.
+long (long integers ) − Also called longs, they are integers of unlimited size, written like integers and followed by an uppercase or lowercase L.
+float (floating point real values) − Also called floats, they represent real numbers and are written with a decimal point dividing the integer and fractional parts. Floats may also be in scientific notation, with E or e indicating the power of 10 (2.5e2 = 2.5 x 102 = 250).
+complex (complex numbers) − are of the form a + bJ, where a and b are floats and J (or j) represents the square root of -1 (which is an imaginary number). The real part of the number is a, and the imaginary part is b. Complex numbers are not used much in Python programming.
+
+
+Files I/O :
+Printing to the Screen
+print "Python is really a great language,", "isn't it?"
+
+Reading Keyboard Input
+Python provides two built-in functions to read a line of text from standard input, which by default comes from the keyboard. These functions are −
+raw_input
+input
+
+The raw_input Function
+The raw_input([prompt]) function reads one line from standard input and returns it as a string
+
+#!/usr/bin/python
+str = raw_input("Enter your input: ");
+print "Received input is : ", str
+This prompts you to enter any string and it would display same string on the screen. When I typed "Hello Python!", its output is like this −
+
+Enter your input: Hello Python
+Received input is :  Hello Python
+
+The input Function
+The input([prompt]) function is equivalent to raw_input, except that it assumes the input is a valid Python expression and returns the evaluated result to you.
+
+#!/usr/bin/python
+
+str = input("Enter your input: ");
+print "Received input is : ", str
+This would produce the following result against the entered input −
+
+Enter your input: [x*5 for x in range(2,10,2)]
+Recieved input is :  [10, 20, 30, 40]
+
+Opening and Closing Files :
+The open Function
+Syntax
+file object = open(file_name [, access_mode][, buffering])
+different  access_mode
+r Opens a file for reading only. The file pointer is placed at the beginning of the file. This is the default mode.
+
+2 rb Opens a file for reading only in binary format. The file pointer is placed at the beginning of the file. This is the default mode.
+
+3 r+ Opens a file for both reading and writing. The file pointer placed at the beginning of the file.
+
+4	rb+ Opens a file for both reading and writing in binary format. The file pointer placed at the beginning of the file.
+
+5	 w Opens a file for writing only. Overwrites the file if the file exists. If the file does not exist, creates a new file for writing.
+
+6	wb Opens a file for writing only in binary format. Overwrites the file if the file exists. If the file does not exist, creates a new file for writing.
+
+7	w+ Opens a file for both writing and reading. Overwrites the existing file if the file exists. If the file does not exist, creates a new file for reading and writing.
+
+8 wb+ Opens a file for both writing and reading in binary format. Overwrites the existing file if the file exists. If the file does not exist, creates a new file for reading and writing.
+
+9	a Opens a file for appending. The file pointer is at the end of the file if the file exists. That is, the file is in the append mode. If the file does not exist, it creates a new file for writing.
+
+10	 ab Opens a file for appending in binary format. The file pointer is at the end of the file if the file exists. That is, the file is in the append mode. If the file does not exist, it creates a new file for writing.
+
+11 a+ Opens a file for both appending and reading. The file pointer is at the end of the file if the file exists. The file opens in the append mode. If the file does not exist, it creates a new file for reading and writing.
+
+12	ab+ Opens a file for both appending and reading in binary format. The file pointer is at the end of the file if the file exists. The file opens in the append mode. If the file does not exist, it creates a new file for reading and writing.
+
+The close() Method
+The close() method of a file object flushes any unwritten information and closes the file object
+Python automatically closes a file when the reference object of a file is reassigned to another file. It is a good practice to use the close() method to close a file.
+Syntax
+fileObject.close();
+
+Reading and Writing Files
+The write() Method
+The write() method writes any string to an open file. It is important to note that Python strings can have binary data and not just text.
+
+The write() method does not add a newline character ('\n') to the end of the string −
+
+Syntax
+fileObject.write(string);
+Here, passed parameter is the content to be written into the opened file.
+
+Example
+#!/usr/bin/python
+
+# Open a file
+fo = open("foo.txt", "wb")
+fo.write( "Python is a great language.\nYeah its great!!\n");
+
+# Close opend file
+fo.close()
+
+The read() Method
+The read() method reads a string from an open file. It is important to note that Python strings can have binary data. apart from text data.
+
+Syntax
+fileObject.read([count]);
+Here, passed parameter is the number of bytes to be read from the opened file. This method starts reading from the beginning of the file and if count is missing, then it tries to read as much as possible, maybe until the end of file.
+
+Example
+Let's take a file foo.txt, which we created above.
+
+#!/usr/bin/python
+
+# Open a file
+fo = open("foo.txt", "r+")
+str = fo.read(10);
+print "Read String is : ", str
+# Close opend file
+fo.close()
+
+Renaming and Deleting Files
+Python os module provides methods that help you perform file-processing operations, such as renaming and deleting files.
+
+To use this module you need to import it first and then you can call any related functions.
+The rename() Method
+Syntax
+os.rename(current_file_name, new_file_name)
+The remove() Method
+Syntax
+os.remove(file_name)
+
+Directories in Python
+Syntax
+os.mkdir("newdir")
+The chdir() Method
+You can use the chdir() method to change the current directory
+Syntax
+os.chdir("newdir")
+getcwd() Method
+The getcwd() method displays the current working directory.
+
+Syntax
+os.getcwd()
+The rmdir() Method
+The rmdir() method deletes the directory, which is passed as an argument in the method.
+
+Before removing a directory, all the contents in it should be removed.
+
+Syntax
+os.rmdir('dirname')
+
+Functions
+=========
+Syntax
+def functionname( parameters ):
+   "function_docstring"
+   function_suite
+   return [expression]
+   
+Pass by reference vs value
+All parameters (arguments) in the Python language are passed by reference. It means if you change what a parameter refers to within a function, the change also reflects back in the calling function
+#!/usr/bin/python
+
+# Function definition is here
+def changeme( mylist ):
+   "This changes a passed list into this function"
+   mylist.append([1,2,3,4]);
+   print "Values inside the function: ", mylist
+   return
+
+# Now you can call changeme function
+mylist = [10,20,30];
+changeme( mylist );
+print "Values outside the function: ", mylist
+Here, we are maintaining reference of the passed object and appending values in the same object. So, this would produce the following result −
+
+Values inside the function:  [10, 20, 30, [1, 2, 3, 4]]
+Values outside the function:  [10, 20, 30, [1, 2, 3, 4]]
+
+Default arguments : 
+# Function definition is here
+def printinfo( name, age = 35 ):
+   "This prints a passed info into this function"
+   print "Name: ", name
+   print "Age ", age
+   return;
+
+# Now you can call printinfo function
+printinfo( age=50, name="miki" )
+printinfo( name="miki" )
+
+Variable-length arguments   
+def functionname([formal_args,] *var_args_tuple ):
+
+The Anonymous Functions
+lambda [arg1 [,arg2,.....argn]]:expression
+ex :
+# Function definition is here
+sum = lambda arg1, arg2: arg1 + arg2;
+   
+Dictionary
+-------------
+dict = {'Name': 'Zara', 'Age': 7, 'Class': 'First'} #declaration
+dict['Name'] #accessing value by key
+dict['Age'] = 8; #update existing entry
+dict['School'] = "DPS School"; # Add new entry
+del dict['Name']; # remove entry with key 'Name'
+dict.clear();     # remove all entries in dict
+del dict ;        # delete entire dictionary
+
+Built-in Dictionary Functions
+cmp(dict1, dict2) : Compares elements of both dict.
+len(dict) : Gives the total length of the dictionary. This would be equal to the number of items in the dictionary.
+
+Dictionary Methods
+1	dict.clear() Removes all elements of dictionary dict
+
+2	dict.copy() Returns a shallow copy of dictionary dict
+
+3	dict.fromkeys() Create a new dictionary with keys from seq and values set to value.
+
+4	dict.get(key, default=None) For key key, returns value or default if key not in dictionary
+
+5	dict.has_key(key) Returns true if key in dictionary dict, false otherwise
+
+6	dict.items() Returns a list of dict's (key, value) tuple pairs
+
+7	dict.keys() Returns list of dictionary dict's keys
+
+8	dict.setdefault(key, default=None) Similar to get(), but will set dict[key]=default if key is not already in dict
+
+9	dict.update(dict2) Adds dictionary dict2's key-values pairs to dict
+
+10	dict.values() Returns list of dictionary dict's values
+
+Tuples : A tuple is a sequence of immutable Python objects. Tuples are sequences, just like lists. The differences between tuples and lists are, the tuples cannot be changed 
+--------
+tup1 = ('physics', 'chemistry', 1997, 2000);
+tup2 = (1, 2, 3, 4, 5 );
+tup3 = "a", "b", "c", "d";
+tup4 = ();
+tup5 = (50,);
+Accessing values by index 
+tup1[0]  #physics
+tup2[1:5] #[2, 3, 4, 5]
+
+tuple = ( 'abcd', 786 , 2.23, 'john', 70.2  )
+tinytuple = (123, 'john')
+
+print tuple           # Prints complete list
+print tuple[0]        # Prints first element of the list
+print tuple[1:3]      # Prints elements starting from 2nd till 3rd 
+print tuple[2:]       # Prints elements starting from 3rd element
+print tinytuple * 2   # Prints list two times
+print tuple + tinytuple # Prints concatenated lists
+This produce the following result −
+
+('abcd', 786, 2.23, 'john', 70.2)
+abcd
+(786, 2.23)
+(2.23, 'john', 70.2)
+(123, 'john', 123, 'john')
+('abcd', 786, 2.23, 'john', 70.2, 123, 'john')
+
+Updating Tuples
+Tuples are immutable which means you cannot update or change the values of tuple elements.
+
+del tup1 #Delete Tuple Elements
+
+Basic Tuples Operations
+Python Expression	      	Results								Description
+len((1, 2, 3))	     			3								Length
+(1, 2, 3) + (4, 5, 6)			(1, 2, 3, 4, 5, 6)				Concatenation
+('Hi!',) * 4					('Hi!', 'Hi!', 'Hi!', 'Hi!')	Repetition
+3 in (1, 2, 3)					True							Membership
+for x in (1, 2, 3): print x,	1 2 3							Iteration
+
+Built-in Tuple Functions
+1	cmp(tuple1, tuple2) Compares elements of both tuples.
+
+2	len(tuple) Gives the total length of the tuple.
+
+3	max(tuple) Returns item from the tuple with max value.
+
+4	min(tuple) Returns item from the tuple with min value.
+
+5	tuple(seq) Converts a list into tuple.
+
+Lists : Important thing about a list is that items in a list need not be of the same type.
+-----------
+list1 = ['physics', 'chemistry', 1997, 2000];
+list2 = [1, 2, 3, 4, 5 ];
+list3 = ["a", "b", "c", "d"]
+list1[0]  #Accessing Values in Lists , physics
+list2[1:5] #Accessing Values in Lists, [2, 3, 4, 5]
+list[2] = 2001; #Updating Lists
+del list1[2]; #Delete List Elements
+
+list = [ 'abcd', 786 , 2.23, 'john', 70.2 ]
+tinylist = [123, 'john']
+
+print list          # Prints complete list
+print list[0]       # Prints first element of the list
+print list[1:3]     # Prints elements starting from 2nd till 3rd 
+print list[2:]      # Prints elements starting from 3rd element
+print tinylist * 2  # Prints list two times
+print list + tinylist # Prints concatenated lists
+This produce the following result −
+['abcd', 786, 2.23, 'john', 70.2]
+abcd
+[786, 2.23]
+[2.23, 'john', 70.2]
+[123, 'john', 123, 'john']
+['abcd', 786, 2.23, 'john', 70.2, 123, 'john']
+
+Built-in List Functions
+1	cmp(list1, list2) Compares elements of both lists.
+2	len(list) Gives the total length of the list.
+3	max(list) Returns item from the list with max value.
+4	min(list) Returns item from the list with min value.
+5	list(seq) Converts a tuple into list.
+
+Python includes following list methods
+1	list.append(obj) Appends object obj to list
+
+2	list.count(obj) Returns count of how many times obj occurs in list
+
+3	list.extend(seq) Appends the contents of seq to list
+
+4	list.index(obj) Returns the lowest index in list that obj appears
+
+5	list.insert(index, obj) Inserts object obj into list at offset index
+
+6	list.pop(obj=list[-1]) Removes and returns last object or obj from list
+
+7	list.remove(obj) Removes object obj from list
+
+8	list.reverse() Reverses objects of list in place
+
+9	list.sort([func]) Sorts objects of list, use compare func if given
+
+Exceptions Handling
+--------------------
+try:
+   You do your operations here;
+   ......................
+except ExceptionI:
+   If there is ExceptionI, then execute this block.
+except ExceptionII:
+   If there is ExceptionII, then execute this block.
+   ......................
+else:
+   If there is no exception then execute this block. 
+   
+The except Clause with No Exceptions : 
+try:
+   You do your operations here;
+   ......................
+except:
+   If there is any exception, then execute this block.
+   ......................
+else:
+   If there is no exception then execute this block. 
+   
+The except Clause with Multiple Exceptions :
+try:
+   You do your operations here;
+   ......................
+except(Exception1[, Exception2[,...ExceptionN]]]):
+   If there is any exception from the given exception list, 
+   then execute this block.
+   ......................
+else:
+   If there is no exception then execute this block. 
+
+The try-finally Clause :   
+try:
+   You do your operations here;
+   ......................
+   Due to any exception, this may be skipped.
+finally:
+   This would always be executed.
+   ......................
+You cannot use else clause as well along with a finally clause.
