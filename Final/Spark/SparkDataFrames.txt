@@ -375,7 +375,7 @@ val ds = spark.createDataset(rdd)
 -------------------------------------------------------------------------------------------------------------------
 Untyped transformations
 ============================
-acdgsswwj
+djsawgswc
 1)agg : Aggregates on the entire Dataset without groups.
 // ds.agg(...) is a shorthand for ds.groupBy().agg(...)
 ds.agg(max($"age"), avg($"salary"))
