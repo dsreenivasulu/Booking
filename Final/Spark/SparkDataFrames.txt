@@ -410,7 +410,7 @@ ds.select(expr("colA"), expr("colB as newName"), expr("abs(colC)"))
 8)withColumnRenamed : rename cloumn name
 
 9)join(rightDf, joinExpression, jointype)  : 
-join types are : inner, outer, left_outer, right_outer, leftsemi.
+join types are : inner, outer, left_outer, right_outer, leftsemi, leftanti.
 
 import org.apache.spark.sql.functions._
 df1.join(df2, $"df1Key" === $"df2Key", "outer")
@@ -484,7 +484,7 @@ ds.groupBy().agg(max($"age"), avg($"salary")
 
 Typed transformations 
 =====================
-feddsolricsuw
+soldredfisuwc
 
 1)coalesce() 
 
