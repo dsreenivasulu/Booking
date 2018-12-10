@@ -83,6 +83,25 @@ Multiple Assignment :
 a = b = c = 1
 a,b,c = 1,2,"john"
 
+Re-declare a Variable :
+a = 10 #Declaring first time
+a = 'hello' #Re-declaring
+
+Concatenate Variables
+1)print("sree" + 35) #TypeError
+
+2)name = "sree"
+id = 35
+print(name + id) #undefined
+
+3)print(name + str(id)) #sree35
+
+global vs local variable
+local variable is declared inside the function 
+global variable is declared out side the function 
+Note : we can acces and re-declare the global variables inside the function using globe
+
+
 Standard Data Types :
 Python has five standard data types −
 Numbers
@@ -508,7 +527,11 @@ lambda [arg1 [,arg2,.....argn]]:expression
 ex :
 # Function definition is here
 sum = lambda arg1, arg2: arg1 + arg2;
-   
+
+Note : 1)The code within every function starts with a colon (:) and should be indented (space)
+2)The statement return (expression) exits a function, optionally passing back a value to the caller. A return statement with no args is the same as return None.
+https://www.guru99.com/functions-in-python.html
+
 Dictionary
 -------------
 dict = {'Name': 'Zara', 'Age': 7, 'Class': 'First'} #declaration
@@ -549,8 +572,12 @@ Tuples : A tuple is a sequence of immutable Python objects. Tuples are sequences
 tup1 = ('physics', 'chemistry', 1997, 2000);
 tup2 = (1, 2, 3, 4, 5 );
 tup3 = "a", "b", "c", "d";
-tup4 = ();
-tup5 = (50,);
+
+tup4 = (); //empty tuple
+
+For writing tuple for a single value, you need to include a comma, even though there is a single value. Also at the end you need to write semicolon as shown below. 
+tup5 = (50,); 
+
 Accessing values by index 
 tup1[0]  #physics
 tup2[1:5] #[2, 3, 4, 5]
@@ -578,6 +605,41 @@ Tuples are immutable which means you cannot update or change the values of tuple
 
 del tup1 #Delete Tuple Elements
 
+Comparing tuples :
+A comparison operator in Python can work with tuples.
+The comparison starts with a first element of each tuple. If they do not compare to =,< or > then it proceed to the second element and so on.It starts with comparing the first element from each of the tuples
+
+Let's study this with an example-
+
+#case 1
+a=(5,6)
+b=(1,4)
+if (a>b):print("a is bigger")
+else: print("b is bigger")
+
+#case 2
+a=(5,6)
+b=(5,4)
+if (a>b):print("a is bigger")
+else: print ("b is bigger")
+
+#case 3
+a=(5,6)
+b=(6,4)
+if (a>b):print("a is bigger")
+else: print("b is bigger")
+
+Case1: Comparison starts with a first element of each tuple. In this case 5>1, so the output a is bigger
+
+Case 2: Comparison starts with a first element of each tuple. In this case 5>5 which is inconclusive. So it proceeds to the next element. 6>4, so the output a is bigger
+
+Case 3: Comparison starts with a first element of each tuple. In this case 5>6 which is false. So it goes into the else loop prints "b is bigger." 
+
+Advantages of tuple over list
+    Iterating through tuple is faster than with list, since tuples are immutable.
+    Tuples that consist of immutable elements can be used as key for dictionary, which is not possible with list
+    If you have data that is immutable, implementing it as tuple will guarantee that it remains write-protected
+
 Basic Tuples Operations
 Python Expression	      	Results								Description
 len((1, 2, 3))	     			3								Length
@@ -596,6 +658,7 @@ Built-in Tuple Functions
 4	min(tuple) Returns item from the tuple with min value.
 
 5	tuple(seq) Converts a list into tuple.
+6       sorted
 
 Lists : Important thing about a list is that items in a list need not be of the same type.
 -----------
@@ -649,6 +712,10 @@ Python includes following list methods
 8	list.reverse() Reverses objects of list in place
 
 9	list.sort([func]) Sorts objects of list, use compare func if given
+
+What is difference between list and tuple ?
+list is declared in square brackets and can be changed 
+tuple is declared in parentheses and cannot be changed
 
 Exceptions Handling
 --------------------
