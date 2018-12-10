@@ -821,6 +821,122 @@ What is difference between list and tuple ?
 list is declared in square brackets and can be changed 
 tuple is declared in parentheses and cannot be changed
 
+
+In Python, there are two kinds of errors: syntax errors and exceptions. (try, raise,  except, else, finally)
+syntax errors :
+Error caused by not following the proper structure (syntax) of the language is called syntax error or parsing error.
+ex : 
+if a < 3
+SyntaxError: invalid syntax
+We can notice here that a colon is missing in the if statement.
+
+while True print('Hello world')
+SyntaxError: invalid syntax
+We can notice here that a colon is missing in the while statement.
+
+Exceptions:
+Even if a statement or expression is syntactically correct, it may cause an
+error when an attempt is made to execute it. 
+Errors which are encountered at runtime (Exceptions)
+Errors detected during execution are called exceptions.
+
+Errors can also occur at runtime and these are called exceptions. 
+They occur, for example, when a file we try to open does not exist (FileNotFoundError), 
+dividing a number by zero (ZeroDivisionError), module we try to import is not found (ImportError) etc
+
+
+ex : 
+1)10 * (1/0)
+ZeroDivisionError: integer division or modulo by zero
+2)4 + spam*3
+NameError: name 'spam' is not defined
+3)'2' + 2
+TypeError: cannot concatenate 'str' and 'int' objects
+4)open("imaginary.txt")
+FileNotFoundError: [Errno 2] No such file or directory: 'imaginary.txt'
+
+Python Built-in Exceptions:
+---------------------------
+
+Illegal operations can raise exceptions. There are plenty of built-in exceptions in Python that are raised when corresponding errors occur. 
+We can view all the built-in exceptions using the local() built-in functions as follows.
+locals()['__builtins__']
+
+Raising an Exception
+We can use raise to throw an exception if a condition occurs
+ex :
+x = 10
+if x > 5:
+    raise Exception('x should not exceed 5. The value of x was: {}'.format(x))
+	
+The else Clause
+In Python, using the else statement, you can instruct a program to execute a certain block of code only in the absence of exceptions.	
+
+Except clause with multiple exceptions
+except (IOError,ValueError) as e:
+
+Python Custom Exceptions
+class UnAcceptedValueError(Exception):   
+
+Debugging tools
+pdb : pdb is a built-in Python module which we can use to debug a program while it’s running
+Pyflakes, pylint, PyChecker and pep8
+These four utilities analyse code for syntax errors as well as some kinds of runtime errors. They also print warnings about bad coding style, and about inefficient and potentially incorrect code – for example, variables and imported modules which are never used.
+
+Pyflakes parses code instead of importing it, which means that it can’t detect as many errors as other tools – but it is also safer to use, since there is no risk that it will execute broken code which does permanent damage to our system. This is mostly relevant when we use it as part of an automated system. It also means that Pyflakes is faster than other checkers.
+
+Pylint and PyChecker do import the code that they check, and they produce more extensive lists of errors and warnings. They are used by programmers who find the functionality of pyflakes to be too basic.
+
+Pep8 specifically targets bad coding style – it checks whether our code conforms to Pep 8, a specification document for good coding style.
+
+Logging
+CRITICAL – for very serious errors
+ERROR – for less serious errors
+WARNING – for warnings
+INFO – for important informative messages
+DEBUG – for detailed debugging messages
+
+import logging
+
+# log messages to a file, ignoring anything less severe than ERROR
+logging.basicConfig(filename='myprogram.log', level=logging.ERROR)
+
+# these messages should appear in our file
+logging.error("The washing machine is leaking!")
+logging.critical("The house is on fire!")
+
+# but these ones won't
+logging.warning("We're almost out of milk.")
+logging.info("It's sunny today.")
+logging.debug("I had eggs for breakfast.")
+
+Best way :
+1)try:
+    age = int(input("Please enter your age: "))
+except ValueError as err:
+    print(err)
+err is not a string, but Python knows how to convert it into one – the string representation of an exception is the message
+
+2)try:
+    age = int(input("Please enter your age: "))
+except ValueError as err:
+    print("You entered incorrect age input: %s" % err)
+	
+3)try:
+    age = int(input("Please enter your age: "))
+    if age < 0:
+        raise ValueError("%d is not a valid age. Age must be positive or zero.")
+except ValueError as err:
+    print("You entered incorrect age input: %s" % err)
+else:
+    print("I see that you are %d years old." % age)
+
+4)try:
+    age = int(input("Please enter your age: "))
+except ValueError as err:
+    print("You entered incorrect age input: %s" % err)
+    raise err	
+
 Exceptions Handling
 --------------------
 try:
